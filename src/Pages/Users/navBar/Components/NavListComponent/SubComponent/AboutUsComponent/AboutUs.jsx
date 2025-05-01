@@ -7,6 +7,8 @@ import axios from 'axios';
 import styles from './styles/aboutUsStyles.module.scss'
 import images from '../../../../../../../assets/for_landingPage/Images.jsx'
 import icons from '../../../../../../../assets/for_landingPage/Icons.jsx'
+import { API_URL } from '/src/config';
+
 
 export default function AboutUs({ setCurrentModal, handleClickOutside, currentModal, nodeRef, ...props }) {
 
@@ -23,7 +25,7 @@ export default function AboutUs({ setCurrentModal, handleClickOutside, currentMo
     // Fetch About Us data from the backend
     const fetchAboutUsData = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/api/aboutus');
+            const response = await axios.get(`${API_URL}/api/aboutus`);
             setAboutUsData(response.data); // Update state with fetched data
         } catch (error) {
             console.error("Error fetching About Us data:", error);
@@ -82,7 +84,7 @@ export default function AboutUs({ setCurrentModal, handleClickOutside, currentMo
                                     {/* Display Image */}
                                     {aboutUsData.image ? (
                                         <img
-                                            src={`http://localhost:5000/uploads/images/${aboutUsData.image}`}
+                                            src={`${API_URL}/uploads/images/${aboutUsData.image}`}
                                             alt="About Us"
                                             className={styles.aboutUsImage}
                                         />

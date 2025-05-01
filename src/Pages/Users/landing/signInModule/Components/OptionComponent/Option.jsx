@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import icons from '../../../../../../assets/for_landingPage/Icons';
 
 import UseToast from '../../../../../Admin/utility/AlertComponent/UseToast';
+import { API_URL } from '/src/config';
 
 export default function Option({ handleBtnClick, isBtnClicked, handleUser }) {
     // toast alert pop up
@@ -74,7 +75,7 @@ export default function Option({ handleBtnClick, isBtnClicked, handleUser }) {
                 requestBody.customRole = customRole;
             }
     
-            const response = await fetch('http://localhost:5000/api/guest/logGuest', {
+            const response = await fetch(`${API_URL}/api/guest/logGuest`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

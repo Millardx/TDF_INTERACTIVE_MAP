@@ -1,17 +1,18 @@
 import axios from 'axios';
 import {jwtDecode} from 'jwt-decode'; // Make sure you have jwt-decode installed
+import {API_URL} from '/src/config'; // Import the API_URL constant
 
-const API_URL = 'http://localhost:5000/api/auth';
+
 
 // Register user
 const register = async (userData) => {
-    const response = await axios.post(`${API_URL}/register`, userData);
+    const response = await axios.post(`${API_URL}/api/auth/register`, userData);
     return response.data;
 };
 
 // Login user
 const login = async (userData) => {
-    const response = await axios.post(`${API_URL}/login`, userData);
+    const response = await axios.post(`${API_URL}/api/auth/login`, userData);
     return response.data;
 };
 
@@ -50,7 +51,7 @@ const getProtectedData = async () => {
         throw new Error('Token expired');
     }
 
-    const response = await axios.get(`${API_URL}/protected-route`, {
+    const response = await axios.get(`${API_URL}/api/auth/protected-route`, {
         headers: authHeader()
     });
     return response.data;

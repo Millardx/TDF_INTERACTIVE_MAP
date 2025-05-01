@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import styles from './AddMarker.module.scss';
 
 import UseToast from '../../../../Admin/utility/AlertComponent/UseToast';
+import { API_URL } from '/src/config';
 
 const Modal = ({ isVisible, onSave, onClose , worldPosition, icon, iconName }) => {
   // toast alert pop up
@@ -22,7 +23,7 @@ const Modal = ({ isVisible, onSave, onClose , worldPosition, icon, iconName }) =
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/markers/addMarker', {
+      const response = await fetch(`${API_URL}/api/markers/addMarker`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

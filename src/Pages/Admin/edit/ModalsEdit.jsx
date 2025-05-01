@@ -12,6 +12,7 @@ import icons from '../../../assets/for_landingPage/Icons';
 import Confirmation from '../utility/ConfirmationComponent/Confirmation';
 import NavBar from './navBar/NavBar';
 import '../utility/sliderCustomStyles/sliderStyles.scss';
+import { API_URL } from '/src/config';
 
 const Modal = () => {
   // toast alert pop up
@@ -58,7 +59,7 @@ useEffect(() => {
   const fetchModals = async () => {
     setIsLoading(true); // Set loading to true before fetching
     try {
-      const response = await axios.get('http://localhost:5000/api/modal');
+      const response = await axios.get(`${API_URL}/api/modal`);
       setModals(response.data);
     } catch (error) {
       console.error('Error fetching modals:', error);
@@ -74,7 +75,7 @@ const fetchModalData = async () => {
   if (currentModal) {
     setIsLoading(true); // Start loading
     try {
-      const response = await axios.get(`http://localhost:5000/api/modal/${currentModal._id}`);
+      const response = await axios.get(`${API_URL}/api/modal/${currentModal._id}`);
       
       // Set modalImages state with the fetched images
       const fetchedImages = response.data.modalImages;
@@ -91,7 +92,7 @@ const fetchModalData = async () => {
 
       // Update image previews based on the fetched images
       const imagePreviews = fetchedImages
-        ? fetchedImages.map((img) => `http://localhost:5000/uploads/modalImages/${img}`)
+        ? fetchedImages.map((img) => `${API_URL}/uploads/modalImages/${img}`)
         : [];
       
       setModalImagePreviews(imagePreviews);
@@ -182,7 +183,7 @@ const handleUploadFileChange = (e) => {
           formData.append('modalImages', image); // Append each image with the key 'modalImages'
         });
     
-        const response = await axios.post(`http://localhost:5000/api/modal/${currentModal._id}`, formData, {
+        const response = await axios.post(`${API_URL}/api/modal/${currentModal._id}`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
@@ -240,7 +241,7 @@ const handleUploadFileChange = (e) => {
       }
   
       const response = await axios.put(
-        `http://localhost:5000/api/modal/${currentModal._id}/updateImage`, formData,
+        `${API_URL}/api/modal/${currentModal._id}/updateImage`, formData,
         {
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -273,7 +274,7 @@ const handleDelete = async () => {
       mountToast("No modal selected for deleting images.", "error");
       return;
     } else {
-      const response = await axios.delete(`http://localhost:5000/api/modal/uploads/modalImages/${deleteFile}`, {
+      const response = await axios.delete(`${API_URL}/api/modal/uploads/modalImages/${deleteFile}`, {
         data: {
           id: currentModal._id, // Pass the modal ID
         },
@@ -301,7 +302,7 @@ const handleDelete = async () => {
 const handleImageArchive = async (modalId, imagePath) => {
   try {
     console.log('Archiving modal image...', modalId, imagePath);
-    const response = await axios.put(`http://localhost:5000/api/archive/modal/${modalId}`, { imagePath });
+    const response = await axios.put(`${API_URL}/api/archive/modal/${modalId}`, { imagePath });
     console.log("API Response:", response);
 
     if (response.status === 200) {
@@ -342,7 +343,7 @@ const handleDescTech = async () => {
   }
 
   try {
-    const response = await axios.put(`http://localhost:5000/api/modal/${currentModal._id}/description`, {
+    const response = await axios.put(`${API_URL}/api/modal/${currentModal._id}/description`, {
       description,
       technologies,
     });
@@ -420,6 +421,14 @@ const handleDescTech = async () => {
     }
   }, [isInfo, description]);
 
+    // Manual text truncate using script - Lorenzo - 04/01/2025
+  // Note: Selected font family does not support/include ellipsis unicode
+  //       This is important
+  function truncateText(text, maxLength) {
+    return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
+  }
+
+
   return (
     <>
     <NavBar /> 
@@ -466,7 +475,10 @@ const handleDescTech = async () => {
             >
               <div className={styles.modal}>
                 <label className = { styles.headerBg }>
-                  <span className = { styles.txtTitle }>{currentModal.title}</span>
+                  {/* Modified by Lorenzo @ 05/01/2025 */}
+                  <span className = { styles.txtTitle }>
+                    { truncateText(currentModal.title, 18) }
+                  </span>
                 </label>
               
                 {/* <button className = { `${ styles.addBtn } ${ styles.onlyIcon }`} type="button" onClick={() => setUploadModalVisible(true)}>
@@ -632,7 +644,7 @@ const handleDescTech = async () => {
             <div className = { styles.customLabel }>
               <button className = { styles.browseBtn }>Browse...</button>
               <span className = { styles.fileName }>
-                { "Temporary Placholder" } {/* Add, file name if one, n files selected if multiple */}
+                { "Temporary Placeholder" } {/* Add, file name if one, n files selected if multiple */}
               </span>
               <input
                 type="file"

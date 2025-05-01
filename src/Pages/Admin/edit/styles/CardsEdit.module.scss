@@ -52,6 +52,10 @@
         font-family: $subTitle;
         font-size: 11px;
         width: 130px;
+
+        // added by lorenzo 05/01/2025
+        text-overflow: ellipsis; 
+        overflow: hidden;
       }
 
       button {

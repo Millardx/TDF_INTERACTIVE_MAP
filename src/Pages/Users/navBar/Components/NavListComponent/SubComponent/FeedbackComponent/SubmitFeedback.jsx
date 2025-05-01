@@ -12,6 +12,8 @@ import UseToast from '../../../../../../Admin/utility/AlertComponent/UseToast.js
 
 import styles from './styles/submitFeedbackStyles.module.scss';
 import icons from '../../../../../../../assets/for_landingPage/Icons.jsx';
+import { API_URL } from '/src/config';
+
 
 export default function NewsAndEvents({ setCurrentModal, handleClickOutside, currentModal, nodeRef, ...props }) {
 
@@ -57,10 +59,10 @@ export default function NewsAndEvents({ setCurrentModal, handleClickOutside, cur
             rating: selectedStar + 1, // Assuming star rating starts from 0
             comment: document.querySelector('textarea[name="feedback"]').value
         };
-    
+
         try {
             console.log('Sending feedback data:', feedbackData); // Check before sending
-            const response = await axios.post('http://localhost:5000/api/guest/updateFeedback', feedbackData, {
+            const response = await axios.post(`${API_URL}/api/guest/updateFeedback`, feedbackData, {
                 headers: {
                     'Content-Type': 'application/json',
                 }

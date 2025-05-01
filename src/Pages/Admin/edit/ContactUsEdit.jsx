@@ -7,6 +7,7 @@ import UseToast from '../utility/AlertComponent/UseToast';
 import styles from "./styles/ContactUsEdit.module.scss";
 import icons from '../../../assets/for_landingPage/Icons';
 import { style } from 'framer-motion/client';
+import { API_URL } from '/src/config';
 
 export default function ContactUsEdit ({ setCurrentModal, currentModal, handleClickOutside }) {
 
@@ -22,7 +23,7 @@ export default function ContactUsEdit ({ setCurrentModal, currentModal, handleCl
 
     const fetchContactUsData = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/api/contact');
+            const response = await axios.get(`${API_URL}/api/contact`);
             setContactUsData(response.data);
         } catch (error) {
             console.error("Error fetching Contact Us data:", error);
@@ -53,7 +54,7 @@ export default function ContactUsEdit ({ setCurrentModal, currentModal, handleCl
         }
     
         try {
-            const response = await axios.put('http://localhost:5000/api/contact', contactUsData);
+            const response = await axios.put(`${API_URL}/api/contact`, contactUsData);
             
             mountToast("Contacts updated successfully", "success");
             setCurrentModal("contactUs");  // Close modal after saving

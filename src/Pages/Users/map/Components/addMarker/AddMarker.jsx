@@ -14,6 +14,7 @@ import uploadIcon from './upload.png'
 
 import { useAuth } from '/src/Pages/Admin/ACMfiles/authContext';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { API_URL } from '/src/config';
 
 
 const AddMarker = ({ scene, container, camera, addMarkerMode, isOnAddMarker }) => {
@@ -36,12 +37,12 @@ const AddMarker = ({ scene, container, camera, addMarkerMode, isOnAddMarker }) =
 
   const fetchMarkerIcons = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/markerIcons');
+      const response = await axios.get(`${API_URL}/api/markerIcons`);
   
       // Map the API response to the desired structure
       const formattedData = response.data.map((icon) => ({
         name: icon.name,
-        icon: `http://localhost:5000/uploads/icons/${icon.iconPath}`, // Construct the image URL
+        icon: `${API_URL}/uploads/icons/${icon.iconPath}`, // Construct the image URL
       }));
   
       setMarkerIcons(formattedData);

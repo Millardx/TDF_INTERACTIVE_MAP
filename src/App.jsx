@@ -45,7 +45,7 @@ const App = () => {
         </Routes>
       </AuthProvider>
 
-      <ToastContainer />
+      <ToastContainer limit={2}/>
     </>
    );
 }

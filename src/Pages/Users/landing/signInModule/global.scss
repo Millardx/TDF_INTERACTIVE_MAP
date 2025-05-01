@@ -73,6 +73,27 @@ li {
 }
 
 
+/* 
+    Added by Lorenzo - 05/01/2025 
+    Affects all table - force and kind of input to wrap
+*/
+
+td, th {
+    font-size: 13px;
+    word-break: break-word; 
+    position: relative; 
+    white-space: nowrap;
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+
+    &:hover {
+        white-space: normal; 
+        overflow: visible;
+        text-overflow: unset;
+    }
+}
+
+
 /* label, title and subTitle global styles */
 
 label, .txtTitle, .txtSubTitle {

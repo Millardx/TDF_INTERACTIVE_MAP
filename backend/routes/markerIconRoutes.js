@@ -4,14 +4,21 @@ const MarkerIcon = require('../models/MarkerIcon'); // Assuming a MarkerIcon mod
 const fs = require('fs');
 const path = require('path');
 const router = express.Router();
+const ensureUploadPathExists = require('../utility/ensureUploadPathExists');
+
 
 // Multer storage configuration for marker icons
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/icons'); // Set the folder for marker icon uploads
+    const uploadPath = 'uploads/icons';
+
+    // ✅ Check and create 'uploads/icons' if it doesn't exist
+    // Create directory if it doesn't exist
+    ensureUploadPathExists(uploadPath); // 📦 Check/create before upload
+    cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname); // Filename format
+    cb(null, Date.now() + '-' + file.originalname);
   },
 });
 

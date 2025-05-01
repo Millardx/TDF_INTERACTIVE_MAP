@@ -4,6 +4,7 @@ import styles from './styles/AudioUpload.module.scss';
 import icons from "../../../assets/for_landingPage/Icons";
 
 import UseToast from '../utility/AlertComponent/UseToast';
+import { API_URL } from '/src/config';
 
 const AudioUpload = ({ audioId, currentTitle, onClose }) => {
   // toast alert pop up
@@ -44,7 +45,7 @@ const AudioUpload = ({ audioId, currentTitle, onClose }) => {
     if (audioFile) formData.append('audio', audioFile);
 
     try {
-      await axios.put(`http://localhost:5000/api/audio/update/${audioId}`, formData, {
+      await axios.put(`${API_URL}/api/audio/update/${audioId}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       mountToast("Audio updated successfully!", "success");

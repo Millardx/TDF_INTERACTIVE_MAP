@@ -118,64 +118,141 @@
       .description, .technologies {
         height: 100%;
 
+
+        // Modified by Lorenzo @ 05/01/2025
         .txtSubTitle {
           color: $tertiary;
           font-size: 8px;
           margin-bottom: 15px;
           margin-top: 10px;
           width: 80%;
+          // added by lorenzo - 05/01/2025
+          text-align: justify;
+          max-height: 100px;
+          overflow-y: scroll;
+          padding-right: 10px;
+          word-wrap: break-word;
         }
       }
 
-      .btns {
-        margin-top: 20px;
-        display: flex;
-        margin-left: -10px;
+      // added and modified by Lorenzo @ 05/01/2025
+      .infoBtn {
 
-        li {
-          color: $tertiary;
-          list-style-type: none;
+        position: relative;
 
-          span {
-            border-radius: 7px 7px 0 0;
-            font-family: $title;
-            font-size: 9px;
-            margin-right: 5px;
+        .btns {
+          margin-top: 20px;
+          display: flex;
+          margin-left: -10px;
+
+          li {
+            color: $tertiary;
+            list-style-type: none;
+
+            span {
+              border-radius: 7px 7px 0 0;
+              font-family: $title;
+              font-size: 9px;
+              margin-right: 5px;
+            }
+
+            .descBtn {
+              background-color: black;
+              padding: 5px 10px 0 10px;
+            }
+
+            .techBtn {
+              background-color: $primary;
+              padding: 5px 10px 0 10px;
+            }
           }
+        }
 
-          .descBtn {
-            background-color: black;
-            padding: 5px 10px 0 10px;
-          }
 
-          .techBtn {
+        // diff check this part - lorenzo - 05/01/2025
+        .speaker {
             background-color: $primary;
-            padding: 5px 10px 0 10px;
+            border-radius: 50%;
+            height: 35px;
+            right: 20px;           // modified by Lorenzo
+            position: absolute;
+            top: -45px;         // modified by Lorenzo
+            transition: all 0.2s ease-in-out;
+            width: 35px;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent; // removes blue highlight on mobile
+
+            .icon {
+              height: 20px;
+              width: 20px;
+            }
+
+            &:hover {
+              scale: 1.1;
+            }
+        }
+
+        // added by lorenzo @05/01/2025 - language toggle
+        .toggleSwitch {
+          width: 65px;
+          height: 25px;
+          right: 5px;
+          top: -5px;
+          background-color: #ccc;
+          border-radius: 999px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 8px;
+          cursor: pointer;
+          transition: background-color 0.3s ease;
+          position: absolute;
+        
+          .label {
+            color: white;
+            font-weight: bold;
+            font-size: 10px;
+            transition: all 0.3s ease;
+            z-index: 2;
+          }
+        
+          .switchCircle {
+            width: 15px;
+            height: 15px;
+            background-color: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 5px;
+            transition: transform 0.3s ease;
+          }
+        
+          &.on {
+            background-color: $secondary;
+        
+            .switchCircle {
+              transform: translateX(30px); // right side
+            }
+        
+            .label {
+              position: absolute;
+              left: 10px;
+            }
+          }
+        
+          &.off {
+            background-color: #999;
+        
+            .switchCircle {
+              transform: translateX(0px); // left side
+            }
+        
+            .label {
+              position: absolute;
+              right: 10px;
+            }
           }
         }
       }
-
-      .speaker {
-          background-color: $primary;
-          border-radius: 50%;
-          height: 35px;
-          right: 12%;
-          position: absolute;
-          top: 80%;
-          transition: all 0.2s ease-in-out;
-          width: 35px;
-          user-select: none;
-          -webkit-tap-highlight-color: transparent; // removes blue highlight on mobile
-
-          .icon {
-            height: 20px;
-            width: 20px;
-          }
-
-          &:hover {
-            scale: 1.1;
-          }
-        }
     }
 
     .infoContainer.active {
@@ -209,19 +286,23 @@
             }
           }
           
-          .btns {
-            li {
-              span {
-                border-radius: 10px 10px 0 0;
-                font-size: 12px;
+          // modified by Lorenzo @05/01/2025
+          .infoBtn {
+            .btns {
+              li {
+                span {
+                  border-radius: 10px 10px 0 0;
+                  font-size: 12px;
+                }
               }
             }
-          }
 
-          .speaker {
-            height: 50px;
-            top: 82%;
-            width: 50px;
+            // removed - Lorenzo - 05/01/2025
+            // .speaker {
+            //   // height: 50px;
+            //   // top: 82%;
+            //   // width: 50px;
+            // }
           }
         }
     }
@@ -239,9 +320,11 @@
             }
           }
 
-          .speaker {
-            top: 85%;
-          }
+
+          // removed by Lorenzo @ 05/01/2025
+          // .speaker {
+          //   top: 85%;
+          // }
         }
     }
   }

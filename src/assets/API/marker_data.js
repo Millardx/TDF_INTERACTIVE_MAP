@@ -3,6 +3,8 @@ import get from './get';
 import assets from '@assets/Icon.js'
 import img from '../images/farm.jpg';
 import axios from 'axios'; // Import axios for API calls
+import {API_URL} from '/src/config'; // Import the API_URL constant
+
 
 
 const data = () => get();
@@ -39,10 +41,10 @@ const fetchMarkerData = async () => {
   let areaPositions = {};  // Declare areaPositions inside the function
 
   try {
-    const response = await axios.get('http://localhost:5000/api/cards');
+    const response = await axios.get(`${API_URL}/api/cards`);
     
     // Fetch marker data to populate areaPositions
-    const markerResponse = await axios.get('http://localhost:5000/api/markers/markerData'); // Adjust URL if needed
+    const markerResponse = await axios.get(`${API_URL}/api/markers/markerData`); // Adjust URL if needed
     const markers = markerResponse.data;
 
     // Populate areaPositions using markers data
@@ -56,7 +58,7 @@ const fetchMarkerData = async () => {
 
 
     // Fetch modal data
-    const modalResponse = await axios.get('http://localhost:5000/api/modal'); // Adjust endpoint as needed
+    const modalResponse = await axios.get(`${API_URL}/api/modal`); // Adjust endpoint as needed
     const modals = modalResponse.data;
 
     // Map modals to a quick access structure
@@ -73,7 +75,7 @@ const fetchMarkerData = async () => {
         position: position,
         icon: `${icon[card.iconType]}`,
         name: card.areaName,
-        img: `http://localhost:5000/uploads/cardsImg/${card.image}`,
+        img: `${API_URL}/uploads/cardsImg/${card.image}`,
         quickFacts: card.quickFacts,
         modalId: card.modal_id,
       };

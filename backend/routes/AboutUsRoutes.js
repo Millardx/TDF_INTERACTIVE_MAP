@@ -5,17 +5,22 @@ const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 const AboutUs = require('../models/AboutUs');
+const ensureUploadPathExists = require('../utility/ensureUploadPathExists'); // Utility function to ensure upload path exists
 
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'uploads/images/');
+      const uploadPath = 'uploads/images/';
+  
+        // Create directory if it doesn't exist
+        ensureUploadPathExists(uploadPath); // 📦 Check/create before upload
+      cb(null, uploadPath);
     },
     filename: (req, file, cb) => {
-        cb(null, `${Date.now()}-${file.originalname}`);
-    }
-});
+      cb(null, `${Date.now()}-${file.originalname}`);
+    },
+  });
 
 const upload = multer({ 
     storage: storage,

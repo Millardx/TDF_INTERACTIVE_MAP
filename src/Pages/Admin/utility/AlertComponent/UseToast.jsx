@@ -1,11 +1,19 @@
 import { toast, Slide } from 'react-toastify';
 
+
+// added by lorenzo - 05/01/2025
+const MAX_TOASTS = 2;   // define max message to accomodate
+
 const UseToast = () => {
+
     const mountToast = (message, type ) => {
+
+        // added by lorenzo - 05/01/2025
+        if (toast.toastCount >= MAX_TOASTS) return;     // terminate execution if request exceeds limit
+
         const toastSettings = {
             position: "top-center",
             autoClose: 2500,
-            limit: 2,
             hideProgressBar: false,
             newestOnTop: true,
             closeOnClick: true,

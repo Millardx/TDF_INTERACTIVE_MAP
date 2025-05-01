@@ -9,11 +9,11 @@ import { useAuth } from '/src/Pages/Admin/ACMfiles/authContext'
 import { useLocation } from 'react-router-dom';
 import { React, useState, useEffect } from 'react';
 import axios from 'axios';
-
 import UseToast from '../../../../../../Admin/utility/AlertComponent/UseToast.jsx';
-
 import styles from './styles/contactUsStyles.module.scss';
 import icons from '../../../../../../../assets/for_landingPage/Icons.jsx';
+import { API_URL } from '/src/config';
+
 
 
 export default function ContactUs({ setCurrentModal, handleClickOutside, currentModal, nodeRef, ...props }) { // isModalActive is a prop from NavListComponent
@@ -30,7 +30,7 @@ export default function ContactUs({ setCurrentModal, handleClickOutside, current
 
     const fetchContactUsData = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/api/contact');
+            const response = await axios.get(`${API_URL}/api/contact`);
             setContactUsData(response.data);
         } catch (error) {
             console.error("Error fetching Contact Us data:", error);

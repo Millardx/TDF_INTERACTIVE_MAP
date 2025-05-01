@@ -7,6 +7,7 @@ import UseToast from '../utility/AlertComponent/UseToast';
 
 import styles from './styles/AboutUsEdit.module.scss'
 import icons from '../../../assets/for_landingPage/Icons'
+import { API_URL } from '/src/config';
 
 export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClickOutside }) {
 
@@ -26,7 +27,7 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
 
     const fetchAboutUsData = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/api/aboutus');
+            const response = await axios.get(`${API_URL}/api/aboutus`);
             setAboutUsData(response.data);
         } catch (error) {
             console.error("Error fetching About Us data:", error);
@@ -53,7 +54,7 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
         }
     
         try {
-            const response = await axios.put('http://localhost:5000/api/aboutus', aboutUsData);
+            const response = await axios.put(`${API_URL}/api/aboutus`, aboutUsData);
             
             mountToast("Information was updated successfully!", "success");
             setCurrentModal("aboutUs");  // Close modal after saving
@@ -88,7 +89,7 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
         formData.append('image', selectedImage);
 
         try {
-            const response = await axios.put('http://localhost:5000/api/aboutus/image', formData, {
+            const response = await axios.put(`${API_URL}/api/aboutus/image`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             mountToast("Image updated successfully!", "success");
@@ -104,13 +105,13 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
     const handleDeleteImage = async () => {
         try {
             if (selectedImage) {
-                await axios.delete('http://localhost:5000/api/aboutus/image');
+                await axios.delete(`${API_URL}/api/aboutus/image`);
                 alert("Image deleted successfully.");
                 fetchAboutUsData();  // Refresh data after deletion
                 setDeleteModalVisible(null);
             }
 
-            await axios.delete('http://localhost:5000/api/aboutus/image');
+            await axios.delete(`${API_URL}/api/aboutus/image`);
             alert("Image deleted successfully.");
             fetchAboutUsData();  // Refresh data after deletion
         } catch (error) {
@@ -120,7 +121,7 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
 
     const handleArchiveImage = async () => {
         try {
-            const response = await axios.put('http://localhost:5000/api/archive/aboutUs', {
+            const response = await axios.put(`${API_URL}/api/archive/aboutUs`, {
                 imagePath: aboutUsData.image, // Pass the image path from your state
             });
     
@@ -206,7 +207,7 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
                                     ) : aboutUsData.image ? (
                                         <div className = { styles.uploaded }>
                                             <img 
-                                                src={`http://localhost:5000/uploads/images/${aboutUsData.image}`} 
+                                                src={`${API_URL}/uploads/images/${aboutUsData.image}`} 
                                                 alt="About Us" 
                                                 className={styles.imgPreview} 
                                             />

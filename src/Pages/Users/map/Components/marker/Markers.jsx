@@ -6,6 +6,7 @@ import fetchMarkerData from '/src/assets/API/marker_data';
 import markerData from '../../../../../assets/API/marker_data';
 import Popup from './popup/Popup';
 import { motion, AnimatePresence } from 'framer-motion'
+import { API_URL } from '/src/config';
 
 // data pipe here
 //const markers = fetchMarkerData;
@@ -22,7 +23,7 @@ const [modals, setModals] = useState([]);
     // Fetch modals from the backend
     useEffect(() => {
       const fetchModals = async () => {
-        const response = await axios.get('http://localhost:5000/api/modal');
+        const response = await axios.get(`${API_URL}/api/modal`);
         setModals(response.data);
       };
       fetchModals();

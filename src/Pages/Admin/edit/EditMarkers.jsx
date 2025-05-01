@@ -9,6 +9,8 @@ import styles from './styles/editMarkersStyles.module.scss'
 import icons from "../../../assets/for_landingPage/Icons";
 import { motion, AnimatePresence } from 'framer-motion'
 import MarkerUpload from './MarkerUpload';
+import { API_URL } from '/src/config';
+import PaginationControls from '../utility/PaginationComponent/PaginationControls';
 
 //marker icon data
 import markerData from '../../Users/map/Components/addMarker/markerData';
@@ -23,13 +25,16 @@ export default function EditMarkers() {
     const [isMarker, setIsMarker] = useState(null);
     const [isDelete, setIsDelete] = useState(false); // Confirmation Modal 
     const [markers, setMarkers] = useState([]); // State for fetched markers
+    const [currentMarkers, setCurrentMarkers] = useState([]);
+    const [filteredMarkers, setFilteredMarkers] = useState([]);
+    const [logsPerPage, setLogsPerPage] = useState(5);
     const [selectedMarkerId, setSelectedMarkerId] = useState(null);
     
     const [markerIcons, setMarkerIcons] = useState([]);
         // Fetch MarkerIcons
     const fetchMarkerIcons = async () => {
         try {
-        const response = await axios.get('http://localhost:5000/api/markerIcons');
+        const response = await axios.get(`${API_URL}/api/markerIcons`);
         setMarkerIcons(response.data);
         } catch (error) {
         console.error('Error fetching marker icons:', error);
@@ -48,7 +53,7 @@ export default function EditMarkers() {
           console.log('Archiving marker icon...', markerId, name,  iconPath);
       
           const response = await axios.put(
-            `http://localhost:5000/api/archive/markerIcon/${markerId}`,
+            `${API_URL}/api/archive/markerIcon/${markerId}`,
             { iconPath , name}
           );
       
@@ -87,8 +92,10 @@ export default function EditMarkers() {
     
     const fetchMarkers = async () => {
         try {
-          const response = await axios.get('http://localhost:5000/api/markers/markerData');
+          const response = await axios.get(`${API_URL}/api/markers/markerData`);
           setMarkers(response.data);
+          setFilteredMarkers(response.data);
+          setCurrentMarkers(response.data.slice(0, logsPerPage));
         } catch (error) {
           console.error('Error fetching markers:', error);
           mountToast('Error fetching markers', 'error');
@@ -97,7 +104,7 @@ export default function EditMarkers() {
     
       useEffect(() => {
         fetchMarkers();
-      }, []);
+      }, [logsPerPage]);
     
 
     const handleDeleteBtn = () => {
@@ -118,7 +125,7 @@ export default function EditMarkers() {
     {/*handle delete for the Markers*/}
     const handleConfirmDelete = async (markerId) => {
         try {
-          const response = await axios.delete(`http://localhost:5000/api/markers/${markerId}`);
+          const response = await axios.delete(`${API_URL}/api/markers/${markerId}`);
           setMarkers(markers.filter(marker => marker._id !== confirmDelete)); // Remove the deleted marker from the list
           mountToast('Marker and related documents deleted successfully', 'success');
           setIsDelete(false);
@@ -166,6 +173,26 @@ export default function EditMarkers() {
         }
       }, [location])
 
+          // pagination 
+    const handleFilterChange = (searchTerm, limit, currentPage) => {
+        const filtered = markers.filter((markers) =>
+            [markers.areaName, markers.iconType]
+                .map((value) => value?.toString().toLowerCase())
+                .some((value) => value?.includes(searchTerm.toLowerCase()))
+        );
+
+        setLogsPerPage(limit);
+        setFilteredMarkers(filtered);
+
+        const offset = currentPage * limit;
+        setCurrentMarkers(filtered.slice(offset, offset + limit));
+    };
+
+    const handlePaginationChange = (currentPage) => {
+        const offset = currentPage * logsPerPage;
+        setCurrentMarkers(filteredMarkers.slice(offset, offset + logsPerPage));
+    };
+
       return (
         <>
             <NavBar />
@@ -204,7 +231,7 @@ export default function EditMarkers() {
                         {markerIcons.map((iconData) => (
                         <div key={iconData._id} className={styles.marker}>
                             <img 
-                            src={`http://localhost:5000/uploads/icons/${iconData.iconPath}`} 
+                            src={`${API_URL}/uploads/icons/${iconData.iconPath}`} 
                             alt={iconData.name} 
                             className={styles.icon} 
                             />
@@ -242,6 +269,13 @@ export default function EditMarkers() {
                 <span className={`${styles.txtTitle} ${styles.listHeader}`}>Marker List</span>
 
                 <div className={styles.tblWrapper}>
+
+                     <PaginationControls
+                        data={filteredMarkers}
+                        rowsPerPageOptions={[5, 10, 15, 20]}
+                        onFilterChange={handleFilterChange}
+                        onPaginationChange={handlePaginationChange}
+                    />
                     <table>
                         <thead>
                             <tr>
@@ -251,8 +285,8 @@ export default function EditMarkers() {
                             </tr>
                         </thead>
                         <tbody>
-                            {markers.length > 0 ? (
-                                markers.map((marker) => (
+                            {currentMarkers.length > 0 ? (
+                                currentMarkers.map((marker) => (
                                     <tr key={marker._id}>
                                         <td>{marker.areaName}</td>
                                         <td>{marker.iconType}</td>
@@ -328,6 +362,7 @@ export default function EditMarkers() {
                 </motion.div>
             )}
             </AnimatePresence>
+
 
             {/* Confirmation Modal */}
             <AnimatePresence>

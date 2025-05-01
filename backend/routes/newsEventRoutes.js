@@ -4,11 +4,15 @@ const fs = require('fs');
 const path = require('path');
 const NewsEvent = require('../models/NewsEvent');
 const router = express.Router();
+const ensureUploadPathExists = require('../utility/ensureUploadPathExists');
+
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'uploads/images/');
+        const uploadPath = 'uploads/images/';
+        ensureUploadPathExists(uploadPath); // 📦 Check/create before upload
+        cb(null, uploadPath);
     },
     filename: (req, file, cb) => {
         cb(null, `${Date.now()}-${file.originalname}`);

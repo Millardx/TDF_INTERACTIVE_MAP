@@ -12,6 +12,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useLocation, useNavigate, } from 'react-router-dom';
 import { useAuth } from '/src/Pages/Admin/ACMfiles/authContext';
 import axios from 'axios';
+import { API_URL } from '/src/config';
+
 
 
 import legend from '../../../../../assets/icon/Icons.js';
@@ -24,11 +26,11 @@ export default function Legend() {
     // Fetch marker icons
     const fetchMarkerIcons = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/api/markerIcons');
+            const response = await axios.get(`${API_URL}/api/markerIcons`);
             // Map the API response to the desired structure
             const formattedData = response.data.map((icon) => ({
                 name: icon.name,
-                icon: `http://localhost:5000/uploads/icons/${icon.iconPath}`, // Construct the image URL
+                icon: `${API_URL}uploads/icons/${icon.iconPath}`, // Construct the image URL
             }));
             setMarkerIcons(formattedData);
         } catch (error) {

@@ -1,0 +1,89 @@
+@import '../../../../Users/landing/signInModule/stylesVariables.scss';
+@import '../../../../Users/landing/signInModule/global.scss';
+
+
+.searchFilter {
+    margin: -30px 0 10px 21px;
+
+    .searchLabel {
+        font-size: 13px;
+    }
+
+    input {
+        margin-left: 10px;
+        padding: 5px;
+        outline: none;
+
+        &:focus {
+            border: 1px solid $secondary;
+        }
+    }
+}
+
+.controls {
+    .rowsPerPage {
+        margin-left: 21px;
+
+        .limitLabel {
+            font-size: 13px;
+        }
+
+        select {
+            margin-left: 10px;
+            padding: 5px;
+        }
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        list-style: none;
+        padding: 0;
+        margin: 20px 0;
+    }
+
+    .pageItem {
+        margin: 0 5px;
+        padding: 8px 12px;
+        cursor: pointer;
+        border: 1px solid #ddd;
+        font-size: 13px;
+        border-radius: 5px;
+        font-family: $subTitle;
+        transition: all 0.3s ease-in-out;
+        user-select: none;
+
+        &:hover {
+            background-color: #f0f0f0;
+        }
+
+        &.active {
+            background-color: $primary;
+            color: white;
+            border: none;
+        }
+    }
+}
+
+
+@media (min-width: 992px) {
+
+    .searchFilter {
+        .searchLabel {
+            font-size: 16px;
+        }
+    }
+    
+    .controls {
+        .rowsPerPage {
+            .limitLabel {
+                font-size: 16px;
+            }
+        }
+    
+        .pageItem {
+            font-size: 16px;
+        }
+    }
+
+}

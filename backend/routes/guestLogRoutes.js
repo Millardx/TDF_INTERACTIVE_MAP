@@ -6,6 +6,8 @@ const GuestLog = require('../models/GuestLog'); // Adjust the path as necessary
 const moment = require('moment-timezone');
 
 // Route to log guest with UUID, sexAtBirth, and role
+// This will create a new guest log entry with the provided details
+
 router.post('/logGuest', async (req, res) => {
     const { sexAtBirth, role, customRole } = req.body;
     console.log('Guest ID:','Sex:', sexAtBirth, 'Role:',role, 'CustomRole' ,customRole)
@@ -36,9 +38,8 @@ router.post('/logGuest', async (req, res) => {
 
 
 
-
-
 // Route to update feedback for an existing guest log
+// This will update the feedback for a guest log entry based on the guestId
 router.post('/updateFeedback', async (req, res) => {
     const { guestId, rating, comment } = req.body;
     console.log('Received guestId:', guestId); // Log the guestId for debugging
@@ -65,6 +66,7 @@ router.post('/updateFeedback', async (req, res) => {
 
 
 // Route to get analytics data
+// This will fetch and process guest logs to generate analytics
 router.get('/analytics', async (req, res) => {
     try {
         // Fetch only guest logs that have feedback and a rating
@@ -101,7 +103,7 @@ router.get('/analytics', async (req, res) => {
 });
 
 
-
+// Route to get all guest logs with defined feedback rating
 router.get('/guestLogs', async (req, res) => {
     try {
         // Fetch guest logs where rating is defined (not null or undefined)
@@ -115,6 +117,45 @@ router.get('/guestLogs', async (req, res) => {
     }
 });
 
+//Addded by Millard 4-28
+// Route to get count of feedback and no feedback
+// This will count the number of guest logs with and without feedback
+router.get('/guestLogs/countFeedback', async (req, res) => {
+    try {
+        const totalViews = await GuestLog.countDocuments();
+
+        const withStarsAndComment = await GuestLog.countDocuments({
+            'feedback.rating': { $exists: true, $ne: null },
+            'feedback.comment': { $exists: true, $ne: '' }
+        });
+
+        const withStarsNoComment = await GuestLog.countDocuments({
+            'feedback.rating': { $exists: true, $ne: null },
+            $or: [
+                { 'feedback.comment': { $exists: false } },
+                { 'feedback.comment': '' }
+            ]
+        });
+
+        const withoutFeedback = await GuestLog.countDocuments({
+            $or: [
+                { 'feedback.rating': { $exists: false } },
+                { 'feedback.rating': null }
+            ]
+        });
+
+        res.status(200).json({
+            totalViews,
+            withStarsAndComment,
+            withStarsNoComment,
+            withoutFeedback
+        });
+
+    } catch (error) {
+        console.error('Error counting guest logs:', error);
+        res.status(500).json({ message: 'Failed to count guest logs' });
+    }
+});
 
 
 module.exports = router;

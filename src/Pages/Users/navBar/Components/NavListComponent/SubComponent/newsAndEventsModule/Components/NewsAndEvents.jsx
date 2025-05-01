@@ -7,6 +7,8 @@ import icons from '../../../../../../../../assets/for_landingPage/Icons.jsx';
 import { useAuth } from '/src/Pages/Admin/ACMfiles/authContext'
 import { useLocation } from 'react-router-dom';
 import '../../../../../../../Admin/utility/sliderCustomStyles/sliderStyles.scss';
+import { API_URL } from '/src/config';
+
 
 
 export default function NewsAndEvents({ setCurrentModal, handleClickOutside, currentModal, nodeRef, ...props }) {
@@ -22,7 +24,7 @@ export default function NewsAndEvents({ setCurrentModal, handleClickOutside, cur
     useEffect(() => {
         const fetchImages = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/images');
+                const response = await axios.get(`${API_URL}/api/images`);
                 setImages(response.data[0].images); // Assuming only one document
                 setHeaders(response.data[0].newsHeader || [] );
                 setDescription(response.data[0].description || []);
@@ -87,7 +89,7 @@ export default function NewsAndEvents({ setCurrentModal, handleClickOutside, cur
                                                     {images.map((image, index) => (
                                                         <>
                                                             <div key={index} className ={styles.slickSlide}>
-                                                                <img src={`http://localhost:5000/uploads/images/${image}`} 
+                                                                <img src={`${API_URL}/uploads/images/${image}`} 
                                                                 alt={`Slide ${index}`} 
                                                                 className ={styles.carouselImg}/>
                                                             </div>

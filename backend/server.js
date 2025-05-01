@@ -1,3 +1,6 @@
+// @ts-nocheck
+/* eslint-env node */
+
 // server.js
 const express = require('express');
 const mongoose = require('mongoose');
@@ -39,7 +42,7 @@ app.use(bodyParser.json()); // Add this line to parse JSON requests
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // MongoDB connection
-const dbUri = process.env.MONGO_URI;  // Name or change the Card&Audio if you create new DB in MongoDB
+const dbUri = process.env.MONGO_URI;  
 mongoose.connect(dbUri);
 
 // Database connection events

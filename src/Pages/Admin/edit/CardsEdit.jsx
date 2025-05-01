@@ -13,6 +13,7 @@ import images from '../../../assets/for_landingPage/Images';
 import AccessBtn from '/src/Pages/Users/landing/signInModule/AccessBtn'; // Import the new AccessBtn component
 import '/src/Pages/Users/landing/signInModule/AccessBtn.module.scss';
 import Confirmation from '../utility/ConfirmationComponent/Confirmation';
+import { API_URL } from '/src/config'; // Import the API_URL constant
 
 
 
@@ -53,7 +54,7 @@ const Cards = () => {
   // Fetch cards from the database
   const fetchCards = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/cards');
+      const response = await axios.get(`${API_URL}/api/cards`);
       const data = response.data;
       // If there are fetched cards, update the state; otherwise, keep initial cards
       if (data.length > 0) {
@@ -137,7 +138,7 @@ const handleSubmit = async (e) => {
         }
 
         // Update the card with changes
-        const response = await axios.put(`http://localhost:5000/api/cards/${card._id}`, formData, {
+        const response = await axios.put(`${API_URL}/api/cards/${card._id}`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
@@ -163,32 +164,11 @@ const handleSubmit = async (e) => {
   }
 };
 
-  const handleImageDelete = async () => {
-      try {
-        if (confirmDelete && imgToDelete) {
-          const response = await axios.delete(`http://localhost:5000/api/cards/${imgToDelete}/image`);
-          if (response.status === 200) {
-            setCards(prevCards =>
-              prevCards.map(card =>
-                card._id === imgToDelete ? { ...card, image: null, imagePreview: null, file: null } : card
-              )
-            );
-            mountToast("Image deleted successfully", "success");
-            setConfirmDelete(false);
-            setImgToDelete(null);
-            setIsDelete(false);
-          }
-        }
-      } catch (error) {
-        console.error('Error deleting image:', error);
-        mountToast("Error deleting image. Please try again.", "error");
-      }
-  };
 
   const handleImageArchive = async (imageId, imagePath) => {
     try {
       console.log('Archiving image...', imageId, imagePath);
-      const response = await axios.put(`http://localhost:5000/api/archive/cards/${imageId}`, { imagePath });
+      const response = await axios.put(`${API_URL}/api/archive/cards/${imageId}`, { imagePath });
       console.log("API Response:", response);
   
       if (response.status === 200) {
@@ -237,6 +217,13 @@ const handleSubmit = async (e) => {
       ref.current.style.height = `${ref.current.scrollHeight}px`; // Set height to scroll height
     }
   };
+
+    // Manual text truncate using script - Lorenzo - 04/01/2025
+  // Note: Selected font family does not support/include ellipsis unicode
+  //       This is important
+  function truncateText(text, maxLength) {
+    return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
+  }
 
   return (
     <>
@@ -288,7 +275,7 @@ const handleSubmit = async (e) => {
 
                         <input
                           type="file"
-                          accept="image/"
+                          accept=".jpg, .jpeg, .png, .gif"
                           ref={fileInputRef}
                           id={`image-upload-${card._id}`}
                           onChange={(e) => handleImageUpload(e, card._id)}
@@ -303,7 +290,7 @@ const handleSubmit = async (e) => {
                             Upload
                             <input
                             type="file"
-                            accept="image/"
+                            accept=".jpg, .jpeg, .png, .gif"
                             ref={fileInputRef}
                             id={`image-upload-${card._id}`}
                             onChange={(e) => handleImageUpload(e, card._id)}
@@ -318,7 +305,7 @@ const handleSubmit = async (e) => {
                             Delete
                           </button>
                         </div>
-                        <img src={`http://localhost:5000/uploads/cardsImg/${card.image}`} alt="Fetched Image Preview" />
+                        <img src={`${API_URL}/uploads/cardsImg/${card.image}`} alt="Fetched Image Preview" />
                       </div>
                     ) : (
                       <div className = { styles.noImg }>
@@ -328,7 +315,7 @@ const handleSubmit = async (e) => {
 
                         <input
                           type="file"
-                          accept="image/"
+                          accept=".jpg, .jpeg, .png, .gif"
                           ref={fileInputRef}
                           id={`image-upload-${card._id}`}
                           onChange={(e) => handleImageUpload(e, card._id)}
@@ -343,7 +330,10 @@ const handleSubmit = async (e) => {
 
                   <div className={styles.cont1}>
 
-                    <span className = {styles.txtTitle} >{card.areaName}</span>
+                    {/* Modified by Lorenzo @ 04/01/2025 */}
+                    <span className = {styles.txtTitle} >
+                      { truncateText(card.areaName, 15) }
+                    </span>
 
                     <div className = { styles.line }></div>
 

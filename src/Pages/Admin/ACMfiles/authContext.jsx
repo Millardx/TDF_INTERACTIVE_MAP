@@ -3,38 +3,14 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import {jwtDecode} from 'jwt-decode'; // jwtDecode doesn't need curly braces
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom'; // Assuming you use React Router
+import {API_URL} from '/src/config'; // Import the API_URL constant
 
 const AuthContext = createContext();
-const API_URL = 'http://localhost:5000/api/auth';
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
 
-  {/* useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            try {
-                const decodedUser = jwtDecode(token);
-
-                // Check if the token is expired
-                const currentTime = Date.now() / 1000; // Current time in seconds
-     // Check if the token is expired for admin and staff only
-    if ((decodedUser.role === 'admin' || decodedUser.role === 'staff') && decodedUser.exp < currentTime) {
-                //if (decodedUser.exp < currentTime) {
-
-                    // Token has expired
-                    alert('Your session has expired, please log in again.');
-                    logout();
-                } else {
-                    setUser(decodedUser); // Token is still valid
-                }
-            } catch (error) {
-                console.error("Error decoding token:", error);
-                logout(); // If decoding fails, logout
-            }
-        }
-    }, []); */}
 
         // Function to check and decode the token if it exist will direct to map page
         const checkToken = () => {
@@ -87,7 +63,7 @@ export const AuthProvider = ({ children }) => {
             }
     
             // If the token is valid, make the logout API call
-            const response = await axios.post(`${API_URL}/logout`, {}, {
+            const response = await axios.post(`${API_URL}/api/auth/logout`, {}, {
                 headers: {
                     Authorization: `Bearer ${token}`, // Include the token in the header
                 },

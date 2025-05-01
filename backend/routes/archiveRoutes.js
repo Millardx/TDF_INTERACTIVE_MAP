@@ -207,8 +207,6 @@ router.put('/markerIcon/:id', async (req, res) => {
 });
 
 
-
-
 // Archive a user account by ID
 router.put('/user/:id', async (req, res) => {
   const { id } = req.params;  // Get the user ID from the request params

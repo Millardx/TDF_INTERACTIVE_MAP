@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Confirmation from '../utility/ConfirmationComponent/Confirmation';
 
 import UseToast from '../utility/AlertComponent/UseToast';
+import { API_URL } from '/src/config';
 
 export default function NewsEventImage({ setCurrentModal, currentModal, handleClickOutside}) { // setCurrentModal, currentModal, handleClickOutside
     // toast alert pop up
@@ -45,7 +46,7 @@ export default function NewsEventImage({ setCurrentModal, currentModal, handleCl
     // Fetch images from the single document
     const fetchnewsEvent = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/api/images');
+            const response = await axios.get(`${API_URL}/api/images`);
             const document = response.data[0]; // Assuming there's only one document
 
         // Set the images array
@@ -64,7 +65,7 @@ export default function NewsEventImage({ setCurrentModal, currentModal, handleCl
 
 
             // Generate image preview URLs based on the fetched images
-            const imagePreviews = fetchedImages.map((img) => `http://localhost:5000/uploads/images/${img}`);
+            const imagePreviews = fetchedImages.map((img) => `${API_URL}/uploads/images/${img}`);
 
             // Set state to hold the preview URLs for the slider
             setImagePreviews(imagePreviews);
@@ -113,7 +114,7 @@ export default function NewsEventImage({ setCurrentModal, currentModal, handleCl
         });
     
         try {
-            const response = await axios.post(`http://localhost:5000/api/images`, formData, {
+            const response = await axios.post(`${API_URL}/api/images`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -150,7 +151,7 @@ export default function NewsEventImage({ setCurrentModal, currentModal, handleCl
         const filename = selectedImageFilename.split('/').pop(); // Get only the filename
     
         try {
-            const response = await axios.put(`http://localhost:5000/api/images/uploads/images/${filename}`, formData, {
+            const response = await axios.put(`${API_URL}/api/images/uploads/images/${filename}`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
     
@@ -173,7 +174,7 @@ export default function NewsEventImage({ setCurrentModal, currentModal, handleCl
 
         try {
             if (selectedImageFilename) {
-                const response = await axios.delete(`http://localhost:5000/api/images/uploads/images/${filename}`);
+                const response = await axios.delete(`${API_URL}/api/images/uploads/images/${filename}`);
                     if (response.status === 200) {
                         mountToast("Image deleted successfully!", "success");
                         fetchnewsEvent(); // Refresh image list after successful deletion
@@ -191,7 +192,7 @@ const handleArchive = async () => {
     const filename = selectedImageFilename.split('/').pop(); // Extract only the filename
     try {
         if (selectedImageFilename) {
-            const response = await axios.put(`http://localhost:5000/api/archive/newsEvent/image/${filename}`);
+            const response = await axios.put(`${API_URL}/api/archive/newsEvent/image/${filename}`);
             if (response.status === 200) {
                 mountToast("Image archived successfully!", "success");
                 fetchnewsEvent(); // Refresh the list to show updated data
@@ -235,7 +236,7 @@ const handleSaveHeaderAndDesc = async () => {
         }
 
         // Send the updated data to the backend if changes exist
-        await axios.put("http://localhost:5000/api/images/updateNews", updatedData);
+        await axios.put(`${API_URL}/api/images/updateNews`, updatedData);
         mountToast("Changes saved successfully!", "success");
 
         // Optionally refresh data

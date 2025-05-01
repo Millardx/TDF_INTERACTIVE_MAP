@@ -4,6 +4,7 @@ import icons from "../../../assets/for_landingPage/Icons";
 import axios from 'axios';
 
 import styles from "./styles/markerUploadStyles.module.scss";
+import { API_URL } from '/src/config';
 
 export default function MarkerUpload({ markerId ,setmarkerId, onClose, onRefresh  }) {
   const [file, setFile] = useState(null); // Store selected file
@@ -19,10 +20,10 @@ export default function MarkerUpload({ markerId ,setmarkerId, onClose, onRefresh
       useEffect(() => {
         const fetchMarkerDetails = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/api/markerIcons/${markerId}`);
+                const response = await axios.get(`${API_URL}/api/markerIcons/${markerId}`);
                 const { name: fetchedName, iconPath } = response.data;
                 setName(fetchedName); // Set the current name
-                setCurrentImage(`http://localhost:5000/uploads/icons/${iconPath}`); // Set the current image
+                setCurrentImage(`${API_URL}/uploads/icons/${iconPath}`); // Set the current image
             } catch (error) {
                 console.error("Error fetching marker details:", error);
             }
@@ -57,8 +58,8 @@ export default function MarkerUpload({ markerId ,setmarkerId, onClose, onRefresh
 
     try {
       const url = markerId 
-        ? `http://localhost:5000/api/markerIcons/Icon/${markerId}` // Update route
-        : 'http://localhost:5000/api/markerIcons/Icon'; // Add route
+        ? `${API_URL}/api/markerIcons/Icon/${markerId}` // Update route
+        : `${API_URL}/api/markerIcons/Icon`; // Add route
 
       const method = markerId ? 'PUT' : 'POST';
 

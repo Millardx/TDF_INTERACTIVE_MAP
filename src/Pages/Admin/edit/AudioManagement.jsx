@@ -4,6 +4,7 @@ import styles from './styles/AudioManagement.module.scss';
 import { useLocation, useNavigate } from 'react-router-dom';
 import AudioUpload from './AudioUpload';
 import AccessBtn from '/src/Pages/Users/landing/signInModule/AccessBtn'; // Import the new AccessBtn component
+import PaginationControls from '../utility/PaginationComponent/PaginationControls';
 
 import UseToast from '../utility/AlertComponent/UseToast';
 
@@ -11,6 +12,7 @@ import icons from "../../../assets/for_landingPage/Icons";
 import { motion, AnimatePresence } from 'framer-motion'
 import NavBar from './navBar/NavBar';
 import Confirmation from '../utility/ConfirmationComponent/Confirmation';
+import {API_URL } from '/src/config';
 
 const AudioManagement = () => {
   // toast alert pop up
@@ -19,7 +21,11 @@ const AudioManagement = () => {
   const location = useLocation();
   const user = location.state?.user;
   
+  const [audiosRef, setAudiosRef] = useState([]);
   const [audios, setAudios] = useState([]);
+  const [filteredAudio, setFilteredAudio] = useState([]);
+  const [logsPerPage, setLogsPerPage] = useState(5);
+
   const [playingAudioId, setPlayingAudioId] = useState(null); // Track which audio is currently playing
   const [showUploadModal, setShowUploadModal] = useState(false);
   const navigate = useNavigate();
@@ -47,20 +53,21 @@ const AudioManagement = () => {
 
   const [modalProps, setModalProps] = useState({ audioId: null, currentTitle: '' });
 
-  useEffect(() => {
-    fetchAudios();
-  }, []);
 
   const fetchAudios = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/audio');
+      const response = await axios.get(`${API_URL}/api/audio`);
       setAudios(response.data);
+      setFilteredAudio(response.data);
+      setAudios(response.data.slice(0, logsPerPage));
     } catch (error) {
       console.error('Error fetching audios:', error);
     }
   };
 
- 
+  useEffect(() => {
+    fetchAudios();
+  }, [logsPerPage]);
 
   const handlePlayAudio = async (filePath, audioId) => {
     // Stop currently playing audio if different
@@ -83,7 +90,7 @@ const AudioManagement = () => {
     }
   
     try {
-      const response = await axios.get(`http://localhost:5000/uploads/audios/${filePath}`, { responseType: 'blob' });
+      const response = await axios.get(`${API_URL}/uploads/audios/${filePath}`, { responseType: 'blob' });
       
       // Check if the response status is 200 (OK)
       if (response.status === 200) {
@@ -103,21 +110,6 @@ const AudioManagement = () => {
   };
   
 
-  const handleDelete = async () => {
-    try {
-      if (confirmDelete && audioToDelete) {
-        await axios.delete(`http://localhost:5000/api/audio/delete/${audioToDelete}`);
-        fetchAudios(); // Refresh the audio list after deletion
-        mountToast("Audio deleted successfully", "success");
-        setConfirmDelete(false);
-        setAudioToDelete(null);
-        setIsDelete(false);
-      }
-    } catch (error) {
-      console.error('Error deleting audio:', error);
-    }
-  };
-
   const [audioToArchive, setAudioToArchive] = useState(null);  // Track the audio to be archived
 
   const handleAudioArchive = async (audioId, audioFilePath) => {
@@ -125,7 +117,7 @@ const AudioManagement = () => {
       console.log('Archiving audio...', audioId, audioFilePath);
       
       // Send a PUT request to archive the audio file by its ID and file path
-      const response = await axios.put(`http://localhost:5000/api/archive/audio/${audioId}`, { audioFilePath });
+      const response = await axios.put(`${API_URL}/api/archive/audio/${audioId}`, { audioFilePath });
       console.log("API Response:", response);
   
       if (response.status === 200) {
@@ -181,6 +173,26 @@ const AudioManagement = () => {
       rootDiv.classList.remove(styles.rootDiv);
     }
   }, [location])
+
+    // pagination 
+    const handleFilterChange = (searchTerm, limit, currentPage) => {
+      const filtered = audiosRef.filter((audio) =>
+          [audio.title, audio.originalName]
+              .map((value) => value?.toString().toLowerCase())
+              .some((value) => value?.includes(searchTerm.toLowerCase()))
+      );
+  
+      setLogsPerPage(limit);
+      setFilteredAudio(filtered);
+  
+      const offset = currentPage * limit;
+      setAudios(filtered.slice(offset, offset + limit));
+    };
+  
+    const handlePaginationChange = (currentPage) => {
+        const offset = currentPage * logsPerPage;
+        setAudios(filteredAudio.slice(offset, offset + logsPerPage));
+    };
   
  return (
   <>
@@ -193,6 +205,14 @@ const AudioManagement = () => {
       </div>
 
       <div className = { styles.tblWrapper }>
+
+        <PaginationControls
+          data={filteredAudio}
+          rowsPerPageOptions={[5, 10, 15, 20]}
+          onFilterChange={handleFilterChange}
+          onPaginationChange={handlePaginationChange}
+        />
+
         <table className={styles.audioManagementTable}>
           <thead>
             <tr>
@@ -205,34 +225,86 @@ const AudioManagement = () => {
           <tbody>
             {audios.map((audio) => (
               <tr key={audio._id}>
+                {/* Modified by lorenzo @ 05/01/2025 */}
                 <td>
-                  <button 
-                    onClick={() => handlePlayAudio(audio.filePath, audio._id)}
-                    className = { styles.playBtn }
-                  >
-                    <img className = { `${ styles.icon } ${ styles.play}` } src = { icons.audio } alt = "Play Audio" />
-                  </button>
+                  <div className = { styles.subRow }>
+                    {/* Filipino */}
+                    <button 
+                      onClick={() => handlePlayAudio(audio.filePath, audio._id)}
+                      className = { styles.playBtn }
+                    >
+                      <img className = { `${ styles.icon } ${ styles.play}` } src = { icons.audio } alt = "Play Audio" />
+                    </button>
+                    {/* English */}
+                    <button 
+                      onClick={() => handlePlayAudio(audio.filePath, audio._id)}
+                      className = { styles.playBtn }
+                    >
+                      <img className = { `${ styles.icon } ${ styles.play}` } src = { icons.audio } alt = "Play Audio" />
+                    </button>
+                  </div>
                 </td>
                 <td>{audio.title}</td>
-                <td className = { styles.fileName }>{audio.originalName || 'No Audio Available'}</td>
-                <td>
-                  <div className = {styles.actionBtns }>
-                    {audio.originalName ? (
-                      <>
-                        <button onClick={() => handleOpenModal(audio._id, audio.title)}>
-                          <img className = { `${ styles.icon } ${ styles.delete}` } src = { icons.pencil } alt = "Delete Item" />
-                        </button>
-                        {/*<button onClick={() => handleDeleteBtn(audio._id)}> */}
-                        <button onClick={() => { setFileId(audio._id); setAudioToDelete(audio.filePath); handleDeleteBtn();}}>
-                          <img className = { `${ styles.icon } ${ styles.update }` } src = { icons.remove } alt = "Delete Item" />
-                        </button>
-                      </>
-                    ) : (
-                      <button onClick={() => handleOpenModal(audio._id, audio.title)}>
-                        <img className = { `${ styles.icon } ${ styles.add}` } src = { icons.add } alt = "Add Audio"/>
-                      </button>
-                    )}
+
+                {/* Modified by lorenzo @ 05/01/2025 */}
+                <td className = { styles.fileName }>
+                  <div className = { styles.subRow }>
+                      {/* Filipino */}
+                      <span>
+                        <strong>FIL: </strong>{audio.originalName || 'No Audio Available'}
+                      </span>
+
+                      {/* English */}
+                      <span>
+                        <strong>ENG: </strong>{audio.originalName || 'No Audio Available'}
+                      </span>
                   </div>
+                  
+                  
+                </td>
+                {/* Modified by lorenzo @ 05/01/2025 */}
+                <td>
+                  <div className = { styles.subRow }>
+                      {/* Filipino */}
+                      <div className = {styles.actionBtns }>
+                        {audio.originalName ? (
+                          <>
+                            <button onClick={() => handleOpenModal(audio._id, audio.title)}>
+                              <img className = { `${ styles.icon } ${ styles.delete}` } src = { icons.pencil } alt = "Delete Item" />
+                            </button>
+                            {/*<button onClick={() => handleDeleteBtn(audio._id)}> */}
+                            <button onClick={() => { setFileId(audio._id); setAudioToDelete(audio.filePath); handleDeleteBtn();}}>
+                              <img className = { `${ styles.icon } ${ styles.update }` } src = { icons.remove } alt = "Delete Item" />
+                            </button>
+                          </>
+                        ) : (
+                          <button onClick={() => handleOpenModal(audio._id, audio.title)}>
+                            <img className = { `${ styles.icon } ${ styles.add}` } src = { icons.add } alt = "Add Audio"/>
+                          </button>
+                        )}
+                      </div>
+
+                        
+                      {/* English */}
+                      <div className = {styles.actionBtns }>
+                        {audio.originalName ? (
+                          <>
+                            <button onClick={() => handleOpenModal(audio._id, audio.title)}>
+                              <img className = { `${ styles.icon } ${ styles.delete}` } src = { icons.pencil } alt = "Delete Item" />
+                            </button>
+                            {/*<button onClick={() => handleDeleteBtn(audio._id)}> */}
+                            <button onClick={() => { setFileId(audio._id); setAudioToDelete(audio.filePath); handleDeleteBtn();}}>
+                              <img className = { `${ styles.icon } ${ styles.update }` } src = { icons.remove } alt = "Delete Item" />
+                            </button>
+                          </>
+                        ) : (
+                          <button onClick={() => handleOpenModal(audio._id, audio.title)}>
+                            <img className = { `${ styles.icon } ${ styles.add}` } src = { icons.add } alt = "Add Audio"/>
+                          </button>
+                        )}
+                      </div>
+                  </div>
+      
                 </td>
               </tr>
             ))}

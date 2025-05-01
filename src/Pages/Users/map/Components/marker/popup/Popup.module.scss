@@ -108,13 +108,33 @@
             text-align: center;
         }
 
+        // added by Lorenzo - 04/30/2025
+        .titleWrapper {
+            // width: 230px;
+            // display: block;
+        }
+
+        .cardTitle {        // specific styling for card title
+            font-family: $title, 'Arial', sans-serif;
+            overflow: hidden;
+            white-space: nowrap;
+            // text-overflow: ellipsis;
+            display: block;            
+            // max-width: 210px;            // Adjust when necessary 
+        }
+
         .quickFacts {
             font-family: $subTitle;
             font-size: 13px;
             justify-self: center;
             margin-top: 5px;
-            text-align: center;
-            width: 210px;
+            text-align: justify;    // Modified - from center to justify - 04/30/2025
+            width: 220px;
+            // added by lorenzo - limit text display - 04/30/2025
+            max-height: 200px;
+            padding-right: 13px;    // adjust scroll gap
+            overflow-y: scroll;
+            word-wrap: break-word;
 
         }
 

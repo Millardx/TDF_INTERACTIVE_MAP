@@ -6,12 +6,15 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 import Confirmation from '../utility/ConfirmationComponent/Confirmation';
 import ConfirmRestore from '../utility/ConfirmationComponent/ConfirmRestor';
+import PaginationControls from '../utility/PaginationComponent/PaginationControls';         // added by Lorenzo @04/30/2025
+
 
 import icons from "../../../assets/for_landingPage/Icons";
 import NavBar from './navBar/NavBar';
 import styles from './styles/archiveStyles.module.scss';
 
 import UseToast from '../utility/AlertComponent/UseToast';
+import { API_URL } from '/src/config';
 
 export default function Archive() {
     const [archives, setArchives] = useState([]);
@@ -26,6 +29,11 @@ export default function Archive() {
     const [itemId, setItemId] = useState(null);
     const [confirmRestore, setConfirmRestore] = useState(false);
     const [isRestore, setIsRestore] = useState(false);
+
+    //for pagination
+    const [OriginalItems, setOriginalItems] = useState([]);
+    const [currentItems, setCurrentItems] = useState([]);
+    const [logsPerPage, setLogsPerPage] = useState(5);
     
     const mountToast = UseToast();
     const location = useLocation();
@@ -49,8 +57,6 @@ export default function Archive() {
     }, [confirmDelete, itemToDelete]);
 
     //for restoration
-
-    // for deletion
     const handleRestoreBtn = () => {
         setIsRestore(!isRestore);
     }
@@ -79,8 +85,10 @@ export default function Archive() {
 
     const fetchArchives = async (limit) => {
         try {
-            const response = await axios.get(`http://localhost:5000/api/archive/archivesData?limit=${limit}`); // Pass limit as query param
+            const response = await axios.get(`${API_URL}/api/archive/archivesData?limit=${limit}`); // Pass limit as query param
             setArchives(response.data);
+            setOriginalItems(response.data);                            // get all data - Lorenzo @ 04/30/2025
+            setCurrentItems(response.data.slice(0, logsPerPage));       // get filtered items - Lorenzo @04/30/2025
         } catch (error) {
             mountToast('Error fetching archives', 'error');
             console.error('Error fetching archives:', error);
@@ -94,7 +102,7 @@ export default function Archive() {
         // Delete handler
         const handleDelete = async (archiveId) => {
             try {
-                const response = await axios.delete(`http://localhost:5000/api/delete/archive/${archiveId}`);
+                const response = await axios.delete(`${API_URL}/api/delete/archive/${archiveId}`);
                 mountToast(response.data.message, 'success');
                 fetchArchives(fetchLimit);
                 setConfirmDelete(false);
@@ -117,12 +125,12 @@ export default function Archive() {
                 // Determine the correct endpoint based on the type
                 let endpoint = '';
                 if (type === 'document') {
-                    endpoint = `http://localhost:5000/api/restore/user/${archiveId}`;
+                    endpoint = `${API_URL}/api/restore/user/${archiveId}`;
                 } else if (type === 'markerIcon') {
-                    endpoint = `http://localhost:5000/api/restore/markerIcon/${archiveId}`;
+                    endpoint = `${API_URL}/api/restore/markerIcon/${archiveId}`;
                 } else {
                     // Handle other types (e.g., card, audio, etc.)
-                    endpoint = `http://localhost:5000/api/restore/${archiveId}`;
+                    endpoint = `${API_URL}/api/restore/${archiveId}`;
                 }
 
                 // Make the API call to restore the archive
@@ -146,6 +154,31 @@ export default function Archive() {
             }
         };
 
+    // Added by Lorenzo @ 05/01/2025
+    const handleFilterChange = (searchTerm, limit, currentPage) => {
+        const filtered = archives.filter((archive) =>
+            [
+                archive.originalCollection,                     // e.g., 'User', 'MarkerIcon'
+                archive.fieldName,                              // e.g., 'email', 'iconPath'
+                ...Object.values(archive.data || {}),           // dynamically includes name, email, role, iconPath, etc.
+                archive.archivedAt                              // archive timestamp
+            ]
+                .map((value) => value?.toString().toLowerCase())
+                .some((value) => value?.includes(searchTerm.toLowerCase()))
+        );
+    
+        setLogsPerPage(limit);
+        setOriginalItems(filtered);
+    
+        const offset = currentPage * limit;
+        setCurrentItems(filtered.slice(offset, offset + limit));  
+    };
+    
+    const handlePaginationChange = (currentPage) => {
+        const offset = currentPage * logsPerPage;
+        setCurrentItems(OriginalItems.slice(offset, offset + logsPerPage)); 
+    };
+
 
     return (
         <>
@@ -155,6 +188,14 @@ export default function Archive() {
                     <span className={styles.txtTitle}>Deleted Items</span>
                 </div>
                 <span className={`${styles.txtTitle} ${styles.archiveHeader}`}>Archive List</span>
+
+                <PaginationControls
+                    data={OriginalItems}
+                    rowsPerPageOptions={[5, 10, 15, 20]}
+                    onFilterChange={handleFilterChange}
+                    onPaginationChange={handlePaginationChange}
+                />
+
                 <table className={styles.table}>
                     <thead>
                         <tr>
@@ -167,7 +208,7 @@ export default function Archive() {
                     </thead>
                     <tbody>
                         {archives.length > 0 ? (
-                            archives.map((archive) => {
+                            currentItems.map((archive) => {
                                 const isDocument = archive.originalCollection === 'User'; // Check if it's a document (User)
                                 const isMarkerIcon = archive.originalCollection === 'MarkerIcon'; // Check if it's a MarkerIcon
 
@@ -204,7 +245,7 @@ export default function Archive() {
                                                 const restoreType = archive.originalCollection === 'MarkerIcon' ? 'markerIcon' : 
                                                                     (archive.originalCollection === 'User' ? 'document' : 'field');
                                                 setItemToRestore(restoreType);
-                                                handleRestore(archive._id, restoreType);
+                                                handleRestoreBtn();
                                             }}
                                             >
                                                 

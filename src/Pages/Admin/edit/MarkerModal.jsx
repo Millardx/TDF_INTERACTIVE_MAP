@@ -4,8 +4,9 @@ import marker from "../../../assets/icon/Icons";
 import icons from "../../../assets/for_landingPage/Icons";
 import axios from 'axios';
 import UseToast from '../utility/AlertComponent/UseToast';
+import {API_URL } from '/src/config';
 
-export default function MarkerModal({ onClose ,markerData, fetchMarkers}) {
+export default function MarkerModal({ onClose ,markerData }) {
     const mountToast = UseToast();
     const [isMarker, setMarker] = useState(null);
     const [areaName, setAreaName] = useState(markerData?.areaName || "");
@@ -17,7 +18,7 @@ export default function MarkerModal({ onClose ,markerData, fetchMarkers}) {
     // Fetch marker icons from the database
     const fetchMarkerIcons = async () => {
         try {
-            const response = await axios.get("http://localhost:5000/api/markerIcons");
+            const response = await axios.get(`${API_URL}/api/markerIcons`);
             setMarkerIcons(response.data); // Store fetched marker icons
         } catch (error) {
             console.error("Error fetching marker icons:", error);
@@ -25,15 +26,22 @@ export default function MarkerModal({ onClose ,markerData, fetchMarkers}) {
         }
     };
 
+    // Fetch marker icons when component mounts
+    //Added Millard 4-28
     useEffect(() => {
         fetchMarkerIcons();
-        if (markerData?.iconType) {
+    }, []); // 🔥 Fetch marker icons only once when component mounts
+    
+    // 🔥 New useEffect that waits for markerIcons + markerData to be ready
+    useEffect(() => {
+        if (markerData?.iconType && markerIcons.length > 0) {
             const selectedMarker = markerIcons.find((icon) => icon.name === markerData.iconType);
             setMarker(
-                selectedMarker ? `http://localhost:5000/uploads/icons/${selectedMarker.iconPath}` : ""
+                selectedMarker ? `${API_URL}/uploads/icons/${selectedMarker.iconPath}` : ""
             );
         }
-    }, [markerData]);
+    }, [markerIcons, markerData]);
+    
     
 
     
@@ -50,7 +58,7 @@ const handleIconTypeChange = (e) => {
     setIconType(selectedType); // Update selected icon type
     const selectedMarker = markerIcons.find((icon) => icon.name === selectedType);
     setMarker(
-        selectedMarker ? `http://localhost:5000/uploads/icons/${selectedMarker.iconPath}` : ""
+        selectedMarker ? `${API_URL}/uploads/icons/${selectedMarker.iconPath}` : ""
     ); // Dynamically set the corresponding marker icon
 };
 
@@ -63,13 +71,13 @@ const handleIconTypeChange = (e) => {
             return;
         }
         try {
-            const response = await axios.put(`http://localhost:5000/api/markers/${markerData._id}`, {
+            const response = await axios.put(`${API_URL}/api/markers/${markerData._id}`, {
                 areaName,
                 iconType,
             });
 
             mountToast(response.data.message, 'success');
-            fetchMarkers(); // Refetch markers to update UI
+            fetchMarkerIcons(); // Refetch markers to update UI
             onClose(); // Close modal
         } catch (error) {
             console.error('Error updating marker:', error);

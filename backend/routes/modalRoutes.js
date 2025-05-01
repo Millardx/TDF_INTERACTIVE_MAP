@@ -5,23 +5,26 @@ const path = require('path');       // Used to manage file paths
 const Modal = require('../models/Modal');  // Import the Modal model
 const fs = require('fs');
 const router = express.Router();     // Initialize Express router
+const ensureUploadPathExists = require('../utility/ensureUploadPathExists');
+
 
 // Set up multer storage for handling image uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // Set upload directory to 'uploads/'
-    cb(null, 'uploads/modalImages');
+    const uploadPath = 'uploads/modalImages';
+
+    // Create directory if it doesn't exist
+    ensureUploadPathExists(uploadPath); // 📦 Check/create before upload
+    cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
-    // Generate a unique filename with the original name and a timestamp
-    const originalName = file.originalname; // Get the original file name
-    const fileExtension = path.extname(originalName); // Extract the file extension
-    const baseName = path.basename(originalName, fileExtension); // Get file name without extension
-    
-    // Create a new filename with a timestamp to avoid conflicts
+    const originalName = file.originalname; // Get original filename
+    const fileExtension = path.extname(originalName); // Extract extension
+    const baseName = path.basename(originalName, fileExtension); // Get name without extension
+
+    // Create unique filename: modalImages-<timestamp>-<originalname>.<ext>
     const newFileName = `modalImages-${Date.now()}-${baseName}${fileExtension}`;
-    
-    // Save the new filename
+
     cb(null, newFileName);
   }
 });

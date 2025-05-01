@@ -17,6 +17,7 @@ import Confirmation from '../utility/ConfirmationComponent/Confirmation';
 import NavBar from './navBar/NavBar';
 import AccessBtn from '/src/Pages/Users/landing/signInModule/AccessBtn'; // Import the new AccessBtn component
 import '/src/Pages/Users/landing/signInModule/AccessBtn.module.scss';
+import {API_URL} from '/src/config'; // Import the API_URL constant
 
 const UserManagement = () => {
     // toast alert pop up
@@ -56,7 +57,7 @@ const UserManagement = () => {
     const fetchUsers = async () => {
         console.log("Attempting to fetch users...");
         try {
-            const response = await axios.get('http://localhost:5000/api/users/all');  // Use the full URL
+            const response = await axios.get(`${API_URL}/api/users/all`);  // Use the full URL
             console.log("Users fetched:", response.data);
             setUsers(response.data);
         } catch (error) {
@@ -67,11 +68,11 @@ const UserManagement = () => {
     const handleAddOrUpdateUser = async (user) => {
         try {
             if (currentUser) {
-                await axios.put(`http://localhost:5000/api/users/update/${currentUser._id}`, user);
+                await axios.put(`${API_URL}/api/users/update/${currentUser._id}`, user);
                 mountToast("User update successful", "success");
                 setModalOpen(false);
             } else {
-                await axios.post('http://localhost:5000/api/users/add', user);
+                await axios.post(`${API_URL}/api/users/add`, user);
                 mountToast("User successfully added", "success");
                 setModalOpen(false);
             }
@@ -86,7 +87,7 @@ const UserManagement = () => {
     const handleDeleteUser = async () => {
         try {
             if (confirmDelete && userToDelete) {
-                await axios.delete(`http://localhost:5000/api/users/delete/${userToDelete}`);
+                await axios.delete(`${API_URL}/api/users/delete/${userToDelete}`);
                 fetchUsers();
                 mountToast("User deleted successfully!", "success");
                 setConfirmDelete(false);
@@ -101,7 +102,7 @@ const UserManagement = () => {
     const handleArchiveUser = async () => {
         try {
             if (confirmDelete && userToDelete) {
-                const response = await axios.put(`http://localhost:5000/api/archive/user/${userToDelete}`);
+                const response = await axios.put(`${API_URL}/api/archive/user/${userToDelete}`);
                 if (response.status === 200) {
                     mountToast("User archived successfully", "success");
                     fetchUsers(); // Refresh the user list

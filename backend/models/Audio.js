@@ -3,12 +3,16 @@
 const mongoose = require('mongoose');
 
 const audioSchema = new mongoose.Schema({
-  title: { type: String},
-  originalName: { type: String },
-  filePath: { type: String, required: false, default: null},
-  format: { type: String, required: false, default: null },
-  audioArchived: { type: Boolean, default: false }, // Archive flag for audio
+  title: { type: String },
+  englishAudio: { type: String, default: null },      // Cloudinary URL
+  filipinoAudio: { type: String, default: null },     // Cloudinary URL
+  englishOriginalName: { type: String, default: null }, // Original filename
+  filipinoOriginalName: { type: String, default: null }, // Original filename
+  format: { type: String, default: null },
+  audioArchived: { type: Boolean, default: false }
 });
+
+
 
 const Audio = mongoose.model('Audio', audioSchema);
 

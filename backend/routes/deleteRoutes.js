@@ -2,6 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const Archive = require('../models/Archive');
 const express = require('express');
+const { cloudinary } = require('../utility/cloudinaryConfig');
+const { extractPublicId } = require('../utility/claudinaryHelpers');
 
 const router = express.Router();
 
@@ -16,64 +18,55 @@ const folderMapping = {
   // Add other mappings as needed
 };
 
-router.delete('/archive/:archiveId', async (req, res) => {
-    const { archiveId } = req.params;
-  
-    try {
+    router.delete('/archive/:archiveId', async (req, res) => {
+        const { archiveId } = req.params;
+    
+        try {
         const archive = await Archive.findById(archiveId);
-  
         if (!archive) {
             return res.status(404).json({ error: 'Archive entry not found' });
         }
-  
-        // Log the originalCollection to debug the issue
-        console.log('originalCollection:', archive.originalCollection);
-  
-        // Determine the correct folder for the archived file
-        const folder = folderMapping[archive.originalCollection];
-        if (!folder) {
-            // Special handling for collections without files (like User)
-            console.log('No folder mapping for this collection. Skipping file deletion.');
-            // Proceed to delete the archive entry without attempting to delete a file
-            await archive.deleteOne();
-            return res.json({ message: 'Archive entry deleted permanently, no associated file' });
-        }
-  
-        // If there is a file, proceed with deleting it
-        //const fileName = archive.data[archive.fieldName];
-          // For MarkerIcon, use iconPath directly to get the file name
-          let fileName = '';
-          if (archive.originalCollection === 'MarkerIcon') {
-              fileName = archive.data.iconPath; // Access the iconPath directly
-          } else {
-              fileName = archive.data[archive.fieldName]; // Access the file name for other collections
-          }
-        if (fileName) {
-            const archivePath = path.join(__dirname, '../archives', folder, fileName);
-            console.log('Attempting to delete file at:', archivePath);
-  
-            // Check if the file exists before deleting
-            if (fs.existsSync(archivePath)) {
-                fs.unlink(archivePath, (err) => {
-                    if (err) {
-                        console.error('Error deleting file:', err);
-                    } else {
-                        console.log(`File deleted: ${fileName}`);
-                    }
-                });
-            } else {
-                console.warn('File does not exist:', archivePath);
-            }
+    
+        const { originalCollection, fieldName, data } = archive;
+        const folder = folderMapping[originalCollection];
+    
+        console.log('🔍 Deleting archive for collection:', originalCollection);
+    
+        // Determine the Cloudinary file path
+        let fileUrl = null;
+    
+        if (originalCollection === 'MarkerIcon') {
+            fileUrl = data.iconPath;
         } else {
-            console.log('No file associated with this archive entry, skipping file deletion');
+            fileUrl = data[fieldName];
         }
-  
-        // Remove the archive entry from the database
+    
+        if (!fileUrl || !fileUrl.includes('cloudinary.com')) {
+            console.log('⚠️ No valid Cloudinary file to delete. Skipping.');
+        } else {
+            const publicId = extractPublicId(fileUrl);
+    
+            if (publicId) {
+            try {
+                await cloudinary.uploader.destroy(publicId, { invalidate: true });
+                console.log(`🗑️ Cloudinary file deleted: ${publicId}`);
+            } catch (cloudErr) {
+                console.warn('⚠️ Cloudinary delete failed:', cloudErr.message);
+            }
+            }
+        }
+    
+        // Delete the Archive entry in MongoDB
         await archive.deleteOne();
-        res.json({ message: 'Archive entry and file deleted permanently' });
-    } catch (error) {
+        console.log(`✅ Archive entry deleted: ${archiveId}`);
+        res.json({ message: 'Archive entry and Cloudinary file deleted successfully' });
+    
+        } catch (error) {
+        console.error('❌ Archive deletion error:', error.message);
         res.status(500).json({ error: error.message });
-    }
-  });
+        }
+    });
   
+
+    
 module.exports = router;

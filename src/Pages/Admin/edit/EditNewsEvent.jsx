@@ -65,7 +65,7 @@ export default function NewsEventImage({ setCurrentModal, currentModal, handleCl
 
 
             // Generate image preview URLs based on the fetched images
-            const imagePreviews = fetchedImages.map((img) => `${API_URL}/uploads/images/${img}`);
+            const imagePreviews = fetchedImages.map((img) => `${img}`);
 
             // Set state to hold the preview URLs for the slider
             setImagePreviews(imagePreviews);
@@ -168,24 +168,6 @@ export default function NewsEventImage({ setCurrentModal, currentModal, handleCl
         }
     };
 
-    // Handle deleting an image (DELETE)
-    const handleDelete = async () => {
-        const filename = selectedImageFilename.split('/').pop(); // Get only the filename from the full path
-
-        try {
-            if (selectedImageFilename) {
-                const response = await axios.delete(`${API_URL}/api/images/uploads/images/${filename}`);
-                    if (response.status === 200) {
-                        mountToast("Image deleted successfully!", "success");
-                        fetchnewsEvent(); // Refresh image list after successful deletion
-                        setDeleteModalVisible(null);
-                    }
-                }
-        } catch (error) {
-            console.error('Error deleting image:', error);
-            mountToast("Error deleting image. Please try again.", "error");
-        }
-    };
 
             // Handle archiving an image or the entire newsEvent document (PUT)
 const handleArchive = async () => {

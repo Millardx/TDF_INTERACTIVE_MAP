@@ -2,39 +2,34 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const fs = require('fs');
 const path = require('path');
 const AboutUs = require('../models/AboutUs');
-const ensureUploadPathExists = require('../utility/ensureUploadPathExists'); // Utility function to ensure upload path exists
+const { cloudinary, getFolderByType } = require('../utility/cloudinaryConfig');
+const { extractPublicId, buildCloudinaryUrl } = require('../utility/claudinaryHelpers');
 
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      const uploadPath = 'uploads/images/';
-  
-        // Create directory if it doesn't exist
-        ensureUploadPathExists(uploadPath); // 📦 Check/create before upload
-      cb(null, uploadPath);
-    },
-    filename: (req, file, cb) => {
-      cb(null, `${Date.now()}-${file.originalname}`);
-    },
-  });
 
-const upload = multer({ 
-    storage: storage,
-    fileFilter: (req, file, cb) => {
-        const fileTypes = /jpeg|jpg|png|gif/;
-        const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
-        const mimetype = fileTypes.test(file.mimetype);
-        if (extname && mimetype) {
-            return cb(null, true);
+
+    const storage = multer.diskStorage({
+        destination: (req, file, cb) => {
+        cb(null, 'uploads/images'); // or any temp path you want
+        },
+        filename: (req, file, cb) => {
+        cb(null, Date.now() + '-' + file.originalname);
+        },
+    });
+    
+    const upload = multer({
+        storage,
+        fileFilter: (req, file, cb) => {
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
+        if (allowedTypes.includes(file.mimetype)) {
+            cb(null, true);
         } else {
-            cb('Error: Images Only!');
+            cb(new Error('Only image files are allowed'));
         }
-    }
-});
+        },
+    });
 
 // Fetch About Us details
 router.get('/', async (req, res) => {
@@ -93,59 +88,41 @@ router.put('/', async (req, res) => {
     }
 });
 
-// Update About Us image only
+// ✅ Update About Us image using Cloudinary and multer disk storage
 router.put('/image', upload.single('image'), async (req, res) => {
     try {
-        let aboutUs = await AboutUs.findOne();
-
-        if (!aboutUs) {
-            return res.status(404).json({ message: 'About Us data not found' });
-        }
-
-        // If there's an existing image, delete it
-        if (aboutUs.image) {
-            const oldImagePath = path.join(__dirname, '../uploads/images/', aboutUs.image);
-            fs.unlink(oldImagePath, (err) => {
-                if (err) console.error("Error deleting old image:", err);
-            });
-        }
-
-        // Update with new image
-        aboutUs.image = req.file ? req.file.filename : '';
-        await aboutUs.save();
-        res.json({ message: 'Image updated successfully', image: aboutUs.image });
+      const aboutUs = await AboutUs.findOne();
+  
+      if (!aboutUs) {
+        return res.status(404).json({ message: 'About Us data not found' });
+      }
+  
+      if (!req.file || !req.file.path) {
+        return res.status(400).json({ message: 'No image file provided' });
+      }
+  
+      // 📤 Upload new image to Cloudinary
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: getFolderByType('aboutus'),
+      });
+  
+      // 🧹 Delete old Cloudinary image if exists
+      if (aboutUs.image) {
+        const oldPublicId = extractPublicId(aboutUs.image);
+        await cloudinary.uploader.destroy(oldPublicId, { invalidate: true });
+      }
+  
+      // 💾 Save new Cloudinary image URL to DB
+      aboutUs.image = result.secure_url;
+      await aboutUs.save();
+  
+      res.json({ message: 'Image updated successfully', image: result.secure_url });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+      console.error('❌ Error updating About Us image:', error);
+      res.status(500).json({ message: 'Failed to update About Us image', error: error.message });
     }
-});
-
-// Route to delete About Us image
-router.delete('/image', async (req, res) => {
-    try {
-        const aboutUs = await AboutUs.findOne();
-        if (!aboutUs || !aboutUs.image) {
-            return res.status(404).json({ message: 'No image found to delete.' });
-        }
-
-        // Path to the image file
-        const imagePath = path.join(__dirname, '../uploads/images', aboutUs.image);
-
-        // Delete image file if it exists
-        fs.unlink(imagePath, (err) => {
-            if (err) console.error('Error deleting image file:', err);
-        });
-
-        // Clear the image field in the database
-        aboutUs.image = '';
-        await aboutUs.save();
-
-        res.json({ message: 'Image deleted successfully.' });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-});
-
-
+  });
+  
 
 
 module.exports = router;

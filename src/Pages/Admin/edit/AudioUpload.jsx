@@ -6,13 +6,16 @@ import icons from "../../../assets/for_landingPage/Icons";
 import UseToast from '../utility/AlertComponent/UseToast';
 import { API_URL } from '/src/config';
 
-const AudioUpload = ({ audioId, currentTitle, onClose }) => {
+const AudioUpload = ({ audioId, currentTitle, onClose, language}) => {
   // toast alert pop up
   const mountToast = UseToast();
 
   const [title, setTitle] = useState(currentTitle || ''); // Title of the audio
   const [audioFile, setAudioFile] = useState(null); // Selected audio file
   const [message, setMessage] = useState(''); // Error or informational messages
+  const [englishFile, setEnglishFile] = useState(null);
+  const [filipinoFile, setFilipinoFile] = useState(null);
+
 
   // Handler for file input change
   const handleFileChange = (e) => {
@@ -20,41 +23,94 @@ const AudioUpload = ({ audioId, currentTitle, onClose }) => {
   };
 
   // Handler for updating existing audio record
+  // const handleUpdate = async (e) => {
+  //   e.preventDefault();
+
+  //   if (!audioId) return; // No action if there's no audio ID
+  //   if (!audioFile) {
+  //     mountToast("Please select an audio file to upload.", "error"); // Alert if no file is selected
+  //     console.log("error");
+  //     return; // Stop execution if no file is selected
+  //   }
+
+  //         // Allowed audio file extensions
+  //     const allowedExtensions = ['.mp3', '.wav', '.m4a'];
+      
+  //     // Check if the file extension is in the allowed list
+  //     const fileExtension = audioFile.name.split('.').pop().toLowerCase();
+  //     if (!allowedExtensions.includes(`.${fileExtension}`)) {
+  //       mountToast("Unsupported audio format. Only mp3, wav, m4a are allowed.", "error");
+  //       return; // Stop execution if the file extension is not allowed
+  //     }
+
+  //   const formData = new FormData();
+  //   formData.append('title', title);
+  //   if (audioFile) formData.append('audio', audioFile);
+
+  //   try {
+  //     await axios.put(`${API_URL}/api/audio/update/${audioId}`, formData, {
+  //       headers: { 'Content-Type': 'multipart/form-data' },
+  //     });
+  //     mountToast("Audio updated successfully!", "success");
+  //     onClose(); // Close the modal
+  //   } catch (error) {
+  //     console.error('Error updating audio:', error);
+  //     mountToast("Error updating audio, please try again.", "error"); // Show error message
+  //   }
+  // };
+
+  //new Hnadler for 2 audio Fil and Eng
   const handleUpdate = async (e) => {
     e.preventDefault();
-
-    if (!audioId) return; // No action if there's no audio ID
-    if (!audioFile) {
-      mountToast("Please select an audio file to upload.", "error"); // Alert if no file is selected
-      console.log("error");
-      return; // Stop execution if no file is selected
+  
+    if (!audioId) return;
+  
+    // Ensure required file is selected based on language
+    if (language === 'english' && !englishFile) {
+      return mountToast("Please select an English audio file.", "error");
     }
-
-          // Allowed audio file extensions
-      const allowedExtensions = ['.mp3', '.wav', '.m4a'];
-      
-      // Check if the file extension is in the allowed list
-      const fileExtension = audioFile.name.split('.').pop().toLowerCase();
-      if (!allowedExtensions.includes(`.${fileExtension}`)) {
-        mountToast("Unsupported audio format. Only mp3, wav, m4a are allowed.", "error");
-        return; // Stop execution if the file extension is not allowed
-      }
-
+    if (language === 'filipino' && !filipinoFile) {
+      return mountToast("Please select a Filipino audio file.", "error");
+    }
+  
+    // Validate extension
+    const allowedExtensions = ['.mp3', '.wav', '.m4a'];
+    const checkExtension = (file) => allowedExtensions.includes(`.${file.name.split('.').pop().toLowerCase()}`);
+  
+    if (language === 'english' && englishFile && !checkExtension(englishFile)) {
+      return mountToast("Invalid English audio format. Only mp3, wav, m4a are allowed.", "error");
+    }
+  
+    if (language === 'filipino' && filipinoFile && !checkExtension(filipinoFile)) {
+      return mountToast("Invalid Filipino audio format. Only mp3, wav, m4a are allowed.", "error");
+    }
+  
     const formData = new FormData();
     formData.append('title', title);
-    if (audioFile) formData.append('audio', audioFile);
-
+  
+    // Only include the relevant file
+    if (language === 'english' && englishFile) {
+      formData.append('englishAudio', englishFile);
+    }
+  
+    if (language === 'filipino' && filipinoFile) {
+      formData.append('filipinoAudio', filipinoFile);
+    }
+  
     try {
       await axios.put(`${API_URL}/api/audio/update/${audioId}`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
-      mountToast("Audio updated successfully!", "success");
+  
+      mountToast(`${language === 'english' ? 'English' : 'Filipino'} audio updated successfully!`, "success");
       onClose(); // Close the modal
     } catch (error) {
-      console.error('Error updating audio:', error);
-      mountToast("Error updating audio, please try again.", "error"); // Show error message
+      console.error('Update error:', error);
+      mountToast("Error updating audio. Please try again.", "error");
     }
   };
+  
+  
 
   // Handler to close the modal
   const handleClose = () => {
@@ -83,27 +139,39 @@ const AudioUpload = ({ audioId, currentTitle, onClose }) => {
             <input
               type="text"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter audio title"
-              required
               disabled
             />
           </div>
           
-          <label className = { styles.customLabel }>
-            {/* Just a visual representation of the input tag */}
-            <button className = { styles.browseBtn }>Browse...</button>
-            <span className = { styles.fileName }>
-              { audioFile ? audioFile.name : "No file selected" }
+          {/* English Audio Upload */}
+          {language === 'english' && (
+            <label className={styles.customLabel}>
+              <button className={styles.browseBtn}>Browse File</button>
+              <span className={styles.fileName}>
+                {englishFile ? englishFile.name : "No English audio file selected"}
+              </span>
+              <input
+                type="file"
+                accept="audio/*"
+                onChange={(e) => setEnglishFile(e.target.files[0])}
+              />
+            </label>
+          )}
+
+        {/* Filipino Audio Upload */}
+        {language === 'filipino' && (
+          <label className={styles.customLabel}>
+            <button className={styles.browseBtn}>Browse File</button>
+            <span className={styles.fileName}>
+              {filipinoFile ? filipinoFile.name : "No Filipino audio file selected"}
             </span>
-            {/* Hidden */}
-            <input 
-              type="file" 
-              onChange={handleFileChange} 
-              accept="audio/*" 
-              required 
+            <input
+              type="file"
+              accept="audio/*"
+              onChange={(e) => setFilipinoFile(e.target.files[0])}
             />
           </label>
+        )}
 
           <div className = { styles.btns }>
             <button 

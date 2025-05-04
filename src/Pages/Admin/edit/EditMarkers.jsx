@@ -231,7 +231,7 @@ export default function EditMarkers() {
                         {markerIcons.map((iconData) => (
                         <div key={iconData._id} className={styles.marker}>
                             <img 
-                            src={`${API_URL}/uploads/icons/${iconData.iconPath}`} 
+                            src={`${iconData.iconPath}`} 
                             alt={iconData.name} 
                             className={styles.icon} 
                             />
@@ -266,7 +266,7 @@ export default function EditMarkers() {
                     </div>
                 </div>
 
-                <span className={`${styles.txtTitle} ${styles.listHeader}`}>Marker List</span>
+                <span className={`${styles.txtTitle} ${styles.listHeader}`}>Marker List</span> <br></br>
 
                 <div className={styles.tblWrapper}>
 
@@ -276,6 +276,7 @@ export default function EditMarkers() {
                         onFilterChange={handleFilterChange}
                         onPaginationChange={handlePaginationChange}
                     />
+
                     <table>
                         <thead>
                             <tr>

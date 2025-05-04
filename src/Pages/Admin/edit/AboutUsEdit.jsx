@@ -102,23 +102,6 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
         }
     };
 
-    const handleDeleteImage = async () => {
-        try {
-            if (selectedImage) {
-                await axios.delete(`${API_URL}/api/aboutus/image`);
-                alert("Image deleted successfully.");
-                fetchAboutUsData();  // Refresh data after deletion
-                setDeleteModalVisible(null);
-            }
-
-            await axios.delete(`${API_URL}/api/aboutus/image`);
-            alert("Image deleted successfully.");
-            fetchAboutUsData();  // Refresh data after deletion
-        } catch (error) {
-            console.error("Error deleting image:", error);
-        }
-    };
-
     const handleArchiveImage = async () => {
         try {
             const response = await axios.put(`${API_URL}/api/archive/aboutUs`, {
@@ -126,12 +109,12 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
             });
     
             if (response.status === 200) {
-                alert('AboutUs image archived successfully.');
+                mountToast('AboutUs image archived successfully.', 'success');
                 fetchAboutUsData(); // Refresh the data
             }
         } catch (error) {
             console.error('Error archiving AboutUs image:', error);
-            alert('Failed to archive image. Please try again.');
+            mountToast('Failed to archive image. Please try again.', 'error');
         }
     };
 
@@ -207,7 +190,7 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
                                     ) : aboutUsData.image ? (
                                         <div className = { styles.uploaded }>
                                             <img 
-                                                src={`${API_URL}/uploads/images/${aboutUsData.image}`} 
+                                                src={`${aboutUsData.image}`} 
                                                 alt="About Us" 
                                                 className={styles.imgPreview} 
                                             />

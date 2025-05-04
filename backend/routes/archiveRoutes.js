@@ -10,6 +10,8 @@ const NewsEvent = require('../models/NewsEvent');
 const AboutUs = require('../models/AboutUs');
 const Archive = require('../models/Archive');
 const MarkerIcon = require('../models/MarkerIcon');
+const { getArchiveFolderByType , cloudinary} = require('../utility/cloudinaryConfig');
+const { extractPublicId} = require('../utility/claudinaryHelpers'); 
 
 
 
@@ -30,49 +32,53 @@ router.get('/archivesData', async (req, res) => {
 
 // Archive card image by ID
 router.put('/cards/:id', async (req, res) => {
-    const { imagePath } = req.body;  // Get imagePath from the request body
-    console.log('Archive Route Hit:', req.params.id, imagePath);  // Log imageId and imagePath
-  
-    const card = await Card.findById(req.params.id);
-  
-    if (!card || !imagePath) {
-      return res.status(404).json({ message: 'Image not found for archiving' });
-    }
-  
-    console.log('Archiving image:', card.image, 'with path:', imagePath);
-  
-    // Proceed with archiving
-    await archiveField('Cards', card._id, 'image', imagePath);
-  
-    card.image = null;
-    card.imageArchived = true;
-    await card.save();
-  
-    res.status(200).json({ message: 'Image archived successfully' });
+  console.log('📥 Archive Route Hit:', req.params.id);
+
+  const card = await Card.findById(req.params.id);
+  if (!card || !card.image) {
+    return res.status(404).json({ message: '❌ Image not found for archiving' });
+  }
+
+  console.log('📦 Archiving image from:', card.image);
+
+  // ⬇️ Proceed with moving the image
+  const archivedUrl = await archiveField('Cards', card._id, 'image', card.image, {
+    areaName: card.areaName || 'Unknown Area'
   });
 
+  card.image = null;
+  card.imageArchived = true;
+  await card.save();
 
-  // Archive modal image by ID
+  console.log('✅ Image archived to:', archivedUrl);
+  res.status(200).json({ message: 'Image archived successfully', archivedUrl });
+});
+
+
+
+// Archive modal image by ID
 router.put('/modal/:id', async (req, res) => {
-  const { imagePath } = req.body; // Get imagePath from the request body
-  console.log('Archive Route for Modal Hit:', req.params.id, imagePath); // Log modalId and imagePath
+  const { imagePath } = req.body;
 
   try {
     const modal = await Modal.findById(req.params.id);
-
     if (!modal || !imagePath) {
       return res.status(404).json({ message: 'Image or Modal not found for archiving' });
     }
 
-    console.log('Archiving modal image:', imagePath, 'for modal ID:', modal._id);
+    const imageIndex = modal.modalImages.findIndex(img => img === imagePath);
+    if (imageIndex === -1) {
+      return res.status(404).json({ message: 'Image not found in modalImages array' });
+    }
 
-    // Proceed with archiving
-    await archiveField('Modal', modal._id, 'modalImages', imagePath);
+    // Include index in archive metadata
+    await archiveField('Modal', modal._id, 'modalImages', imagePath, {
+      originalIndex: imageIndex,
+      areaName: modal.title || 'Unknown Area'
+    });
 
-    // Remove the archived image from the `modalImages` array
-    modal.modalImages = modal.modalImages.filter((img) => img !== imagePath);
+    modal.modalImages.splice(imageIndex, 1);
 
-    // If no images are left, set `imageArchived` to true
     if (modal.modalImages.length === 0) {
       modal.imageArchived = true;
     }
@@ -86,125 +92,154 @@ router.put('/modal/:id', async (req, res) => {
   }
 });
 
-// Archive audio by ID
+
+
+// Archive audio by ID using Cloudinary
+// 🔁 Archive Audio with metadata
 router.put('/audio/:id', async (req, res) => {
-  const { audioFilePath } = req.body;  // Get audioFilePath from the request body
+  const { englishUrl, filipinoUrl } = req.body;
   const audio = await Audio.findById(req.params.id);
 
-  if (!audio || !audioFilePath) {
-    return res.status(404).json({ message: 'Audio file not found for archiving' });
+  if (!audio) {
+    return res.status(404).json({ message: 'Audio not found for archiving' });
   }
 
-  console.log('Archiving audio:', audio.filePath, 'with path:', audioFilePath);
-
-  // Archive the audio file
   try {
-    await archiveField('Audio', audio._id, 'filePath', audioFilePath);  // Archive the audio file
+    // 🧾 Archive English Audio if URL exists
+    if (englishUrl) {
+      console.log('📦 Archiving English Audio:', englishUrl);
 
-    // Update the audio document to mark it as archived
-    audio.audioArchived = true;
-    audio.originalName = "";
-    audio.format = null;
-    audio.filePath = null;  // Optionally, remove filePath if you no longer want to store it
+      await archiveField('Audio', audio._id, 'englishAudio', englishUrl, {
+        originalName: audio.englishOriginalName || '',
+        format: audio.format || '',
+        areaName: audio.title,
+      });
+
+      audio.englishAudio = null;
+      audio.englishOriginalName = '';
+    }
+
+    // 🧾 Archive Filipino Audio if URL exists
+    if (filipinoUrl) {
+      console.log('📦 Archiving Filipino Audio:', filipinoUrl);
+
+      await archiveField('Audio', audio._id, 'filipinoAudio', filipinoUrl, {
+        originalName: audio.filipinoOriginalName || '',
+        format: audio.format || '',
+        areaName: audio.title,
+      });
+
+      audio.filipinoAudio = null;
+      audio.filipinoOriginalName = '';
+    }
+
+    // ✅ If both are archived, set main flag
+    if (!audio.englishAudio && !audio.filipinoAudio) {
+      audio.audioArchived = true;
+    }
+
     await audio.save();
 
     res.status(200).json({ message: 'Audio archived successfully' });
   } catch (error) {
-    console.error('Error archiving audio:', error);
+    console.error('❌ Error archiving audio:', error);
     res.status(500).json({ message: 'Error archiving audio' });
   }
 });
 
-// PUT route to archive an image and its associated data by filename
+
+
+
 router.put('/newsEvent/image/:filename', async (req, res) => {
-  const { filename } = req.params; // Extract filename from URL params
+  const { filename } = req.params;
   console.log('Archiving NewsEvent image:', filename);
 
   try {
-      // Find the NewsEvent document containing the images array
-      const newsEvent = await NewsEvent.findOne();
-      if (!newsEvent) {
-          return res.status(404).json({ message: 'NewsEvent document not found' });
-      }
-
-      console.log('Images in NewsEvent:', newsEvent.images);
-
-      // Check if the image exists in the array
-      const imageIndex = newsEvent.images.indexOf(filename);
-      if (imageIndex === -1) {
-          return res.status(404).json({ message: 'Image not found for archiving' });
-      }
-
-      // Use the archive utility to move the image to the archive folder
-      await archiveField('NewsEvent', newsEvent._id, 'images', filename);
-
-      // Remove the image, header, and description at the same index
-      newsEvent.images.splice(imageIndex, 1); // Remove image
-      if (newsEvent.newsHeader) {
-          newsEvent.newsHeader.splice(imageIndex, 1); // Remove corresponding header (null or value)
-      }
-      if (newsEvent.description) {
-          newsEvent.description.splice(imageIndex, 1); // Remove corresponding description (null or value)
-      }
-
-      // Check if the images array is empty, then set imageArchived to true
-      if (newsEvent.images.length === 0) {
-          newsEvent.imageArchived = true;
-      }
-
-      // Save the updated NewsEvent document
-      await newsEvent.save();
-
-      res.status(200).json({ message: 'Image and associated data archived successfully' });
-  } catch (error) {
-      console.error('Error during NewsEvent image archiving:', error);
-      res.status(500).json({ error: error.message });
-  }
-});
-
-
-
-// Archive AboutUs image
-router.put('/aboutUs', async (req, res) => {
-  const { imagePath } = req.body;
-  console.log('Archive AboutUs Image Hit:', imagePath);
-
-  try {
-    // Find the single AboutUs document
-    const aboutUs = await AboutUs.findOne();
-
-    if (!aboutUs) {
-      return res.status(404).json({ message: 'AboutUs document not found' });
+    const newsEvent = await NewsEvent.findOne();
+    if (!newsEvent) {
+      return res.status(404).json({ message: 'NewsEvent document not found' });
     }
 
-    // Check if the provided image matches
-    if (aboutUs.image !== imagePath) {
-      return res.status(400).json({ message: 'Provided image path does not match' });
+    // Find the full Cloudinary image URL that includes the given filename
+    const imageIndex = newsEvent.images.findIndex(img => img.includes(filename));
+    if (imageIndex === -1) {
+      return res.status(404).json({ message: 'Image not found for archiving' });
     }
 
-    // Archive the image and update the document
-    const archivedImagePath = await archiveField('AboutUs', aboutUs._id, 'image', imagePath); // Ensure using _id
-    aboutUs.image = null; // Set the image field to null
-    aboutUs.isArchived = true; // Add an archive flag if needed
+    const imageUrl = newsEvent.images[imageIndex]; // ✅ Cloudinary URL
+    const header = newsEvent.newsHeader?.[imageIndex] || null;
+    const description = newsEvent.description?.[imageIndex] || null;
 
-    await aboutUs.save();
-    res.status(200).json({ message: 'Image archived successfully', archivedImagePath });
+    // 🗃️ Archive the image URL with header/description as extra data
+    await archiveField('NewsEvent', newsEvent._id, 'images', imageUrl, {
+      header,
+      description,
+      originalIndex: imageIndex
+    });
+
+    // 🧹 Remove image + its header/description from arrays
+    newsEvent.images.splice(imageIndex, 1);
+    if (newsEvent.newsHeader) newsEvent.newsHeader.splice(imageIndex, 1);
+    if (newsEvent.description) newsEvent.description.splice(imageIndex, 1);
+
+    // 🏁 If no more images, flag as archived
+    if (newsEvent.images.length === 0) {
+      newsEvent.imageArchived = true;
+    }
+
+    await newsEvent.save();
+
+    res.status(200).json({ message: 'Image, header, and description archived successfully' });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Error during NewsEvent image archiving:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 
-// Archive MarkerIcon document data by Id
-router.put('/markerIcon/:id', async (req, res) => {
-  try {
-    const markerIconId = req.params.id;
-    await archiveMarkerIcon(markerIconId);
-    res.status(200).json({ message: 'MarkerIcon archived successfully' });
-  } catch (error) {
-    res.status(500).json({ message: 'Error archiving MarkerIcon', error });
-  }
-});
+
+
+
+  // Archive AboutUs image
+  router.put('/aboutUs', async (req, res) => {
+    const { imagePath } = req.body;
+    console.log('Archive AboutUs Image Hit:', imagePath);
+
+    try {
+      // Find the single AboutUs document
+      const aboutUs = await AboutUs.findOne();
+
+      if (!aboutUs) {
+        return res.status(404).json({ message: 'AboutUs document not found' });
+      }
+
+      // Check if the provided image matches
+      if (aboutUs.image !== imagePath) {
+        return res.status(400).json({ message: 'Provided image path does not match' });
+      }
+
+      // Archive the image and update the document
+      const archivedImagePath = await archiveField('AboutUs', aboutUs._id, 'image', imagePath); // Ensure using _id
+      aboutUs.image = null; // Set the image field to null
+      aboutUs.isArchived = true; // Add an archive flag if needed
+
+      await aboutUs.save();
+      res.status(200).json({ message: 'Image archived successfully', archivedImagePath });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Server error', error: error.message });
+    }
+  });
+
+  // Archive MarkerIcon document data by Id
+  router.put('/markerIcon/:id', async (req, res) => {
+    try {
+      const markerIconId = req.params.id;
+      await archiveMarkerIcon(markerIconId);
+      res.status(200).json({ message: 'MarkerIcon archived successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Error archiving MarkerIcon', error });
+    }
+  });
 
 
 // Archive a user account by ID

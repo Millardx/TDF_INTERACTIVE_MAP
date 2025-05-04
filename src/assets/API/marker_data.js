@@ -75,7 +75,7 @@ const fetchMarkerData = async () => {
         position: position,
         icon: `${icon[card.iconType]}`,
         name: card.areaName,
-        img: `${API_URL}/uploads/cardsImg/${card.image}`,
+        img: `${card.image}`,
         quickFacts: card.quickFacts,
         modalId: card.modal_id,
       };

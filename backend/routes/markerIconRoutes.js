@@ -5,22 +5,17 @@ const fs = require('fs');
 const path = require('path');
 const router = express.Router();
 const ensureUploadPathExists = require('../utility/ensureUploadPathExists');
+const { cloudinary, storage, getFolderByType } = require('../utility/cloudinaryConfig');
+const { extractPublicId, buildCloudinaryUrl } = require('../utility/claudinaryHelpers');
 
 
-// Multer storage configuration for marker icons
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadPath = 'uploads/icons';
 
-    // ✅ Check and create 'uploads/icons' if it doesn't exist
-    // Create directory if it doesn't exist
-    ensureUploadPathExists(uploadPath); // 📦 Check/create before upload
-    cb(null, uploadPath);
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname);
-  },
+// Set req.uploadType = 'icons' before upload
+router.use((req, res, next) => {
+  req.uploadType = 'icons';
+  next();
 });
+
 
 // Multer configuration
 const upload = multer({
@@ -61,111 +56,62 @@ router.get('/:id', async (req, res) => {
   }
 });
 
- // POST route for creating a new marker icon
+ // 🟡 CREATE marker icon
 router.post('/Icon', upload.single('icon'), async (req, res) => {
-  const { name } = req.body; // Marker name
-  const uploadedFile = req.file;
+  const { name } = req.body;
 
   try {
-    // Validate that both name and uploaded file are provided
-    if (!name || !uploadedFile) {
-      throw new Error('Name and icon are required.');
-    }
-    
-     // Save only the filename in the database (e.g., '1735500439170-wheat.png')
-     const iconFileName = path.basename(uploadedFile.path);
+    if (!name || !req.file) throw new Error('Name and icon are required');
 
-    // Save only the filename in the database
-    const newMarkerIcon = new MarkerIcon({
+    const newIcon = new MarkerIcon({
       name,
-      iconPath: iconFileName, // Store just the filename
+      iconPath: req.file.path, // ✅ Full Cloudinary URL
     });
 
-    // Save the new MarkerIcon document to the database
-    await newMarkerIcon.save();
-
-    res.status(201).json({
-      message: 'New marker icon created successfully!',
-      data: newMarkerIcon,
-    });
-  } catch (error) {
-    console.error('Error in creating marker icon:', error.message);
-    res.status(500).json({ error: error.message || 'Error creating marker icon' });
+    await newIcon.save();
+    res.status(201).json({ message: 'New marker icon created!', data: newIcon });
+  } catch (err) {
+    console.error('Error creating marker icon:', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
-
-
-// PUT route for adding/updating marker icon
+// 🟡 UPDATE marker icon (name + optional icon replacement)
 router.put('/Icon/:id', upload.single('icon'), async (req, res) => {
-  const { id } = req.params; // MarkerIcon ID
-  const { name } = req.body; // Additional fields
-  const uploadedFile = req.file;
+  const { id } = req.params;
+  const { name } = req.body;
 
   try {
-    // Find the MarkerIcon document by ID
-    let markerIcon = await MarkerIcon.findById(id);
+    let icon = await MarkerIcon.findById(id);
+    if (!icon) return res.status(404).json({ error: 'Marker icon not found' });
 
-    if (!markerIcon) {
-      // If not found, create a new document
-      markerIcon = new MarkerIcon({ _id: id });
-    }
-
-    // Update the name if provided
-    if (name) {
-      markerIcon.name = name;
-    } else if (!markerIcon.name) {
-      throw new Error('Name is required');
-    }
-
-    // If a new icon file is uploaded
-    if (uploadedFile) {
-      // Delete the old icon file if it exists
-      if (markerIcon.iconPath) {
-        const oldFilePath = path.join(__dirname, '..', 'uploads', 'icons', markerIcon.iconPath);
-        if (fs.existsSync(oldFilePath)) {
-          fs.unlinkSync(oldFilePath); // Remove the old file
+    // ✅ Delete old icon if new one uploaded
+    if (req.file && icon.iconPath) {
+      const oldPublicId = extractPublicId(icon.iconPath);
+      if (oldPublicId) {
+        try {
+          await cloudinary.uploader.destroy(oldPublicId, { invalidate: true });
+          console.log('✅ Old icon deleted:', oldPublicId);
+        } catch (err) {
+          console.warn('⚠️ Failed to delete old icon:', err.message);
         }
       }
+    }
 
-      // Save only the filename in the database
-      markerIcon.iconPath = path.basename(uploadedFile.path);
-    } 
+    // ✅ Update fields
+    icon.name = name || icon.name;
+    if (req.file) {
+      icon.iconPath = req.file.path;
+    }
 
-    // Save the updated or new MarkerIcon document
-    await markerIcon.save();
-
-    res.status(200).json({
-      message: 'Marker icon updated successfully',
-      data: markerIcon,
-    });
-  } catch (error) {
-    console.error('Error in marker icon route:', error.message);
-    res.status(500).json({ error: error.message || 'Error updating marker icon' });
+    await icon.save();
+    res.status(200).json({ message: 'Marker icon updated successfully', data: icon });
+  } catch (err) {
+    console.error('Error updating marker icon:', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
 
-  // Delete a marker icon
-  router.delete('/delete/:id', async (req, res) => {
-    const { id } = req.params;
-  
-    try {
-      const icon = await MarkerIcon.findById(id);
-      if (!icon) return res.status(404).json({ error: 'Marker icon not found' });
-  
-      const filePath = path.join(__dirname, '..', 'uploads', 'icons', icon.filePath);
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath); // Remove the file
-      }
-  
-      await MarkerIcon.findByIdAndDelete(id); // Delete the database record
-      res.status(200).json({ message: 'Marker icon deleted successfully!' });
-    } catch (err) {
-      console.error('Error deleting marker icon:', err);
-      res.status(500).json({ error: 'Error deleting marker icon' });
-    }
-  });
-  
 
 module.exports = router;

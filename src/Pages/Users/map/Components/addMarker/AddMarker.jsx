@@ -42,7 +42,7 @@ const AddMarker = ({ scene, container, camera, addMarkerMode, isOnAddMarker }) =
       // Map the API response to the desired structure
       const formattedData = response.data.map((icon) => ({
         name: icon.name,
-        icon: `${API_URL}/uploads/icons/${icon.iconPath}`, // Construct the image URL
+        icon: `${icon.iconPath}`, // Construct the image URL
       }));
   
       setMarkerIcons(formattedData);
@@ -244,9 +244,10 @@ const AddMarker = ({ scene, container, camera, addMarkerMode, isOnAddMarker }) =
         <div className={styles.container} ref={containerRef}>
           <button
           className={styles.close} 
-          onClick={(e) => {toggleAddMarker(); addMarkerMode();}}>
+          onClick={(e) => {toggleAddMarker(); addMarkerMode();}}><br></br>
             Close 
             {/* change this to bigger close button */}
+            <br></br>
           </button>
           <div 
           onDragOver={(e) => e.preventDefault()} // Allow drop
@@ -276,11 +277,6 @@ const AddMarker = ({ scene, container, camera, addMarkerMode, isOnAddMarker }) =
                 </div>
               ))}
 
-              <div 
-                className={styles.markerIcon}
-                onClick={(e) => {addIcon();}}>
-                <img src={uploadIcon} alt="upload marker" />
-              </div>
             {/* Draggable dropped markers */}
           </div>
         </div>

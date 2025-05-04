@@ -26,39 +26,40 @@ const Modal = ({ isOpen, onClose, details, modalData }) => {
 
   const onClickAudio = async (audioId) => {
     if (!audioId) {
-      console.error('No modal ID provided');
+      console.error('No audio ID provided');
       return;
     }
-
+  
     try {
-      let audio = [];
-      const response = await axios.get(`${API_URL}/api/audio`);
-      audio = response.data;
-      const playAudio = audio.find(obj => obj._id === audioId);
-
-      if (playAudio && playAudio.filePath) {
-        if (isPlaying) { // If audio is already playing, do not play again
-          console.log('Audio is already playing.');
-          return; 
-        }
-
-        audioRef.current.src = `${API_URL}/uploads/audios/${playAudio.filePath}`; // Set audio source
-        audioRef.current.play(); // Play the audio
-        setIsPlaying(true); // Set audio state to playing
-        console.log('Playing Audio:', playAudio.filePath);
-
-        audioRef.current.onended = () => {
-          setIsPlaying(false); // Reset state when audio ends
-        };
-      } else {
-        mountToast('Audio file not found.', 'error');   // added by lorenzo 05/01/2025
-        console.error('Audio file not found.');
+      const response = await axios.get(`${API_URL}/api/audio/${audioId}`); // ✅ New route to get one audio
+      const audio = response.data;
+  
+      const selectedAudioUrl = isEng ? audio.englishAudio : audio.filipinoAudio;
+  
+      if (!selectedAudioUrl) {
+        mountToast(`No ${isEng ? 'English' : 'Filipino'} audio available.`, 'error');
+        return;
       }
+  
+      if (isPlaying) {
+        console.log('Audio already playing.');
+        return;
+      }
+  
+      audioRef.current.src = selectedAudioUrl;
+      await audioRef.current.play();
+      setIsPlaying(true);
+  
+      audioRef.current.onended = () => {
+        setIsPlaying(false);
+      };
+  
     } catch (error) {
-      mountToast('Error fetching audio data', 'error');   // added by lorenzo 05/01/2025
-      console.error('Error fetching audio data:', error);
+      console.error('Error fetching audio:', error);
+      mountToast("Error fetching audio data.", "error");
     }
   };
+  
 
   const handleClose = () => {
     audioRef.current.pause(); // Pause the audio
@@ -123,7 +124,7 @@ const Modal = ({ isOpen, onClose, details, modalData }) => {
                   {modalData.modalImages.map((image, index) => (
                     <div key={index} className={styles.slickSlide}>
                       <img 
-                        src={`${API_URL}/uploads/modalImages/${image}`}
+                        src={`${image}`}
                         alt={`Image ${index}`} 
                         className={styles.carouselImage}
                       />

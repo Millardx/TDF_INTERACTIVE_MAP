@@ -84,7 +84,7 @@ export default function AboutUs({ setCurrentModal, handleClickOutside, currentMo
                                     {/* Display Image */}
                                     {aboutUsData.image ? (
                                         <img
-                                            src={`${API_URL}/uploads/images/${aboutUsData.image}`}
+                                            src={`${aboutUsData.image}`}
                                             alt="About Us"
                                             className={styles.aboutUsImage}
                                         />

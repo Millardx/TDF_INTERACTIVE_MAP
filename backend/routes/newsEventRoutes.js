@@ -4,34 +4,24 @@ const fs = require('fs');
 const path = require('path');
 const NewsEvent = require('../models/NewsEvent');
 const router = express.Router();
-const ensureUploadPathExists = require('../utility/ensureUploadPathExists');
+const { cloudinary, getFolderByType } = require('../utility/cloudinaryConfig');
+const { extractPublicId } = require('../utility/claudinaryHelpers');
 
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const uploadPath = 'uploads/images/';
-        ensureUploadPathExists(uploadPath); // 📦 Check/create before upload
-        cb(null, uploadPath);
-    },
-    filename: (req, file, cb) => {
-        cb(null, `${Date.now()}-${file.originalname}`);
+// 🧠 Use memory storage for Cloudinary
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'));
     }
+  },
 });
 
-const upload = multer({ 
-    storage: storage,
-    fileFilter: (req, file, cb) => {
-        const fileTypes = /jpeg|jpg|png|gif/;
-        const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
-        const mimetype = fileTypes.test(file.mimetype);
-        if (extname && mimetype) {
-            return cb(null, true);
-        } else {
-            cb('Error: Images Only!');
-        }
-    }
-});
 
 
 // Get all images (GET)
@@ -62,98 +52,105 @@ router.get('/:id', async (req, res) => { // Removed /api/images from the path
 
 
 
-// Add new images (POST)
+// ➕ Upload new images to Cloudinary
 router.post('/', upload.array('images', 10), async (req, res) => {
-    console.log("Request body:", req.body);
-    console.log("Uploaded files:", req.files);
-
     try {
-        // Extract filenames from uploaded files
-        const filenames = req.files.map(file => file.filename);
-
-        // Find the first image document
-        let imageDoc = await NewsEvent.findOne();
-
-        if (imageDoc) {
-            // Update existing document
-            imageDoc.images.push(...filenames); // Add new filenames
-            const numNewImages = filenames.length;
-
-            // Add null placeholders for each new image
-            imageDoc.newsHeader.push(...Array(numNewImages).fill(null));
-            imageDoc.description.push(...Array(numNewImages).fill(null));
-
-            await imageDoc.save();
-            return res.status(200).json(imageDoc);
-        } else {
-            // Create a new document
-            const numNewImages = filenames.length;
-
-            const newImages = new NewsEvent({
-                images: filenames,
-                newsHeader: Array(numNewImages).fill(null),
-                description: Array(numNewImages).fill(null),
-            });
-
-            await newImages.save();
-            return res.status(201).json(newImages);
-        }
+      const folder = getFolderByType('news');
+      const uploadPromises = req.files.map(file =>
+        cloudinary.uploader.upload_stream({ folder }).end(file.buffer)
+      );
+  
+      const results = await Promise.allSettled(
+        req.files.map(file =>
+          new Promise((resolve, reject) => {
+            cloudinary.uploader.upload_stream({ folder }, (err, result) => {
+              if (err) reject(err);
+              else resolve(result.secure_url);
+            }).end(file.buffer);
+          })
+        )
+      );
+  
+      const uploadedUrls = results
+        .filter(r => r.status === 'fulfilled')
+        .map(r => r.value);
+  
+      const numNew = uploadedUrls.length;
+  
+      let imageDoc = await NewsEvent.findOne();
+      if (imageDoc) {
+        imageDoc.images.push(...uploadedUrls);
+        imageDoc.newsHeader.push(...Array(numNew).fill(null));
+        imageDoc.description.push(...Array(numNew).fill(null));
+        await imageDoc.save();
+        return res.status(200).json(imageDoc);
+      } else {
+        const newDoc = new NewsEvent({
+          images: uploadedUrls,
+          newsHeader: Array(numNew).fill(null),
+          description: Array(numNew).fill(null),
+        });
+        await newDoc.save();
+        return res.status(201).json(newDoc);
+      }
     } catch (error) {
-        console.error("Error adding images:", error);
-        res.status(500).json({ message: "Error adding images", error });
+      console.error('❌ Error uploading images:', error);
+      res.status(500).json({ message: 'Upload failed', error });
     }
-});
+  });
 
 
 
-
-// PUT route to update a specific image by filename
+// ✅ Update a specific image (Cloudinary + Memory Storage)
 router.put('/uploads/images/:filename', upload.single('image'), async (req, res) => {
     try {
-        const { filename } = req.params;
-
-        // Find the document containing the images array
-        const imageDoc = await NewsEvent.findOne({ images: `${filename}` });
-
-        if (!imageDoc) {
-            return res.status(404).json({ message: "Image document not found" });
-        }
-
-        // Check if file is uploaded
-        if (!req.file) {
-            return res.status(400).json({ message: "No file uploaded" });
-        }
-
-        // Get the old image path before updating
-        const oldImagePath = `uploads/images/${filename}`;
-
-        // Handle the new image upload from multer
-        const updatedImagePath = req.file.path.replace(/\\/g, '/'); // New image path with forward slashes
-
-        // Update the specific image path in the array
-        const updatedImages = imageDoc.images.map(image => image === oldImagePath ? updatedImagePath : image);
-        imageDoc.images = updatedImages;
-
-        // Save the updated document
-        await imageDoc.save();
-
-        // Delete the old image from the server
-        const oldImageAbsolutePath = path.join(__dirname, '..', oldImagePath); // Get full path for deletion
-        fs.unlink(oldImageAbsolutePath, (err) => {
-            if (err) {
-                console.error('Error deleting old image:', err);
-            } else {
-                console.log('Old image deleted:', oldImagePath);
-            }
-        });
-
-        res.status(200).json(imageDoc); // Return the updated document
+      const { filename } = req.params;
+  
+      const doc = await NewsEvent.findOne();
+      if (!doc || !doc.images || !Array.isArray(doc.images)) {
+        return res.status(404).json({ message: 'NewsEvent document not found or images missing' });
+      }
+  
+      const imageIndex = doc.images.findIndex(img => img.includes(filename));
+      if (imageIndex === -1) {
+        return res.status(404).json({ message: 'Image filename not found' });
+      }
+  
+      if (!req.file || !req.file.buffer) {
+        return res.status(400).json({ message: 'No image buffer provided' });
+      }
+  
+      // 🧹 Delete old Cloudinary image
+      const oldPublicId = extractPublicId(doc.images[imageIndex]);
+      await cloudinary.uploader.destroy(oldPublicId, { invalidate: true });
+  
+      // 📤 Upload new image to Cloudinary from memory buffer
+      const uploadResult = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream(
+          { folder: getFolderByType('news') },
+          (err, result) => {
+            if (err) reject(err);
+            else resolve(result);
+          }
+        ).end(req.file.buffer);
+      });
+  
+      // 💾 Update image URL in DB
+      doc.images[imageIndex] = uploadResult.secure_url;
+      await doc.save();
+  
+      res.status(200).json({
+        message: 'Image updated successfully',
+        images: doc.images
+      });
     } catch (error) {
-        console.error("Error updating image:", error);
-        res.status(500).json({ message: "Error updating image", error });
+      console.error('❌ Error updating NewsEvent image:', error);
+      res.status(500).json({ message: 'Error updating NewsEvent image', error: error.message });
     }
-});
-
+  });
+  
+  
+  
 
 
 // Backend route for updating header and description
@@ -209,48 +206,7 @@ router.put('/updateNews', async (req, res) => {
 
 
 
-// DELETE route to delete a specific image by its filename
-router.delete('/uploads/images/:filename', async (req, res) => {
-    const { filename } = req.params;
-    const imagePath = path.join(__dirname, '..', 'uploads', 'images', filename); // Path to the image file
 
-    console.log('Attempting to delete file:', filename);
-    console.log('Image path:', imagePath);
-
-    try {
-      // Remove the image from the MongoDB images array using the filename
-      const updatedDoc = await NewsEvent.findOneAndUpdate(
-        { images: `uploads/images/${filename}` }, // Use forward slashes
-        { $pull: { images: `uploads/images/${filename}` } }, // Use forward slashes
-        { new: true }
-    );
-
-        if (!updatedDoc) {
-            console.error('Image not found in database');
-            return res.status(404).json({ message: 'Image not found in database' });
-        }
-
-        // Delete the file from the server if it exists
-        fs.access(imagePath, fs.constants.F_OK, (err) => {
-            if (err) {
-                console.error('File not found on server:', imagePath);
-                return res.status(404).json({ message: 'File not found on server' });
-            }
-
-            fs.unlink(imagePath, (err) => {
-                if (err) {
-                    console.error('Error deleting file from directory:', err);
-                    return res.status(500).json({ message: 'Error deleting file from server' });
-                }
-                console.log('File deleted from directory:', filename);
-                res.status(200).json({ message: 'Image deleted successfully' });
-            });
-        });
-    } catch (error) {
-        console.error('Error deleting image:', error);
-        res.status(500).json({ message: 'Error deleting image' });
-    }
-});
 
 
 

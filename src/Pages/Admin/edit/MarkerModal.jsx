@@ -1,6 +1,5 @@
 import { useState , useEffect } from 'react'
 import styles from "./styles/markerModalStyles.module.scss"
-import marker from "../../../assets/icon/Icons";
 import icons from "../../../assets/for_landingPage/Icons";
 import axios from 'axios';
 import UseToast from '../utility/AlertComponent/UseToast';
@@ -37,15 +36,11 @@ export default function MarkerModal({ onClose ,markerData }) {
         if (markerData?.iconType && markerIcons.length > 0) {
             const selectedMarker = markerIcons.find((icon) => icon.name === markerData.iconType);
             setMarker(
-                selectedMarker ? `${API_URL}/uploads/icons/${selectedMarker.iconPath}` : ""
+                selectedMarker ? `${selectedMarker.iconPath}` : ""
             );
         }
     }, [markerIcons, markerData]);
     
-    
-
-    
-
 
   // Handle changes to areaName or iconType
   useEffect(() => {
@@ -58,7 +53,7 @@ const handleIconTypeChange = (e) => {
     setIconType(selectedType); // Update selected icon type
     const selectedMarker = markerIcons.find((icon) => icon.name === selectedType);
     setMarker(
-        selectedMarker ? `${API_URL}/uploads/icons/${selectedMarker.iconPath}` : ""
+        selectedMarker ? `${selectedMarker.iconPath}` : ""
     ); // Dynamically set the corresponding marker icon
 };
 

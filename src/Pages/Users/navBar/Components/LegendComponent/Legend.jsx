@@ -30,7 +30,7 @@ export default function Legend() {
             // Map the API response to the desired structure
             const formattedData = response.data.map((icon) => ({
                 name: icon.name,
-                icon: `${API_URL}uploads/icons/${icon.iconPath}`, // Construct the image URL
+                icon: `${icon.iconPath}`, // Construct the image URL
             }));
             setMarkerIcons(formattedData);
         } catch (error) {

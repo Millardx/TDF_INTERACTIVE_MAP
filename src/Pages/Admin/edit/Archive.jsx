@@ -201,7 +201,7 @@ export default function Archive() {
                         <tr>
                             <th>Collection Name</th>
                             <th>Type</th>
-                            <th>Data</th>
+                            <th>Data From:</th>
                             <th>Date&Time</th>
                             <th>Action</th>
                         </tr>
@@ -211,27 +211,96 @@ export default function Archive() {
                             currentItems.map((archive) => {
                                 const isDocument = archive.originalCollection === 'User'; // Check if it's a document (User)
                                 const isMarkerIcon = archive.originalCollection === 'MarkerIcon'; // Check if it's a MarkerIcon
+                                
+                                const typeDisplay = (() => {
+                                    if (archive.originalCollection === 'User') return 'Credentials';
+                                    if (archive.originalCollection === 'MarkerIcon') return 'Icon Image';
+                                    if (archive.originalCollection === 'Modal') return 'Modal Image';
+                                    if (archive.originalCollection === 'Cards') return 'Card Image';
+                                    if (archive.originalCollection === 'Audio') {
+                                      const ext = archive.data.format || 'Audio';
+                                      return `Audio (.${ext.toUpperCase()})`;
+                                    }
+                                    if (archive.originalCollection === 'NewsEvent') return 'News Event Image';
+                                    if (archive.originalCollection === 'AboutUs') return 'About Us Image';
+                                    return archive.fieldName;
+                                  })();
+                                  
 
-                                const dataToDisplay = isDocument ? (
-                                    <ul className={styles.noBullets}>
-                                    <li><strong>Name:</strong> {archive.data.name || 'N/A'}</li>
-                                    <li><strong>Email:</strong> {archive.data.email || 'N/A'}</li>
-                                    <li><strong>Role:</strong> {archive.data.role || 'N/A'}</li>
-                                </ul>
-                                ) : isMarkerIcon ? (
-                                // For MarkerIcon, display name and iconPath
-                                <ul className={styles.noBullets}>
-                                    <li><strong>Name:</strong> {archive.data.name || 'N/A'}</li>
-                                    <li><strong>File:</strong> {archive.data.iconPath || 'N/A'}</li>
-                                </ul>
-                                ) : (
-                                    archive.data[archive.fieldName] // For fields, show the file name
-                                );
+                                const dataToDisplay = (() => {
+                                    if (isDocument) {
+                                      return (
+                                        <ul className={styles.noBullets}>
+                                          <li><strong>Name:</strong> {archive.data.name || 'N/A'}</li>
+                                          <li><strong>Email:</strong> {archive.data.email || 'N/A'}</li>
+                                          <li><strong>Role:</strong> {archive.data.role || 'N/A'}</li>
+                                        </ul>
+                                      );
+                                    }
+                                  
+                                    if (isMarkerIcon) {
+                                      return (
+                                        <ul className={styles.noBullets}>
+                                          <li><strong>Icon Name:</strong> {archive.data.name || 'N/A'}</li>
+                                        </ul>
+                                      );
+                                    }
+                                  
+                                    if (archive.originalCollection === 'NewsEvent') {
+                                      return (
+                                        <ul className={styles.noBullets}>
+                                          <li><strong>News Title:</strong> {archive.data.header || 'N/A'}</li>
+                                        </ul>
+                                      );
+                                    }
+                                  
+                                    if (archive.originalCollection === 'Modal') {
+                                      const area = archive.data.areaName || 'N/A';
+                                  
+                                      return (
+                                        <ul className={styles.noBullets}>
+                                          <li><strong>Area Name:</strong> {area}</li>
+                                        </ul>
+                                      );
+                                    }
+                                  
+                                    if (archive.originalCollection === 'Cards') {
+                                      const area = archive.data.areaName || 'N/A';
+                                      return (
+                                        <ul className={styles.noBullets}>
+                                          <li><strong>Area Name:</strong> {area}</li>
+                                        </ul>
+                                      );
+                                    }
+                                  
+                                    if (archive.originalCollection === 'Audio') {
+                                      const area = archive.data.areaName || 'N/A';
+                                      const audioName = archive.data.originalName || 'N/A';
+                                      return (
+                                        <ul className={styles.noBullets}>
+                                          <li><strong>Area Name:</strong> {area}</li>
+                                          <li><strong>Audio Name:</strong> {audioName}</li>
+                                        </ul>
+                                      );
+                                    }
+
+                                    if (archive.originalCollection === 'AboutUs') {
+                                        return (
+                                            <ul className={styles.noBullets}>
+                                            <li><strong>About Us</strong>  </li>
+                                          </ul>
+                                        );
+                                      }
+                                  
+                                    return 'N/A';
+                                  })();
+                                  
+                                  
 
                                 return (
                                 <tr key={archive._id}>
                                         <td>{archive.originalCollection}</td>
-                                        <td>{archive.fieldName}</td>
+                                        <td>{typeDisplay}</td>
                                         <td>{dataToDisplay}</td>
                                         <td>{moment(archive.archivedAt).format('MMM D, YYYY , h:mm A')}</td> 
                                     <td>

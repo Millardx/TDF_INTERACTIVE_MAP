@@ -20,6 +20,8 @@ const contactUsRoutes = require('./routes/ContactUsRoutes');
 const mainRoutes = require('./routes/mainRoutes'); 
 const markerRoutes = require('./routes/MarkerRoutes');
 const markerIconRoutes = require('./routes/markerIconRoutes');
+const cron = require('node-cron');
+const { cleanOrphanedCloudinaryFiles } = require('./utility/archiveCleaner');
 
 dotenv.config(); 
 
@@ -33,6 +35,8 @@ const PORT = process.env.PORT || 5000;
 //   allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
 // };
 
+
+
 // Middleware
 app.use(cors()); //local use
 // app.use('*',cors(corsOptions));  //deployed running
@@ -40,6 +44,8 @@ app.use(express.json());
 app.use(bodyParser.json()); // Add this line to parse JSON requests
 // Serve static files from the 'uploads' directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+
 
 // MongoDB connection
 const dbUri = process.env.MONGO_URI;  
@@ -74,6 +80,12 @@ app.use('/api/markerIcons', markerIconRoutes);
 // Start the server
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on http://0.0.0.0:${PORT}`);
+});
+
+ // ⏰ Start cleanup task
+ cron.schedule('*/4 * * * *', () => { // Every 2 minutes for testing
+  console.log('🕒 Scheduled Cloudinary archive cleanup triggered...');
+  cleanOrphanedCloudinaryFiles();
 });
 
 // For Railway-managed HTTPS:

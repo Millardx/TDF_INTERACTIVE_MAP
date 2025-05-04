@@ -3,31 +3,11 @@ const express = require('express');
 const multer = require('multer');   // Used for handling file uploads
 const path = require('path');       // Used to manage file paths
 const Modal = require('../models/Modal');  // Import the Modal model
-const fs = require('fs');
 const router = express.Router();     // Initialize Express router
-const ensureUploadPathExists = require('../utility/ensureUploadPathExists');
+const { cloudinary, storage, getFolderByType } = require('../utility/cloudinaryConfig');
+const {extractPublicId} = require('../utility/claudinaryHelpers');
 
 
-// Set up multer storage for handling image uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadPath = 'uploads/modalImages';
-
-    // Create directory if it doesn't exist
-    ensureUploadPathExists(uploadPath); // 📦 Check/create before upload
-    cb(null, uploadPath);
-  },
-  filename: (req, file, cb) => {
-    const originalName = file.originalname; // Get original filename
-    const fileExtension = path.extname(originalName); // Extract extension
-    const baseName = path.basename(originalName, fileExtension); // Get name without extension
-
-    // Create unique filename: modalImages-<timestamp>-<originalname>.<ext>
-    const newFileName = `modalImages-${Date.now()}-${baseName}${fileExtension}`;
-
-    cb(null, newFileName);
-  }
-});
 
 // Set file filtering for allowed image types (JPEG and PNG)
 const fileFilter = (req, file, cb) => {
@@ -78,76 +58,62 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.post('/:id', upload.array('modalImages', 10), async (req, res) => {
-  const { id } = req.params;
-  const filenames = req.files.map(file => file.filename); // Array of filenames
+  // Upload modal images (up to 10)
+  router.post('/:id', (req, res, next) => {
+    req.uploadType = 'modal';
+    next();
+  }, upload.array('modalImages', 10), async (req, res) => {
+    const { id } = req.params;
+    const imagePaths = req.files.map(file => file.path); // Use Cloudinary URLs
 
-  try {
-    const modal = await Modal.findById(id);
+    try {
+      const modal = await Modal.findById(id);
+      if (!modal) {
+        return res.status(404).json({ message: 'Modal not found' });
+      }
 
-    if (!modal) {
-      return res.status(404).json({ message: 'Modal not found' });
+      if (!modal.modalImages) modal.modalImages = [];
+      modal.modalImages.push(...imagePaths);
+
+      const updatedModal = await modal.save();
+      res.status(200).json(updatedModal);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: error.message });
     }
+  });
 
-    // Ensure modalImages is initialized as an array
-    if (!modal.modalImages) {
-      modal.modalImages = [];
+  // Replace image at index
+  router.put('/:id/updateImage', (req, res, next) => {
+    req.uploadType = 'modal';
+    next();
+  }, upload.single('modalImage'), async (req, res) => {
+    const { id } = req.params;
+    const { imageIndex } = req.body;
+
+    try {
+      const modal = await Modal.findById(id);
+      if (!modal) return res.status(404).json({ message: 'Modal not found' });
+      if (!req.file) return res.status(400).json({ message: 'No image uploaded' });
+      if (!modal.modalImages || !modal.modalImages[imageIndex]) {
+        return res.status(400).json({ message: 'Invalid image index' });
+      }
+
+      // Delete old Cloudinary image
+      const oldPublicId = extractPublicId(modal.modalImages[imageIndex]);
+      if (oldPublicId) {
+        await cloudinary.uploader.destroy(oldPublicId);
+      }
+
+      modal.modalImages[imageIndex] = req.file.path;
+      const updatedModal = await modal.save();
+
+      res.status(200).json(updatedModal);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: error.message });
     }
-
-    // Push the new image filenames to the modalImages array
-    modal.modalImages.push(...filenames);
-
-    // Save the updated modal document
-    const updatedModal = await modal.save();
-
-    res.status(200).json(updatedModal);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: error.message });
-  }
-});
-
-
-
-router.put('/:id/updateImage', upload.single('modalImage'), async (req, res) => {
-  const { id } = req.params;
-  const { imageIndex } = req.body; // Get the index from the request
-  const uploadedFile = req.file; // Get the new uploaded image
-
-  try {
-    const modal = await Modal.findById(id);
-    if (!modal) {
-      return res.status(404).json({ message: 'Modal not found' });
-    }
-
-    if (!uploadedFile) {
-      return res.status(400).json({ message: 'No image file uploaded' });
-    }
-
-    // Ensure modalImages exists and the index is valid
-    if (!modal.modalImages || !modal.modalImages[imageIndex]) {
-      return res.status(400).json({ message: 'Invalid image index' });
-    }
-
-    // Delete the old image
-    const oldImage = modal.modalImages[imageIndex];
-    const oldImagePath = path.join(__dirname, '..', 'uploads', 'modalImages', oldImage);
-    if (fs.existsSync(oldImagePath)) {
-      fs.unlinkSync(oldImagePath); // Delete the old image file
-    }
-
-    // Update the image at the specific index
-    modal.modalImages[imageIndex] = uploadedFile.filename;
-
-    // Save the updated modal
-    const updatedModal = await modal.save();
-
-    res.status(200).json(updatedModal);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: error.message });
-  }
-});
+  });
 
 // Update modal description and technologies by ID
 router.put('/:id/description', async (req, res) => {
@@ -174,50 +140,6 @@ router.put('/:id/description', async (req, res) => {
   }
 });
 
-
-router.delete('/uploads/modalImages/:filename', async (req, res) => {
-  const { filename } = req.params;
-  const imagePath = path.join(__dirname, '..', 'uploads', 'modalImages', filename); // Path to the image file
-
-  console.log('Attempting to delete file:', filename);
-  console.log('Image path:', imagePath);
-
-  try {
-    // Find and update the modal by removing the filename from the modalImages array
-    const updatedModal = await Modal.findOneAndUpdate(
-      { modalImages: filename }, // Assuming only filename is stored in DB, without full path
-      { $pull: { modalImages: filename } }, // Ensure matching without path
-      { new: true }
-    );
-
-    if (!updatedModal) {
-      console.error('Image not found in database');
-      return res.status(404).json({ message: 'Image not found in database' });
-    }
-
-    // Check if the file exists and delete it
-    fs.access(imagePath, fs.constants.F_OK, (err) => {
-      if (err) {
-        console.error('File not found on server:', imagePath);
-        return res.status(404).json({ message: 'File not found on server' });
-      }
-
-      // Delete the file from the server
-      fs.unlink(imagePath, (err) => {
-        if (err) {
-          console.error('Error deleting file from directory:', err);
-          return res.status(500).json({ message: 'Error deleting file from server' });
-        }
-
-        console.log('File deleted from directory:', filename);
-        res.status(200).json({ message: 'Image deleted successfully', modal: updatedModal });
-      });
-    });
-  } catch (error) {
-    console.error('Error deleting image:', error);
-    res.status(500).json({ message: 'Error deleting image' });
-  }
-});
 
 
 

@@ -1,7 +1,10 @@
+//restoreUtils.js
 const fs = require('fs');
 const path = require('path');
 const Archive = require('../models/Archive');
 const MarkerIcon = require('../models/MarkerIcon');
+const { cloudinary, getFolderByType, getArchiveFolderByType } = require('../utility/cloudinaryConfig');
+const { buildCloudinaryUrl, extractPublicId } = require('../utility/claudinaryHelpers');
 
 const folderMapping = {
   Cards: 'cardsImg', // Folder for card images
@@ -15,187 +18,186 @@ const folderMapping = {
 
 const restoreField = async (archiveId) => {
   const archive = await Archive.findById(archiveId);
-
-  if (!archive) {
-    throw new Error('Archive entry not found');
-  }
+  if (!archive) throw new Error('Archive entry not found');
 
   const { originalCollection, originalId, fieldName, data } = archive;
   const OriginalModel = require(`../models/${originalCollection}`);
-  
-  // Step 1: Remove the archived flag from the original document
+
+    // 🔒 Early guard if field data is missing
+    if (!data[fieldName]) {
+      throw new Error(`No archived Cloudinary URL found for field: ${fieldName}`);
+    }
+
+  // Step 1: Remove the archived flag
   await OriginalModel.findByIdAndUpdate(originalId, {
     $set: { [`${fieldName}Archived`]: false }
   });
 
-  // Step 2: Extract file name and paths correctly
-  const filePath = data[fieldName];  
-  const fileName = path.basename(filePath); // Extract the file name
-  const folder = folderMapping[originalCollection];  
+  // Step 2: Extract Cloudinary info
+  const archivedUrl = data[fieldName];
+  const publicId = extractPublicId(archivedUrl);
+  if (!publicId) throw new Error(`Cannot extract Cloudinary publicId from ${archivedUrl}`);
 
-  const archivePath = path.join(__dirname, '../archives', folder, fileName);
-  const originalPath = path.join(__dirname, '../uploads', folder, fileName);
+  const fileName = publicId.split('/').pop();
+  // 🧼 Remove 'archived-' prefix if present
+  const cleanedFileName = fileName.replace(/^archived-/, '');
+  const archiveFolder = getArchiveFolderByType(originalCollection);
+  const uploadFolder = getFolderByType(originalCollection.toLowerCase());
+  const newPublicId = `${uploadFolder}/${cleanedFileName}`;
 
-  // Step 3: Use fs.rename to move the file back to its original folder
-  fs.rename(archivePath, originalPath, (err) => {
-    if (err) {
-      console.error('Error restoring file:', err);
-      throw new Error('Failed to restore the file');
-    } else {
-      console.log(`File restored: ${fileName}`);
-    }
+  // Step 3: Rename in Cloudinary
+  await cloudinary.uploader.rename(publicId, newPublicId, {
+    overwrite: true,
+    invalidate: true,
+    resource_type: fieldName === 'filePath' || fieldName.includes('Audio') ? 'video' : 'image'
   });
 
-  // Step 4: Update the original document's field with the restored file path
-  const updatedData = {
-    [fieldName]: fileName, // Set the file path back to the original document
-  };
-  
-    // Check if it's a card, modal, or audio and handle accordingly
-    if (originalCollection === 'Cards') {
-      // For cards, it's a single image, so replace the current image field
-      await OriginalModel.findByIdAndUpdate(originalId, {
-        $set: { 
-          ...updatedData,  // Update the image field with the restored data
-          imageArchived: false // Set imageArchived to false when restoring
-        }
-      });
-    } 
-    else if (originalCollection === 'Modal') {
-      // For modals, append the restored image to the modalImages array
-      console.log("Adding restored image to modalImages array");
+  console.log(`✅ Cloudinary file restored: ${newPublicId}`);
 
-      // Update the modal's modalImages array using $push
-      await OriginalModel.findByIdAndUpdate(originalId, {
-        $push: { [fieldName]: updatedData[fieldName] },  // Use $push to add the new image to the array
-        $set: { imageArchived: false }
-      });
-    }
-     else if (originalCollection === 'Audio') {
-      // Restore for Audio
-      const originalName = fileName.split('-').slice(1).join('-'); // Remove multer prefix
-      const format = path.extname(fileName).toUpperCase().replace('.', ''); // Extract format
-    
-      const audioData = {
-        ...updatedData,
-        originalName, // Restore the original name
-        format,       // Restore the format
-        audioArchived: false, // Clear the archive flag
-      };
-    
-      await OriginalModel.findByIdAndUpdate(originalId, { $set: audioData });
-    }
-     else if (originalCollection === 'NewsEvent') {
-      console.log("Restoring image to NewsEvent");
+  const resourceType = originalCollection === 'Audio' ? 'video' : 'image';
+  const newUrl = `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/${resourceType}/upload/${newPublicId}`;
+
+  const updatePayload = { [fieldName]: newUrl, [`${fieldName}Archived`]: false };
+
+  // Step 4: Apply specific updates based on collection
+  if (originalCollection === 'Modal') {
+    const modal = await OriginalModel.findById(originalId);
+    const { originalIndex } = data;
   
-      // Find the NewsEvent document
-      const newsEvent = await OriginalModel.findById(originalId);
-      if (!newsEvent) {
-        throw new Error('NewsEvent document not found');
+    const insertIndex = typeof originalIndex === 'number' ? originalIndex : modal.modalImages.length;
+  
+    modal.modalImages.splice(insertIndex, 0, newUrl);
+    modal.imageArchived = false;
+  
+    await modal.save(); 
+  } 
+
+  else if (originalCollection === 'Audio') {
+    const originalName = data.originalName || cleanedFileName;
+    const format = data.format || path.extname(originalName).replace('.', '').toUpperCase();
+  
+    const restorePayload = {
+      ...updatePayload,
+      audioArchived: false
+    };
+  
+    // 🧠 Set proper originalName field
+    if (fieldName === 'englishAudio') {
+      restorePayload.englishOriginalName = originalName;
+    } else if (fieldName === 'filipinoAudio') {
+      restorePayload.filipinoOriginalName = originalName;
+    }
+  
+    restorePayload.format = format;
+  
+    await OriginalModel.findByIdAndUpdate(originalId, {
+      $set: restorePayload
+    });
+  }
+
+  else if (originalCollection === 'NewsEvent') {
+    const newsEvent = await OriginalModel.findById(originalId);
+    const { header, description, originalIndex } = data;
+  
+    const insertIndex = typeof originalIndex === 'number' ? originalIndex : newsEvent.images.length;
+  
+    // Insert restored image and metadata at the correct index
+    newsEvent.images.splice(insertIndex, 0, newUrl);
+    newsEvent.newsHeader.splice(insertIndex, 0, header || null);
+    newsEvent.description.splice(insertIndex, 0, description || null);
+    newsEvent.imageArchived = false;
+  
+    await newsEvent.save();
+  }
+  
+  else {
+    await OriginalModel.findByIdAndUpdate(originalId, { $set: updatePayload });
+  }
+
+  // Step 5: Remove archive entry
+  await archive.deleteOne();
+  console.log(`🗃️ Archive entry ${archiveId} deleted`);
+};
+
+
+  const restoreDocument = async (archiveId) => {
+    try {
+      // Find the archive entry by ID
+      const archive = await Archive.findById(archiveId);
+      if (!archive || archive.fieldName !== 'document') {
+        throw new Error('Invalid archive entry for document');
+      }
+
+      const { originalCollection, originalId, data } = archive;
+
+      // Restore the document to its original collection
+      const OriginalModel = require(`../models/${originalCollection}`);
+      const restoredDocument = new OriginalModel(data);
+      await restoredDocument.save();
+
+      console.log(`Document restored: ${originalCollection} (ID: ${originalId})`);
+
+      // Delete the archive entry
+      await archive.deleteOne();
+    } catch (err) {
+      console.error('Error during document restoration:', err);
+      throw new Error(`Restoration failed for document: ${err.message}`);
+    }
+  };
+
+  const restoreMarkerIcon = async (archiveId) => {
+    try {
+      // 📦 Step 1: Fetch archive entry
+      const archivedData = await Archive.findById(archiveId);
+      if (!archivedData || archivedData.originalCollection !== 'MarkerIcon') {
+        throw new Error('Invalid archive entry or not a MarkerIcon');
       }
   
-      // Push the restored image to the images array
-      newsEvent.images.push(updatedData[fieldName]);
+      const { name, iconPath } = archivedData.data;
+      if (!name || !iconPath) {
+        throw new Error('Missing name or iconPath in archive data');
+      }
   
-       // Set imageArchived to false when restoring the image
-      newsEvent.imageArchived = false;
+      // 🔍 Step 2: Extract Cloudinary publicId
+      const publicId = extractPublicId(iconPath);
+      if (!publicId) throw new Error('Failed to extract publicId from Cloudinary URL');
   
-      // Save the updated NewsEvent document
-      await newsEvent.save();
-    } 
-    else if(originalCollection === 'AboutUs') {
-      // For AboutUs, we just set the image back to the restored file name
-      await OriginalModel.findByIdAndUpdate(originalId, {
-        $set: { 
-          ...updatedData,  // Update the image field with the restored data
-          imageArchived: false // Set imageArchived to false when restoring
-        }
+      const fileName = publicId.split('/').pop(); // e.g., archivedIcon-map.png
+  
+      // 🧼 Step 3: Remove the prefix "archivedIcon-" if present
+      const originalFileName = fileName.replace(/^archivedIcon-/, '');
+  
+      // 🔁 Step 4: Determine new path in uploads/icons
+      const newPath = `${getFolderByType('icons')}/${originalFileName}`; // uploads/icons/map.png
+  
+      // 🔄 Step 5: Rename (move) image back to uploads
+      await cloudinary.uploader.rename(publicId, newPath, {
+        overwrite: true,
+        invalidate: true,
       });
+  
+      const restoredUrl = buildCloudinaryUrl(newPath);
+      console.log(`✅ MarkerIcon file restored → ${restoredUrl}`);
+  
+      // 📝 Step 6: Recreate MarkerIcon document
+      const restoredMarkerIcon = new MarkerIcon({
+        name,
+        iconPath: restoredUrl,
+      });
+  
+      await restoredMarkerIcon.save();
+      console.log(`✅ MarkerIcon document restored: ${name}`);
+  
+      // 🧹 Step 7: Remove archive entry
+      await Archive.findByIdAndDelete(archiveId);
+      console.log(`🗑️ Archive entry removed`);
+  
+      return { success: true, message: 'MarkerIcon restored successfully' };
+    } catch (err) {
+      console.error('❌ Error restoring MarkerIcon:', err);
+      throw new Error(`Restoration failed: ${err.message}`);
     }
-  // Step 5: Remove the archive entry
-  await archive.deleteOne();
-};
-
-const restoreDocument = async (archiveId) => {
-  try {
-    // Find the archive entry by ID
-    const archive = await Archive.findById(archiveId);
-    if (!archive || archive.fieldName !== 'document') {
-      throw new Error('Invalid archive entry for document');
-    }
-
-    const { originalCollection, originalId, data } = archive;
-
-    // Restore the document to its original collection
-    const OriginalModel = require(`../models/${originalCollection}`);
-    const restoredDocument = new OriginalModel(data);
-    await restoredDocument.save();
-
-    console.log(`Document restored: ${originalCollection} (ID: ${originalId})`);
-
-    // Delete the archive entry
-    await archive.deleteOne();
-  } catch (err) {
-    console.error('Error during document restoration:', err);
-    throw new Error(`Restoration failed for document: ${err.message}`);
-  }
-};
-
-const restoreMarkerIcon = async (archiveId) => {
-  try {
-    // Find the archived MarkerIcon by its ID
-    const archivedData = await Archive.findById(archiveId);
-
-    if (!archivedData || archivedData.originalCollection !== 'MarkerIcon') {
-      throw new Error('Invalid archive entry or wrong collection');
-    }
-
-    // Extract necessary data from the archive entry
-    const { name, iconPath } = archivedData.data;
-
-    if (!name || !iconPath) {
-      throw new Error('Missing name or iconPath in the archived data');
-    }
-
-    // Get the file name and the path to restore
-    const fileName = path.basename(iconPath);
-    const sourcePath = path.join(__dirname, `../archives/icons/`, fileName);
-    const restorePath = path.join(__dirname, `../uploads/icons/`, fileName);
-
-    // Ensure the source file exists in the archive folder
-    if (!fs.existsSync(sourcePath)) {
-      throw new Error(`Icon file not found at path: ${sourcePath}`);
-    }
-
-    // Ensure the restore directory exists
-    const restoreDir = path.dirname(restorePath);
-    if (!fs.existsSync(restoreDir)) {
-      fs.mkdirSync(restoreDir, { recursive: true });
-    }
-
-    // Move the icon file from the archive back to the original folder
-    fs.renameSync(sourcePath, restorePath);
-    console.log(`MarkerIcon file restored: ${fileName}`);
-
-    // Restore the MarkerIcon document
-    const restoredMarkerIcon = new MarkerIcon({
-      name,
-      iconPath: fileName, // Store only the file name in the database
-    });
-
-    await restoredMarkerIcon.save();
-    console.log(`MarkerIcon document restored with name: ${name}`);
-
-    // Optionally delete the archive entry after restoring
-    await Archive.findByIdAndDelete(archiveId);
-    console.log(`Archived MarkerIcon entry deleted after restore`);
-
-    return { success: true, message: 'MarkerIcon restored successfully' };
-
-  } catch (err) {
-    console.error('Error during MarkerIcon restore:', err);
-    throw new Error(`Restoration failed for MarkerIcon: ${err.message}`);
-  }
-};
+  };
+  
 
 module.exports = { restoreField, restoreDocument, restoreMarkerIcon };

@@ -28,31 +28,22 @@ export default function Analytics() {
     // for data graph filter
     const [selectedTimeframe, setSelectedTimeframe] = useState('all');
     const [monthlyViews, setMonthlyViews] = useState([]);
+    const [commentFilter, setCommentFilter] = useState('all'); // 'all', 'with', 'without'
+
 
     //Millard 4-28 refactoring fetching and added the countFeedback function
-    // ✅ Fetch Analytics Data
-    const fetchAnalytics = async () => {
-        try {
-            const response = await fetch(`${API_URL}/api/guest/analytics`);
-            const data = await response.json();
-            console.log("Fetched Analytics:", data);
-
-            setStarFeedback(data.ratings);
-            setSexDistribution(data.sexes);
-            setRoleDistribution(data.roles);
-        } catch (error) {
-            console.error('Error fetching analytics:', error);
-        }
-    };
+   
 
     // ✅ Fetch Guest Logs Data
     const fetchGuestLogs = async () => {
         try {
             const response = await fetch(`${API_URL}/api/guest/guestLogs`);
             const data = await response.json();
-            setGuestLogs(data);
-            setFilteredLogs(data); 
-            setCurrentLogs(data.slice(0, logsPerPage));
+            const sorted = [...data].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            setGuestLogs(sorted);
+            generateMonthlyViewsFromCreatedAt(data);
+            setFilteredLogs(sorted);
+            setCurrentLogs(sorted.slice(0, logsPerPage));
             // added by Lorenzo @ 05/01/2025
             filterLogsByTimeframe(data, selectedTimeframe);
         } catch (error) {
@@ -60,76 +51,124 @@ export default function Analytics() {
         }
     };
 
-        // added by lorenzo - data graph filter and feedback list - 05/01/2025 
-        const filterLogsByTimeframe = (logs, timeframe) => {
-            const now = moment();
-            let filtered = logs;
-    
-            if (timeframe === '30days') {
-                filtered = logs.filter(log => moment(log.feedback?.feedbackDate).isAfter(now.clone().subtract(30, 'days')));
-            } else if (timeframe === '6months') {
-                filtered = logs.filter(log => moment(log.feedback?.feedbackDate).isAfter(now.clone().subtract(6, 'months')));
-            } else if (timeframe === 'year') {
-                filtered = logs.filter(log => moment(log.feedback?.feedbackDate).isSame(now, 'year'));
-            }
-    
-            setFilteredLogs(filtered);
-            setCurrentLogs(filtered.slice(0, logsPerPage));
-    
-            // Generate chart datasets from filtered logs
-            const starMap = {};
-            const sexMap = {};
-            const roleMap = {};
-            const monthMap = Array(12).fill(0);
-    
-            filtered.forEach(log => {
-                const rating = log.feedback?.rating;
-                if (rating) starMap[rating] = (starMap[rating] || 0) + 1;
-    
-                const sex = log.sexAtBirth;
-                if (sex) sexMap[sex] = (sexMap[sex] || 0) + 1;
-    
-                const role = log.role === 'Others' ? log.customRole || 'Others' : log.role;
-                if (role) roleMap[role] = (roleMap[role] || 0) + 1;
-    
-                const month = moment(log.feedback?.feedbackDate).month();
+    const generateMonthlyViewsFromCreatedAt = (logs) => {
+        const monthMap = Array(12).fill(0); // Jan to Dec
+        logs.forEach(log => {
+            if (log.createdAt) {
+                const month = moment(log.createdAt).month(); // 0 = Jan
                 monthMap[month]++;
-            });
+            }
+        });
+        setMonthlyViews(monthMap);
+    };
     
-            setStarFeedback(Object.keys(starMap).map(key => ({ label: `${key} Star`, value: starMap[key] })));
-            setSexDistribution(Object.keys(sexMap).map(key => ({ label: key, value: sexMap[key] })));
-            setRoleDistribution(Object.keys(roleMap).map(key => ({ label: key, value: roleMap[key] })));
-            setMonthlyViews(monthMap);
-        };
+
+        // added by lorenzo - data graph filter and feedback list - 05/01/2025 
+    const filterLogsByTimeframe = (logs, timeframe) => {
+        const now = moment();
+        let filtered = [];
+    
+        logs.forEach(log => {
+            const date = log.createdAt ? moment(log.createdAt) : null;
+            if (date && date.isValid()) {
+                log._effectiveDate = date.toDate();
+            }
+        });
+    
+        if (timeframe === '30days') {
+            filtered = logs.filter(log =>
+                moment(log._effectiveDate).isAfter(now.clone().subtract(30, 'days'))
+            );
+        } else if (timeframe === '6months') {
+            filtered = logs.filter(log =>
+                moment(log._effectiveDate).isAfter(now.clone().subtract(6, 'months')) &&
+                moment(log._effectiveDate).isSame(now, 'year') // 🛠 Fix: ensure same year
+            );
+        } else if (timeframe === 'year') {
+            filtered = logs.filter(log =>
+                moment(log._effectiveDate).isSame(now, 'year')
+            );
+        } else {
+            filtered = logs;
+        }
+    
+        filtered.sort((a, b) => new Date(b._effectiveDate) - new Date(a._effectiveDate));
+        const withFeedback = filtered.filter(log => log.feedback?.rating != null);
+        setFilteredLogs(withFeedback);
+        setCurrentLogs(withFeedback.slice(0, logsPerPage));
+    
+        // 🟢 Update Line Chart - all logs
+        const monthMap = Array(12).fill(0);
+        filtered.forEach(log => {
+            const month = moment(log._effectiveDate).month();
+            monthMap[month]++;
+        });
+        setMonthlyViews(monthMap);
+    
+        // 🟠 Only logs WITH feedback
+        const logsWithFeedback = filtered.filter(log => log.feedback?.rating != null);
+    
+        // Update star feedback
+        const starMap = {};
+        const sexMap = {};
+        const roleMap = {};
+        
+        logsWithFeedback.forEach(log => {
+            const rating = log.feedback?.rating;
+            if (rating) starMap[rating] = (starMap[rating] || 0) + 1;
+    
+            const sex = log.sexAtBirth;
+            if (sex) sexMap[sex] = (sexMap[sex] || 0) + 1;
+    
+            const role = log.role === 'Others' ? log.customRole || 'Others' : log.role;
+            if (role) roleMap[role] = (roleMap[role] || 0) + 1;
+        });
+    
+        setStarFeedback(Object.entries(starMap).map(([label, value]) => ({ label: `${label} Star`, value })));
+        setSexDistribution(Object.entries(sexMap).map(([label, value]) => ({ label, value })));
+        setRoleDistribution(Object.entries(roleMap).map(([label, value]) => ({ label, value })));
+
+        console.log(`🟢 Timeframe Filter: ${timeframe.toUpperCase()}`);
+        console.log(`🔢 Total Logs (All): ${logs.length}`);
+        console.log(`🔍 Filtered Logs (After Date Filter): ${filtered.length}`);
+
+        console.log(`⭐ Logs WITH Feedback: ${withFeedback.length}`);
+
+    };
+    
     
     
     // pagination
     const handleFilterChange = (searchTerm, limit, currentPage) => {
-        const now = moment();
-        let logsToFilter = guestLogs;
 
-        if (selectedTimeframe === '30days') {
-            logsToFilter = logsToFilter.filter(log => moment(log.feedback?.feedbackDate).isAfter(now.clone().subtract(30, 'days')));
-        } else if (selectedTimeframe === '6months') {
-            logsToFilter = logsToFilter.filter(log => moment(log.feedback?.feedbackDate).isAfter(now.clone().subtract(6, 'months')));
-        } else if (selectedTimeframe === 'year') {
-            logsToFilter = logsToFilter.filter(log => moment(log.feedback?.feedbackDate).isSame(now, 'year'));
-        }
+        let logsToFilter = filteredLogs.filter(log => log.feedback?.rating != null);
 
-        const filtered = logsToFilter.filter((log) =>
-            [log.role, log.sexAtBirth, log.feedback?.rating, log.feedback?.comment]
-                .map((value) => value?.toString().toLowerCase())
-                .some((value) => value?.includes(searchTerm.toLowerCase()))
-        );
+            // 🔁 Apply comment filter
+            if (commentFilter === 'with') {
+                logsToFilter = logsToFilter.filter(log => log.feedback?.comment && log.feedback.comment.trim() !== '');
+            } else if (commentFilter === 'without') {
+                logsToFilter = logsToFilter.filter(log => !log.feedback?.comment || log.feedback.comment.trim() === '');
+            } // Filter logs based on search term and limit
 
+        const filtered = filteredLogs
+            .filter(log => log.feedback?.rating != null) // only logs with feedback
+            .filter((log) =>
+                [log.role, log.sexAtBirth, log.feedback?.rating, log.feedback?.comment]
+                    .map((value) => value?.toString().toLowerCase())
+                    .some((value) => value?.includes(searchTerm.toLowerCase()))
+            )
+            .sort((a, b) => new Date(b.feedback?.feedbackDate || b._effectiveDate) - new Date(a.feedback?.feedbackDate || a._effectiveDate));
+    
         setLogsPerPage(limit);
         setFilteredLogs(filtered);
         setCurrentLogs(filtered.slice(currentPage * limit, currentPage * limit + limit));
     };
+    
 
     const handlePaginationChange = (currentPage) => {
         const offset = currentPage * logsPerPage;
         setCurrentLogs(filteredLogs.slice(offset, offset + logsPerPage));
+
     };
 
     // ✅ Fetch Count Feedback Data (new handler)
@@ -143,12 +182,23 @@ export default function Analytics() {
         }
     };
 
+    
+
     // ✅ Run All Fetches on Mount
     useEffect(() => {
-        fetchAnalytics();
         fetchGuestLogs();
         fetchCountFeedback(); // New fetch for count feedback
     }, [logsPerPage, selectedTimeframe]);
+
+    // ✅ Re-filter logs when commentFilter changes
+    useEffect(() => {
+        if (commentFilter === 'with' || commentFilter === 'without') {
+            setLogsPerPage(20); // Set to 20 only on filter
+            handleFilterChange('', 20, 0); // Reset page and re-filter
+        }
+    }, [commentFilter]);
+    
+    
 
     // ✅ Manage page-specific styling
     useEffect(() => {
@@ -206,7 +256,8 @@ export default function Analytics() {
 
                         {/* replace with actual data */}
                         <span className = {`${styles.txtTitle} ${styles.totaltitle}`}>
-                            Total Count: <span className = {`${styles.txtSubTitle} ${styles.totalCount}`}> 100 </span>
+                            Total Count: <span className = {`${styles.txtSubTitle} ${styles.totalCount}`}> 
+                            {monthlyViews.reduce((sum, val) => sum + val, 0)} </span>
                         </span>
                         <div className={styles.wrapper}>
                         <Bar
@@ -218,7 +269,7 @@ export default function Analytics() {
                                 datasets: [
                                     {
                                         label: 'Website Views',
-                                        data: [120, 150, 180, 90, 250, 300, 270, 220, 200, 180, 160, 190],
+                                        data: monthlyViews,
                                         fill: false,
                                         tension: 0.4,
                                         borderColor: 'rgba(75, 192, 192, 1)',
@@ -387,11 +438,34 @@ export default function Analytics() {
                             onFilterChange={handleFilterChange}
                             onPaginationChange={handlePaginationChange}
                         />
+                        
+                        <div className={styles.commentToggleButtons}>
+                            <button
+                                className={commentFilter === 'all' ? styles.active : ''}
+                                onClick={() => setCommentFilter('all')}
+                            >
+                                All Feedback
+                            </button>
+                            <button
+                                className={commentFilter === 'with' ? styles.active : ''}
+                                onClick={() => setCommentFilter('with')}
+                            >
+                                With Comment
+                            </button>
+                            <button
+                                className={commentFilter === 'without' ? styles.active : ''}
+                                onClick={() => setCommentFilter('without')}
+                            >
+                                Without Comment
+                            </button>
+                        </div>
+
 
                         <table>
+                            
                             <thead>
                                 <tr>
-                                    {/* <th>GUEST ID</th> */}
+                                    <th>No.</th>
                                     <th>ROLE</th>
                                     <th>SEX</th>
                                     <th>RATING</th>
@@ -400,15 +474,23 @@ export default function Analytics() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {currentLogs.map((log, index) => (
+                            {currentLogs
+                                    .filter((log) => {
+                                        const hasComment = !!log.feedback?.comment?.trim();
+                                        if (commentFilter === 'with') return hasComment;
+                                        if (commentFilter === 'without') return !hasComment;
+                                        return true; // 'all'
+                                      })
+                                      
+                                    .map((log, index) => (
                                     <tr key={index}>
-                                        {/* <td>{log.guestId}</td> */}
+                                        <td>{index + 1}</td> {/* ✅ Number column */}
                                         <td>{log.role === "Others" ? log.customRole || "N/A" : log.role}</td>
                                         <td>{log.sexAtBirth}</td>
                                         <td>{log.feedback?.rating ? `${log.feedback.rating} Stars` : 'No Rating'}</td>
                                         <td>{log.feedback?.comment || 'No Comment'}</td>
                                         <td>
-                                            {moment(log.feedback?.feedbackDate).format('MMM D, YYYY,')}
+                                            {moment(log.feedback?.feedbackDate || log.createdAt).format('MMM D, YYYY,')}
                                             <br />
                                             {moment(log.feedback?.feedbackDate).format('h:mm A')}
                                         </td>

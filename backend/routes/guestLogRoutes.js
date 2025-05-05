@@ -107,7 +107,7 @@ router.get('/analytics', async (req, res) => {
 router.get('/guestLogs', async (req, res) => {
     try {
         // Fetch guest logs where rating is defined (not null or undefined)
-        const guestLogs = await GuestLog.find({ 'feedback.rating': { $ne: null } });
+        const guestLogs = await GuestLog.find();
 
         // Respond with the filtered guest logs
         res.status(200).json(guestLogs);

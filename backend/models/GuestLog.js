@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const guestLogSchema = new mongoose.Schema({
     guestId: { type: String, required: true },
     dateTimeIN: { type: String, required: true }, // Store in the format "YYYY-MM-DD, HH:MM A"
+    createdAt: { type: Date, default: Date.now }, // ✅ new field
     sexAtBirth: { type: String, required: true},
     role: { type: String, required: true}, // New field to store the role
     customRole: { type: String,},

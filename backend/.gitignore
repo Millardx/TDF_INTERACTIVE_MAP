@@ -17,15 +17,13 @@ uploads/*
 archives/cardsImg/*
 archives/images/*
 archives/modalImages/*
+archives/audios/*
+archives/icons/*
 archives/
 
 !archives/cardsImg/
 !archives/images/
 !archives/modalImages/
 !archives/
-
 !archives/audios/
 !archives/icons/
-
-archives/audios/*
-archives/icons/*

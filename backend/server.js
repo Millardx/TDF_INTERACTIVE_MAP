@@ -82,10 +82,24 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on http://0.0.0.0:${PORT}`);
 });
 
- // ⏰ Start cleanup task
- cron.schedule('*/4 * * * *', () => { // Every 2 minutes for testing
-  console.log('🕒 Scheduled Cloudinary archive cleanup triggered...');
-  cleanOrphanedCloudinaryFiles();
+const formatDateTime = () => {
+  const now = new Date();
+  return now.toISOString(); // e.g. 2025-05-05T12:34:56.789Z
+};
+
+
+// ⏰ Start cleanup task every 12 hours
+cron.schedule('0 */12 * * *', () => {
+  console.log(`🕒 [${formatDateTime()}] Scheduled Cloudinary archive cleanup triggered...`);
+
+  (async () => {
+    try {
+      const deletedCount = await cleanOrphanedCloudinaryFiles();
+      console.log(`✅ [${formatDateTime()}] Cleanup complete. ${deletedCount} files removed.`);
+    } catch (err) {
+      console.error(`❌ [${formatDateTime()}] Cleanup failed:`, err.message);
+    }
+  })();
 });
 
 // For Railway-managed HTTPS:

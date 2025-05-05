@@ -11,7 +11,7 @@ import Archive from "./Pages/Admin/edit/Archive";
 import EditMarkers from "./Pages/Admin/edit/EditMarkers";
 import UserManagement from './Pages/Admin/edit/UserManagement'; // Admin Only
 import PrivateRoute from  '/src/Pages/Admin/ACMfiles/PrivateRoute'; 
-import { AuthProvider } from  '/src/Pages/Admin/ACMfiles/AuthContext';
+import { AuthProvider } from  '/src/Pages/Admin/ACMfiles/authContext';
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';

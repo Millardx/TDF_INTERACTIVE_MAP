@@ -11,7 +11,6 @@ import './ThreeCanvas.scss'; // global styles for the map
 
 import NavigationModule from '../navBar/NavigationModule';
 
-import Shhhh from '../virus/Shhhh';
 
 // for pathfinding
 import Pathfinding from './Components/pathfinding/Pathfinding';

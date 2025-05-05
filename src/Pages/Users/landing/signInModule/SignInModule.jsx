@@ -5,7 +5,7 @@ import Option from './Components/OptionComponent/Option.jsx';
 import SignIn from './Components/SignInComponent/SignIn.jsx';
 import Greeting from './Components/GreetingComponent/Greeting.jsx';
 import styles from './styles/signInModuleStyles.module.scss';
-import { useAuth } from '/src/Pages/Admin/ACMfiles/AuthContext';
+import { useAuth } from '/src/Pages/Admin/ACMfiles/authContext';
 
 export default function SignInModule() {
     const { checkToken } = useAuth();

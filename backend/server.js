@@ -22,18 +22,13 @@ const markerRoutes = require('./routes/MarkerRoutes');
 const markerIconRoutes = require('./routes/markerIconRoutes');
 const cron = require('node-cron');
 const { cleanOrphanedCloudinaryFiles } = require('./utility/archiveCleaner');
+const pingRoute = require('./routes/pingRoute');
+const startSelfPing = require('./utility/selfPing');
 
 dotenv.config(); 
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-
-// Enable CORS for your frontend domain
-// const corsOptions = {
-//   origin: 'https://interactive-map-tdf.web.app', // Frontend domain
-//   methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
-//   allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
-// };
 
 
 
@@ -44,7 +39,6 @@ app.use(express.json());
 app.use(bodyParser.json()); // Add this line to parse JSON requests
 // Serve static files from the 'uploads' directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
 
 
 // MongoDB connection
@@ -76,6 +70,8 @@ app.use('/api/contact', contactUsRoutes);
 app.use('/api', mainRoutes);
 app.use('/api/markers', markerRoutes);
 app.use('/api/markerIcons', markerIconRoutes);
+app.use('/', pingRoute);  // This will make /ping work
+
 
 // Start the server
 app.listen(PORT, '0.0.0.0', () => {
@@ -102,7 +98,7 @@ cron.schedule('0 */12 * * *', () => {
   })();
 });
 
-// For Railway-managed HTTPS:
-// app.listen(PORT, '0.0.0.0', () => {
-//   console.log(`Server is running on https://tdf-interactive-map-production.up.railway.app:${PORT}`);
-// });
+app.get('/ping', (req, res) => {
+  res.send('✅ App is awake');
+});
+startSelfPing();

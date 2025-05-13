@@ -4,7 +4,6 @@ const MarkerIcon = require('../models/MarkerIcon'); // Assuming a MarkerIcon mod
 const fs = require('fs');
 const path = require('path');
 const router = express.Router();
-const ensureUploadPathExists = require('../utility/ensureUploadPathExists');
 const { cloudinary, storage, getFolderByType } = require('../utility/cloudinaryConfig');
 const { extractPublicId, buildCloudinaryUrl } = require('../utility/claudinaryHelpers');
 

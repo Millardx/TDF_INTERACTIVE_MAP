@@ -1,30 +1,46 @@
 import styles from "./styles/navBarStyles.module.scss";
 import icons from "../../../../assets/for_landingPage/Icons";
 
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 import { useAuth } from '/src/Pages/Admin/ACMfiles/authContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+// import axios from 'axios';
+// import {API_URL} from '/src/config'; // Import the API_URL constant
+
+
 export default function NavBar () {
 
     const [isNavBarActive, setIsNavBarActive] = useState(false);
+    
 
     function handleMenuClick() {
         setIsNavBarActive(!isNavBarActive);
     }
     
     const location = useLocation();
-    const { user: authUser, logout } = useAuth();
+    const { user: authUser,isAuthReady, logout } = useAuth();
     const user = location.state?.user || authUser;
+
+    // 🚨 Ensure NavBar waits until auth is ready
+    if (!isAuthReady) {
+        return (
+            <div className={styles.navBar}>
+                <div className={styles.greeting}>
+                    <span className={styles.txtTitle}>Loading...</span>
+                </div>
+            </div>
+        );
+    }
+    
 
     const handleLogout = () => {
         logout(); // Call the logout function from context
         console.log(user.role,'logout')
         //navigate('/'); // Redirect to home or login page after logout
     };
-
     console.log (isNavBarActive);
 
     return (
@@ -47,7 +63,9 @@ export default function NavBar () {
                         <div className = { styles.iconContainer }>
                             <img className = { `${ styles.icon } ${ styles.user }` }src = { icons.user } alt = "User Icon" />
                         </div>
-                        <span className = { styles.txtTitle }>Welcome, <br/> User</span>
+                        <span className = { styles.txtTitle }>
+                            Welcome, {user?.role === 'admin' ? 'Admin' : user?.role === 'staff' ? 'Staff' : ''} {user?.name || 'User'}!
+                        </span>
                     </div>
 
                     {/* line separator */}

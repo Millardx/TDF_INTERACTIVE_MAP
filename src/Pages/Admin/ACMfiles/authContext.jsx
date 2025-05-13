@@ -9,13 +9,17 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
+    const [isAuthReady, setIsAuthReady] = useState(false); // ✅ Add this
     const navigate = useNavigate();
 
 
         // Function to check and decode the token if it exist will direct to map page
         const checkToken = () => {
             const token = localStorage.getItem('token');
-            if (!token) return;
+            if (!token) {
+                setIsAuthReady(true); // Even if no token, mark as ready
+                return;
+            }
     
             try {
                 const decodedUser = jwtDecode(token);
@@ -35,6 +39,9 @@ export const AuthProvider = ({ children }) => {
             } catch (error) {
                 console.error('Error decoding token:', error);
                 logout(); // Logout if decoding fails
+            } 
+            finally {
+                setIsAuthReady(true); // ✅ Always mark as ready after check
             }
         };
         
@@ -87,7 +94,7 @@ export const AuthProvider = ({ children }) => {
     
 
     return (
-        <AuthContext.Provider value={{ user, setUser, logout, checkToken }}>
+        <AuthContext.Provider value={{ user, setUser, logout, checkToken, isAuthReady }}>
             {children}
         </AuthContext.Provider>
     );

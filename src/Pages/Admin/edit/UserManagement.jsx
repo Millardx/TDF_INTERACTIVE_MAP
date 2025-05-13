@@ -57,7 +57,12 @@ const UserManagement = () => {
     const fetchUsers = async () => {
         console.log("Attempting to fetch users...");
         try {
-            const response = await axios.get(`${API_URL}/api/users/all`);  // Use the full URL
+            const token = localStorage.getItem('token');
+            const response = await axios.get(`${API_URL}/api/users/all`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
             console.log("Users fetched:", response.data);
             setUsers(response.data);
         } catch (error) {
@@ -67,42 +72,48 @@ const UserManagement = () => {
 
     const handleAddOrUpdateUser = async (user) => {
         try {
+            const token = localStorage.getItem('token');
             if (currentUser) {
-                await axios.put(`${API_URL}/api/users/update/${currentUser._id}`, user);
-                mountToast("User update successful", "success");
+                await axios.put(`${API_URL}/api/users/update/${currentUser._id}`, user, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
                 setModalOpen(false);
             } else {
-                await axios.post(`${API_URL}/api/users/add`, user);
+                await axios.post(`${API_URL}/api/users/add`, user, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
                 mountToast("User successfully added", "success");
                 setModalOpen(false);
             }
             fetchUsers();
-            
             setCurrentUser(null);
         } catch (error) {
             console.error('Failed to save user:', error);
+            mountToast('Failed to save user', 'error');
         }
     };
-
-    const handleDeleteUser = async () => {
-        try {
-            if (confirmDelete && userToDelete) {
-                await axios.delete(`${API_URL}/api/users/delete/${userToDelete}`);
-                fetchUsers();
-                mountToast("User deleted successfully!", "success");
-                setConfirmDelete(false);
-                setUserToDelete(null);
-                setIsDelete(false);
-            }
-        } catch (error) {
-            console.error('Failed to delete user:', error);
-        }
-    };
+    
+    
 
     const handleArchiveUser = async () => {
         try {
+            const token = localStorage.getItem('token'); // Get the token
+    
             if (confirmDelete && userToDelete) {
-                const response = await axios.put(`${API_URL}/api/archive/user/${userToDelete}`);
+                const response = await axios.put(
+                    `${API_URL}/api/archive/user/${userToDelete}`,
+                    {}, // No body needed
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    }
+                );
+    
                 if (response.status === 200) {
                     mountToast("User archived successfully", "success");
                     fetchUsers(); // Refresh the user list
@@ -112,10 +123,11 @@ const UserManagement = () => {
                 }
             }
         } catch (error) {
-            console.error('Error archiving user:', error);
+            console.error('Error archiving user:', error.response?.data || error.message);
             mountToast("Failed to archive user. Please try again.", "error");
         }
     };
+    
 
     const openModal = (user = null) => {
         setCurrentUser(user);

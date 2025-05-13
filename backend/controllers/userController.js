@@ -1,4 +1,4 @@
-//userController.js
+//controllers/userController.js
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 
@@ -43,7 +43,8 @@ const updateUser = async (req, res) => {
     try {
         let updateData = { name, email, role };
 
-        if (password) {
+          // Apply safety check - only update password if filled and trimmed
+          if (password && password.trim() !== '') {
             const hashedPassword = await bcrypt.hash(password, 10);
             updateData.password = hashedPassword;
         }
@@ -66,4 +67,21 @@ const deleteUser = async (req, res) => {
     }
 };
 
-module.exports = { addUser, getUsers, updateUser, deleteUser };
+const checkEmailExists = async (req, res) => {
+    try {
+        const { email, excludeId } = req.query;
+
+        let query = { email };
+        if (excludeId) {
+            query._id = { $ne: excludeId }; // Exclude current user if editing
+        }
+
+        const existingUser = await User.findOne(query);
+        res.json({ exists: !!existingUser });
+    } catch (err) {
+        res.status(500).json({ error: 'Server error checking email' });
+    }
+};
+
+module.exports = { addUser, getUsers, updateUser, deleteUser, checkEmailExists };
+

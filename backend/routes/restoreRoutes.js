@@ -1,5 +1,7 @@
 const express = require('express');
 const { restoreField , restoreDocument,restoreMarkerIcon } = require('../utility/restoreUtils');
+const authMiddleware = require('../middleware/authMiddleware');
+
 
 const router = express.Router();
 
@@ -24,8 +26,8 @@ router.put('/:archiveId', async (req, res) => {
     }
   });
 
-  // Restore a user account using archiveId
-router.put('/user/:archiveId', async (req, res) => {
+// Restore a user account using archiveId - now protected by admin middleware
+router.put('/user/:archiveId', authMiddleware(['admin']), async (req, res) => {
   const { archiveId } = req.params;  // Get the archive ID from the request params
 
   try {

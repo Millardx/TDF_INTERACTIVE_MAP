@@ -1,21 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import styles from '/src/Pages/Admin/edit/styles/UserModal.module.scss';
 
-// import UseToast from '../utility/AlertComponent/UseToast';
+import UseToast from '../utility/AlertComponent/UseToast';
 // import { ToastContainer } from 'react-toastify';
 // import 'react-toastify/dist/ReactToastify.css';
 
 import icons from "../../../assets/for_landingPage/Icons";
+import {API_URL} from '/src/config'; // Import the API_URL constant
+import axios from 'axios';
+
+
 
 
 const UserModal = ({ user, onSave, onClose }) => {
-    // toast alert pop up
-    // const mountToast = UseToast();
+   
+    const mountToast = UseToast();
 
     const [name, setName] = useState(user ? user.name : '');
     const [email, setEmail] = useState(user ? user.email : '');
     const [password, setPassword] = useState('');  // New password state
     const [role, setRole] = useState(user ? user.role : 'staff');
+    const [showPassword, setShowPassword] = useState(false);
+    const [checkingEmail, setCheckingEmail] = useState(false);
+
+
 
     useEffect(() => {
         if (user) {
@@ -25,10 +33,96 @@ const UserModal = ({ user, onSave, onClose }) => {
         }
     }, [user]);
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        onSave({ name, email, password, role });  // Include password in the save operation
+    const checkEmailExists = async () => {
+        if (!email.trim()) return false;
+        setCheckingEmail(true);
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get(`${API_URL}/api/users/check-email`, {
+                params: {
+                    email,
+                    excludeId: user?._id
+                },
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            setCheckingEmail(false);
+            return response.data.exists;
+        } catch (error) {
+            setCheckingEmail(false);
+            console.error('Failed to check email:', error);
+            mountToast('Failed to check email', 'error');
+            return false;
+        }
     };
+    
+    
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+    
+        // Validation...
+        if (!name.trim()) {
+            mountToast('Name is required', 'error');
+            return;
+        }
+    
+        if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) {
+            mountToast('Please enter a valid email', 'error');
+            return;
+        }
+    
+        if (!user && !passwordRegex.test(password)) {
+            mountToast('Password must be at least 8 characters, include 1 uppercase, 1 lowercase, 1 number, and 1 special character', 'error');
+            return;
+        }
+    
+        if (user && password && !passwordRegex.test(password)) {
+            mountToast('Password must be at least 8 characters, include 1 uppercase, 1 lowercase, 1 number, and 1 special character', 'error');
+            return;
+        }
+    
+        const emailExists = await checkEmailExists();
+        if (emailExists) {
+            mountToast('Email already exists, please use a different email.', 'error');
+            return;
+        }
+    
+        if (user) {
+            const changedFields = [];
+    
+            if (name !== user.name) changedFields.push('Name');
+            if (email !== user.email) changedFields.push('Email');
+            if (role !== user.role) changedFields.push('Role');
+            if (password.trim() !== '') changedFields.push('Password');
+    
+            if (changedFields.length === 0) {
+                mountToast('No changes detected.', 'warn');
+                return;
+            }
+    
+            mountToast(`Successfully updated user (${changedFields.join(', ')})`, 'success');
+        }
+    
+        // 🔧 Clean payload builder: only add password if it's filled
+        const payload = {
+            name,
+            email,
+            role,
+        };
+    
+        if (password.trim() !== '') {
+            payload.password = password;
+        }
+    
+        onSave(payload);
+    };
+    
+    
+    
 
     return (
         <>
@@ -55,18 +149,29 @@ const UserModal = ({ user, onSave, onClose }) => {
                             <input
                                 type="email"
                                 value={email}
+                                onBlur={checkEmailExists}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
                             />
                         </div>
-                        <div className = { styles.subContainer }>
-                            <label>Password:</label>  {/* New password field */}
-                            <input
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required={!user}  // Password is required when adding a new user
-                            />
+                        <div className={styles.subContainer}>
+                            <label>Password:</label>
+                            <div className={styles.passwordWrapper}>
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder={user ? "Change password" : "Enter password"}
+                                    required={!user}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className={styles.showPasswordToggle}
+                                >
+                                    {showPassword ? 'Hide' : 'Show'}
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div className = { styles.container2 }>

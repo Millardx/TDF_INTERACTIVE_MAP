@@ -1,4 +1,4 @@
-//authController.js 
+//controllers/authController.js 
 const User = require('../models/User');
 const AdminLog = require('../models/AdminLog');
 const StaffLog = require('../models/StaffLog');

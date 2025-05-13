@@ -15,6 +15,8 @@ import styles from './styles/archiveStyles.module.scss';
 
 import UseToast from '../utility/AlertComponent/UseToast';
 import { API_URL } from '/src/config';
+import { useAuth } from '/src/Pages/Admin/ACMfiles/authContext';
+
 
 export default function Archive() {
     const [archives, setArchives] = useState([]);
@@ -38,6 +40,18 @@ export default function Archive() {
     const mountToast = UseToast();
     const location = useLocation();
     const [fetchLimit, setFetchLimit] = useState(10);
+
+    const { user: authUser } = useAuth();
+    
+
+    const token = localStorage.getItem('token');
+    let userRole = '';
+    if (token) {
+        const decoded = JSON.parse(atob(token.split('.')[1]));
+        userRole = decoded.role;
+    }
+
+
 
 
     // for deletion
@@ -83,17 +97,32 @@ export default function Archive() {
         }
     }, [location]);
 
+    const filterArchivesByRole = (archivesData) => {
+        if (authUser?.role === 'admin') {
+            return archivesData; // Admin sees everything
+        } else {
+            return archivesData.filter((archive) => archive.originalCollection !== 'User');
+        }
+    };
+    
+
     const fetchArchives = async (limit) => {
         try {
-            const response = await axios.get(`${API_URL}/api/archive/archivesData?limit=${limit}`); // Pass limit as query param
-            setArchives(response.data);
-            setOriginalItems(response.data);                            // get all data - Lorenzo @ 04/30/2025
-            setCurrentItems(response.data.slice(0, logsPerPage));       // get filtered items - Lorenzo @04/30/2025
+            const response = await axios.get(`${API_URL}/api/archive/archivesData?limit=${limit}`);
+            let data = response.data;
+    
+            // Apply role-based filtering
+            data = filterArchivesByRole(data);
+    
+            setArchives(data);
+            setOriginalItems(data);
+            setCurrentItems(data.slice(0, logsPerPage));
         } catch (error) {
             mountToast('Error fetching archives', 'error');
             console.error('Error fetching archives:', error);
         }
     };
+    
 
     useEffect(() => {
         fetchArchives(fetchLimit); // Fetch archives with the current limit
@@ -102,26 +131,32 @@ export default function Archive() {
         // Delete handler
         const handleDelete = async (archiveId) => {
             try {
-                const response = await axios.delete(`${API_URL}/api/delete/archive/${archiveId}`);
+                const token = localStorage.getItem('token');
+                const response = await axios.delete(`${API_URL}/api/delete/archive/${archiveId}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
                 mountToast(response.data.message, 'success');
                 fetchArchives(fetchLimit);
                 setConfirmDelete(false);
                 setItemToDelete(null);
                 setIsDelete(false);
-                fetchArchives(fetchLimit);
-
+        
                 // Update UI by filtering out the deleted item
                 setArchives((prev) => prev.filter((archive) => archive._id !== archiveId));
             } catch (error) {
-                console.error('Error deleting archive entry:', error);
-                mountToast('Error deleting archive entry', 'error');
+                console.error('Error deleting archive entry:', error.response?.data || error.message);
+                mountToast(error.response?.data?.error || 'Error deleting archive entry', 'error');
             }
         };
         
+        
 
-        // Restore handler
         const handleRestore = async (archiveId, type) => {
             try {
+                const token = localStorage.getItem('token');
+        
                 // Determine the correct endpoint based on the type
                 let endpoint = '';
                 if (type === 'document') {
@@ -132,27 +167,33 @@ export default function Archive() {
                     // Handle other types (e.g., card, audio, etc.)
                     endpoint = `${API_URL}/api/restore/${archiveId}`;
                 }
-
-                // Make the API call to restore the archive
-                const response = await axios.put(endpoint);
+        
+                // Make the API call to restore the archive with Authorization header
+                const response = await axios.put(endpoint, {}, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+        
                 mountToast(response.data.message, 'success');
-
+        
                 // Close the confirmation modal and reset states
                 setConfirmRestore(false);
                 setItemToRestore(null);
                 setItemId(null);
                 setIsRestore(false);
-
-                // Fetch and update the list of archives
+        
+                // Refresh the archive list
                 fetchArchives(fetchLimit);
-
-                // Update UI by filtering out the restored item
+        
+                // Remove restored item from UI
                 setArchives((prev) => prev.filter((archive) => archive._id !== archiveId));
             } catch (error) {
-                console.error('Error restoring archive entry:', error);
-                mountToast('Error restoring archive entry', 'error');
+                console.error('Error restoring archive entry:', error.response?.data || error.message);
+                mountToast(error.response?.data?.error || 'Error restoring archive entry', 'error');
             }
         };
+        
 
     // Added by Lorenzo @ 05/01/2025
     const handleFilterChange = (searchTerm, limit, currentPage) => {

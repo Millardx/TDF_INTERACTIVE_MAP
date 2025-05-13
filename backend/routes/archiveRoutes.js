@@ -12,6 +12,8 @@ const Archive = require('../models/Archive');
 const MarkerIcon = require('../models/MarkerIcon');
 const { getArchiveFolderByType , cloudinary} = require('../utility/cloudinaryConfig');
 const { extractPublicId} = require('../utility/claudinaryHelpers'); 
+const authMiddleware = require('../middleware/authMiddleware');
+
 
 
 
@@ -148,8 +150,6 @@ router.put('/audio/:id', async (req, res) => {
 });
 
 
-
-
 router.put('/newsEvent/image/:filename', async (req, res) => {
   const { filename } = req.params;
   console.log('Archiving NewsEvent image:', filename);
@@ -243,7 +243,7 @@ router.put('/newsEvent/image/:filename', async (req, res) => {
 
 
 // Archive a user account by ID
-router.put('/user/:id', async (req, res) => {
+router.put('/user/:id', authMiddleware(['admin']), async (req, res) => {
   const { id } = req.params;  // Get the user ID from the request params
 
   try {

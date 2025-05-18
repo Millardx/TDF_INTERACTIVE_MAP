@@ -28,6 +28,21 @@ export default function SignInModule() {
         };
     }, []);
 
+    // added by Lorenzo @ 05/18/2025
+    const [shouldRender, setShouldRender] = useState(false);
+
+    useEffect(() => {
+        const reloaded = sessionStorage.getItem('reloadedAfterLogout');
+
+        if (!reloaded) {
+            sessionStorage.setItem('reloadedAfterLogout', 'true');
+            window.location.reload(); // Force reload before rendering
+        } else {
+            sessionStorage.removeItem('reloadedAfterLogout'); // Clean up
+            setShouldRender(true); // Safe to render now
+        }
+    }, []);
+
     // --------- Option Component ---------
     const [isBtnClicked, setIsBtnClicked] = useState(false);
 
@@ -62,7 +77,10 @@ export default function SignInModule() {
         console.log(`${user} logged in with ID: ${role}`); // Log the user role
 
     };
-    
+
+    // added by lorenzo @ 05/18/2025
+    // For UX
+    if (!shouldRender) return null; // Prevent rendering during reload
 
     return(
         <UserProvider>

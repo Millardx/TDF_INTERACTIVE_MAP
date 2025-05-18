@@ -17,10 +17,18 @@ import UseToast from "../../../../../Admin/utility/AlertComponent/UseToast.jsx";
 import { useEffect } from "react";
 import { motion, AnimatePresence } from 'framer-motion'
 
+// Added by Lorenzo @ 05/18/2025
+import 'bootstrap-icons/font/bootstrap-icons.css';
+import TogglePassword from "../../../../../Admin/utility/ShowPassComponent/TogglePassword.jsx";
+
 // import axios from 'axios'
 
 
 export default function SignIn ({ handleBtnClick, isBtnClicked, handleUser }) {
+    // for password visibility toggle
+    const { inputType, iconClass, toggleVisibility } = TogglePassword();
+
+
     const { login: setUser } = useUser();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -80,13 +88,21 @@ export default function SignIn ({ handleBtnClick, isBtnClicked, handleUser }) {
                             />
 
                             <label htmlFor = "password">Password</label>
-                            <input 
-                                autoComplete = "off"
-                                name = "password"
-                                type = "password" 
-                                required
-                                onChange = {(e) => setPassword(e.target.value)}
-                            />
+                            <div className = { styles.passWrapper }>
+                                <input
+                                    autoComplete = "off"
+                                    name = "password"
+                                    type = { inputType }
+                                    required
+                                    onChange = {(e) => setPassword(e.target.value)}
+                                />
+
+                                <i 
+                                    className={ iconClass }
+                                    onClick={ toggleVisibility }
+                                ></i>
+                            </div>
+                            
                             {/* Change button names into general names */}
                             <button className = { `${styles.button } ${styles.submitBtn }` } type = "submit">
                                 Sign in

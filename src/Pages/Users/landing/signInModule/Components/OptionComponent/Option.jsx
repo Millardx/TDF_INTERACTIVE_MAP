@@ -101,64 +101,69 @@ export default function Option({ handleBtnClick, isBtnClicked, handleUser }) {
 
     return (
         <>
-            <AnimatePresence>
-                {(!isBtnClicked && !isGuest && categoryUnmountDelay) && (
-                    <motion.div 
-                        className = { styles.optionContent } 
-                        initial = {{opacity: 0}}
-                        animate = {{opacity: 1}}
-                        exit = {{opacity: 0, transition: {delay: 0}}}
-                        transition = {{duration: 0.3, delay: 0.2, ease: "easeInOut"}}
+            {/* Modified by Lorenzo @05/18/2025 */}
+            <AnimatePresence mode="wait">
+                {(!isBtnClicked && !isGuest) ? (
+                    <motion.div
+                        key="login"
+                        className={ styles.optionContent } 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
                     >
-                        <span className = { styles.txtTitle }>Login</span>
-                        <button className = { `${styles.button} ${styles.btnSignIn}` } onClick = { handleBtnClick }>Sign in</button>
-                        <span className = { styles.txtSubTitle }>OR</span>
+                        <span className={ styles.txtTitle }>Login</span>
                         <button 
-                            className = { `${styles.button} ${styles.btnGuest}`}
+                            className={`${styles.button} ${styles.btnSignIn}`} 
+                            onClick={ handleBtnClick }
+                        >
+                            Sign in
+                        </button>
+                        <span className={ styles.txtSubTitle }>OR</span>
+                        <button 
+                            className={`${styles.button} ${styles.btnGuest}`} 
                             // onClick = { () => handleGuestLogin('Guest') }
-                            onClick = { toggleGuest }
+                            onClick={ toggleGuest }
                         >
                             Guest Login
-                        </button> 
-                    </motion.div>  
-                )}
-            </AnimatePresence>
-            <AnimatePresence>
-                {(isGuest && optionUnmountDelay) && (
+                        </button>
+                    </motion.div>
+                ) : (
                     <motion.div
-                        className = { styles.guestCategory }
-                        initial = {{opacity: 0}}
-                        animate = {{opacity: 1}}
-                        exit = {{opacity: 0, transition: {delay: 0}}}
-                        transition = {{duration: 0.3, delay: 0.2, ease: "easeInOut"}}
+                        key="guest"
+                        className={ styles.guestCategory }
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
                     >
-                        <div className = { styles.return } onClick = { toggleGuest }>
-                            <img src = { icons.arrow } alt = "Close" />
+                        <div className={ styles.return } onClick={ toggleGuest }>
+                            <img src={ icons.arrow } alt="Close" />
                         </div>
                         <form>
                             <label>Assigned Sex at Birth</label>
-                            <select value={sexAtBirth} onChange={handleSexChange}>
+                            <select value={ sexAtBirth } onChange={ handleSexChange }>
                                 <option value="">--Select--</option>
                                 <option value="Male">Male</option>
                                 <option value="Female">Female</option>
                             </select>
 
                             <label>Role</label>
-                            <select value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)}>   
-                                <option value="">--Select--</option>                            
+                            <select value={ selectedRole } onChange={(e) => setSelectedRole(e.target.value)}>
+                                <option value="">--Select--</option>
                                 <option value="Student">Student</option>
                                 <option value="Farmer">Farmer</option>
                                 <option value="GovernmentAssoc">Government Associate</option>
                                 <option value="Others">Others</option>
                             </select>
 
-                              {/* Conditional Input for Custom Role */}
-                              {selectedRole === 'Others' && (
-                                <div className = {styles.userInput}>
+                            {/* Conditional Input for Custom Role */}
+                            {selectedRole === 'Others' && (
+                                <div className={ styles.userInput }>
                                     <label>Specify Your Role</label>
                                     <input
                                         type="text"
-                                        value={customRole}
+                                        value={ customRole }
                                         onChange={(e) => setCustomRole(e.target.value)}
                                         placeholder="Enter your role"
                                     />
@@ -167,11 +172,11 @@ export default function Option({ handleBtnClick, isBtnClicked, handleUser }) {
                         </form>
 
                         <button 
-                            className = { `${styles.button} ${styles.btnGuest}`}
-                            onClick = { () => handleGuestLogin('Guest') }>
+                            className={`${styles.button} ${styles.btnGuest}`} 
+                            onClick={() => handleGuestLogin('Guest')}
+                            >
                             Guest Login
-                        </button> 
-                        
+                        </button>
                     </motion.div>
                 )}
             </AnimatePresence>

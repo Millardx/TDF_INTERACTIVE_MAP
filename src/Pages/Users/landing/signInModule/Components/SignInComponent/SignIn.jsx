@@ -87,7 +87,17 @@ export default function SignIn ({ handleBtnClick, isBtnClicked, handleUser }) {
                                 onChange = {(e) => setEmail(e.target.value)}
                             />
 
-                            <label htmlFor = "password">Password</label>
+                            <label htmlFor = "password">
+                                Password
+                                <div className = { styles.passToolTip }> 
+                                    <i className="bi bi-question-circle"></i>
+                                    <small className =  { styles.toolTipText }>
+                                        Password should be 8 characters long and have
+                                        at least 1 number, uppercase, lowercase
+                                        and special character 
+                                    </small>
+                                </div>
+                            </label>
                             <div className = { styles.passWrapper }>
                                 <input
                                     autoComplete = "off"
@@ -104,7 +114,10 @@ export default function SignIn ({ handleBtnClick, isBtnClicked, handleUser }) {
                             </div>
                             
                             {/* Change button names into general names */}
-                            <button className = { `${styles.button } ${styles.submitBtn }` } type = "submit">
+                            <button 
+                                className = { `${styles.button } ${styles.submitBtn }` } 
+                                type = "submit"    
+                            >
                                 Sign in
                             </button>
                         </form>

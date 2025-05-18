@@ -44,6 +44,52 @@
         margin-bottom: 25px;
 
 
+        .passToolTip {
+            position: relative;
+            display: inline-block;
+            margin-left: 8px;
+            cursor: pointer;
+            
+            // Pevents highlight 
+            user-select: none;
+            -webkit-tap-highlight-color: transparent; /* Android Chrome */
+            -webkit-touch-callout: none;              /* iOS Safari */
+
+            .toolTipText {
+                visibility: hidden;
+                opacity: 0;
+                width: 240px;
+                background-color: #000;
+                color: #fff;
+                text-align: left;
+                border-radius: 6px;
+                padding: 8px 10px;
+                position: absolute;
+                z-index: 1;
+                bottom: 125%; 
+                left: 50%;
+                transform: translateX(-50%);
+                transition: all 0.3s ease-in-out;
+
+                &::after {
+                    content: "";
+                    position: absolute;
+                    top: 100%;
+                    left: 50%;
+                    margin-left: -5px;
+                    border-width: 5px;
+                    border-style: solid;
+                    border-color: black transparent transparent transparent;
+                }
+            }
+
+            &:hover .toolTipText {
+                visibility: visible;
+                opacity: 1;
+            }
+        }
+
+
         .passWrapper {
             display: flex;
             align-items: center;
@@ -62,6 +108,11 @@
                 cursor: pointer;
                 color: #666;
                 padding: 10px;
+
+                // Pevents highlight 
+                user-select: none;
+                -webkit-tap-highlight-color: transparent; /* Android Chrome */
+                -webkit-touch-callout: none;              /* iOS Safari */
             }
 
         }

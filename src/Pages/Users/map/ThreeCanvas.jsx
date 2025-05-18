@@ -7,6 +7,9 @@ import Preloader from '../preloader/Preloader';
 import StartingModal from './Components/startingModal/StartingModal';
 import DragAndScroll from '@utils/DragAndScroll'
 
+// Added by Lorenzo @ 05/18/2025
+import { useAuth } from '../../Admin/ACMfiles/authContext'
+
 import './ThreeCanvas.scss'; // global styles for the map
 
 import NavigationModule from '../navBar/NavigationModule';
@@ -256,7 +259,16 @@ const ThreeCanvas = () => {
       {!isOnAddMarker && (
         <NavigationModule user = { user }/>
       )}
-      <StartingModal />
+
+      {/* 
+        Modified @ 05/18/2025 
+        -- Only show tutorial for guest only  
+        
+      */}
+      {(user?.role !== "staff" && user?.role !== "admin") && (
+        <StartingModal />
+      )}
+
       {sceneAndCamera && (
         <Markers
         scene={sceneAndCamera.scene}

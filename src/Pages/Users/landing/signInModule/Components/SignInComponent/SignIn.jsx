@@ -127,7 +127,7 @@ export default function SignIn ({ handleBtnClick, isBtnClicked, handleUser }) {
                             
                             {/* Change button names into general names */}
                             <button 
-                                className = { `${styles.button } ${styles.submitBtn } ${styles.loading}` } 
+                                className = { `${styles.button } ${styles.submitBtn } ${isLoading ? styles.loading : ''}` } 
                                 type = "submit"    
                                 disabled = { isLoading }
                             >

@@ -9,6 +9,9 @@ import UseToast from '../../../../../Admin/utility/AlertComponent/UseToast';
 import { API_URL } from '/src/config';
 
 export default function Option({ handleBtnClick, isBtnClicked, handleUser }) {
+    // added by lorenzo @ 05/18/2025
+    const [isLoading, setIsLoading] = useState(false);      // for loading animation
+
     // toast alert pop up
     const mountToast = UseToast();
 
@@ -45,7 +48,10 @@ export default function Option({ handleBtnClick, isBtnClicked, handleUser }) {
         setSexAtBirth(e.target.value);
     };
     
+
+    // Modified by Lorenzo @05/18/2025
     const handleGuestLogin = async () => {
+
         // Validate inputs
         if (!selectedRole) {
             mountToast("Please select a role!", "error");
@@ -59,6 +65,12 @@ export default function Option({ handleBtnClick, isBtnClicked, handleUser }) {
             mountToast("Please choose Assigned Sex at Birth!", "error");
             return;
         }
+
+        
+        // Only start loading if validation is passed
+        if(isLoading) return;   // Function guard - prevents spam
+        setIsLoading(true);     // start loading
+        
     
         try {
             console.log("Sex at Birth (frontend):", sexAtBirth);
@@ -91,10 +103,14 @@ export default function Option({ handleBtnClick, isBtnClicked, handleUser }) {
             } else {
                 console.error('Failed to log guest login');
                 mountToast("An error occurred while logging in. Please try again.", "error");
+                setIsLoading(false);    // stop loading
             }
         } catch (error) {
             console.error('Error logging guest login:', error);
             mountToast("An error occurred while logging in. Please check your network and try again.", "error");
+            setIsLoading(false);    // stop loading
+        } finally {
+            setIsLoading(false);    // stop loading
         }
     };
     
@@ -173,10 +189,17 @@ export default function Option({ handleBtnClick, isBtnClicked, handleUser }) {
                         </form>
 
                         <button 
-                            className={`${styles.button} ${styles.btnGuest}`} 
+                            className={`${styles.button} ${styles.btnGuest} ${isLoading ? styles.loading : ''}`} 
                             onClick={() => handleGuestLogin('Guest')}
-                            >
-                            Guest Login
+                            disabled = { isLoading }
+                        >
+                            {isLoading ? (
+                                <>
+                                    <span className = { styles.loadingSpinner }></span>
+                                </>
+                            ) : (
+                                'Guest Login'
+                            )}
                         </button>
                     </motion.div>
                 )}

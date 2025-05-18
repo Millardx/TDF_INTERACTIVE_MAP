@@ -19,7 +19,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 // Added by Lorenzo @ 05/18/2025
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import TogglePassword from "../../../../../Admin/utility/ShowPassComponent/TogglePassword.jsx";
+import TogglePassword from "../../../../../Admin/utility/PasswordComponent/TogglePassword.jsx";
 
 // import axios from 'axios'
 
@@ -27,6 +27,9 @@ import TogglePassword from "../../../../../Admin/utility/ShowPassComponent/Toggl
 export default function SignIn ({ handleBtnClick, isBtnClicked, handleUser }) {
     // for password visibility toggle
     const { inputType, iconClass, toggleVisibility } = TogglePassword();
+
+    // added by lorenzo @ 05/18/2025
+    const [isLoading, setIsLoading] = useState(false);      // for loading animation
 
 
     const { login: setUser } = useUser();
@@ -38,8 +41,14 @@ export default function SignIn ({ handleBtnClick, isBtnClicked, handleUser }) {
     // toast alert pop up
     const mountToast = UseToast();
 
+    // Modified by lorenzo @ 05/18/2025
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if(isLoading) return;   // Function guard - prevents spam
+
+        setIsLoading(true);     // start loading
+
         try {
             const userData = { email, password };
             const response = await login(userData);
@@ -57,6 +66,9 @@ export default function SignIn ({ handleBtnClick, isBtnClicked, handleUser }) {
             }
         } catch (error) {
             mountToast("Failed to login!", "error");
+            setIsLoading(false);    // stop loading
+        } finally {
+            setIsLoading(false);    // stop loading
         }
     };
 
@@ -115,10 +127,17 @@ export default function SignIn ({ handleBtnClick, isBtnClicked, handleUser }) {
                             
                             {/* Change button names into general names */}
                             <button 
-                                className = { `${styles.button } ${styles.submitBtn }` } 
+                                className = { `${styles.button } ${styles.submitBtn } ${styles.loading}` } 
                                 type = "submit"    
+                                disabled = { isLoading }
                             >
-                                Sign in
+                                {isLoading ? (
+                                    <>
+                                        <span className = { styles.loadingSpinner }></span>
+                                    </>
+                                ) : (
+                                    'Sign in'
+                                )}
                             </button>
                         </form>
                     </motion.div>   

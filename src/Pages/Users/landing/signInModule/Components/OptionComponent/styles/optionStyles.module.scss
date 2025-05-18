@@ -90,6 +90,11 @@
             }
         }
     }
+
+    // Force hover styles until loading is finished
+    .loading {
+        cursor: wait;
+    }
 }
 
 @media (min-width: 576px) {

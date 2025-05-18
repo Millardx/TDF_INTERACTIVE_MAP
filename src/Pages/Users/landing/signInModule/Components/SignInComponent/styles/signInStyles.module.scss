@@ -131,6 +131,11 @@
             }
         }
         
+        // Force hover styles until loading is finished
+        .loading {
+            cursor: wait;
+        }
+        
         label {
             font-family: $subTitle;
         }

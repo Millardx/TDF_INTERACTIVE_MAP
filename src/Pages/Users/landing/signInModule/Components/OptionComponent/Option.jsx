@@ -140,17 +140,18 @@ export default function Option({ handleBtnClick, isBtnClicked, handleUser }) {
                         <div className={ styles.return } onClick={ toggleGuest }>
                             <img src={ icons.arrow } alt="Close" />
                         </div>
+                        {/* Modified by Lorenszo @ 05/18/2025 */}
                         <form>
                             <label>Assigned Sex at Birth</label>
                             <select value={ sexAtBirth } onChange={ handleSexChange }>
-                                <option value="">--Select--</option>
+                                <option value="" disabled>-- Select --</option>
                                 <option value="Male">Male</option>
                                 <option value="Female">Female</option>
                             </select>
 
                             <label>Role</label>
                             <select value={ selectedRole } onChange={(e) => setSelectedRole(e.target.value)}>
-                                <option value="">--Select--</option>
+                                <option value="" disabled>-- Select --</option>
                                 <option value="Student">Student</option>
                                 <option value="Farmer">Farmer</option>
                                 <option value="GovernmentAssoc">Government Associate</option>

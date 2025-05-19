@@ -30,6 +30,23 @@ export default function Analytics() {
     const [monthlyViews, setMonthlyViews] = useState([]);
     const [commentFilter, setCommentFilter] = useState('all'); // 'all', 'with', 'without'
 
+    // Added by Lorenzo - 05/19/2025
+    const [shouldRender, setShouldRender] = useState(false);
+
+    useEffect(() => {
+        const reloaded = sessionStorage.getItem('hasReloaded');
+        
+        console.log('value', reloaded);
+
+        if (!reloaded) {
+            sessionStorage.setItem('hasReloaded', 'true');
+            window.location.reload();   // Force reload before rendering
+        } else {
+            sessionStorage.removeItem('hasReloaded'); // Clean up
+            setShouldRender(true);      // Allow rendering after reload
+        }
+    }, []);
+
 
     //Millard 4-28 refactoring fetching and added the countFeedback function
    
@@ -209,6 +226,10 @@ export default function Analytics() {
             rootDiv.classList.remove(styles.rootDiv);
         }
     }, [location]);
+
+
+    // Added by lorenzo - 05/19/2025
+    if (!shouldRender) return null;     // Skip render until reload has occurred
 
     return (
         <>

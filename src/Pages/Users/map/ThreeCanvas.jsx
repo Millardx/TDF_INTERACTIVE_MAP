@@ -25,7 +25,14 @@ import AddMarker from './Components/addMarker/AddMarker';
 const ThreeCanvas = () => {
   
   const location = useLocation();
-  const user = location.state?.user;
+  // const user = location.state?.user;
+
+  // Added by Lorenzo - 05/19/2025
+  // Get the currently logged in consistently
+  const [user, setUser] = useState(() => {
+    return JSON.parse(localStorage.getItem('user'));
+  });
+
 
   const containerRef = useRef(null);
   const mapContainerRef = useRef(null);
@@ -252,6 +259,10 @@ const ThreeCanvas = () => {
     // cameraEditMode();
     offVisibility();
   }
+
+  useEffect(() => {
+    console.log("User role on /map:", user?.role);
+  }, [user]);
 
   return(
     <div id="container" ref={containerRef}>

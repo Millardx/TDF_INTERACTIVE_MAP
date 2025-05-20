@@ -15,11 +15,14 @@ import '/src/Pages/Users/landing/signInModule/AccessBtn.module.scss';
 import Confirmation from '../utility/ConfirmationComponent/Confirmation';
 import { API_URL } from '/src/config'; // Import the API_URL constant
 
+//loading content
+import useLoading from '../utility/PageLoaderComponent/useLoading';
+import LoadingAnim from '../utility/PageLoaderComponent/LoadingAnim';
 
-
-  const Cards = () => {
+const Cards = () => {
     // toast alert pop up
     const mountToast = UseToast();
+    const [isLoading, setIsLoading] = useLoading(true);     // For loading
 
     const location = useLocation();
     const user = location.state?.user;
@@ -52,6 +55,8 @@ import { API_URL } from '/src/config'; // Import the API_URL constant
     
     // Fetch cards from the database
     const fetchCards = async () => {
+      setIsLoading(true);
+
       try {
         const response = await axios.get(`${API_URL}/api/cards`);
         const data = response.data;
@@ -62,6 +67,8 @@ import { API_URL } from '/src/config'; // Import the API_URL constant
         }
       } catch (error) {
         console.error('Error fetching all cards:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -226,151 +233,157 @@ import { API_URL } from '/src/config'; // Import the API_URL constant
 
     return (
       <>
-        <NavBar />
-        <div className={styles.cardsContainer}>
-          <div className = { styles.header }>
-            <span className = { styles.txtTitle }>EDIT CARDS</span>
-          </div>
+        {isLoading ? (
+            <LoadingAnim message="Loading cards..." />
+        ) : (
+          <>
+            <NavBar />
+            <div className={styles.cardsContainer}>
+              <div className = { styles.header }>
+                <span className = { styles.txtTitle }>EDIT CARDS</span>
+              </div>
 
-          <span className = { `${ styles.txtTitle} ${ styles.listHeader }` }>Select Card</span>
-          
-          <div className={styles.cardsList}>
-          {cards.map((card) => (
-            <div className = { styles.infoContainer } key={card._id}>
-              <span className = { styles.txtTitle }>{card.areaName}</span>
-              <button onClick={() => setSelectedCardId(card._id)}>Edit</button>
-            </div>
-          ))}
-          </div>
+              <span className = { `${ styles.txtTitle} ${ styles.listHeader }` }>Select Card</span>
+              
+              <div className={styles.cardsList}>
+              {cards.map((card) => (
+                <div className = { styles.infoContainer } key={card._id}>
+                  <span className = { styles.txtTitle }>{card.areaName}</span>
+                  <button onClick={() => setSelectedCardId(card._id)}>Edit</button>
+                </div>
+              ))}
+              </div>
 
-          <button 
-            className = { `${styles.txtTitle} ${ styles.btnSave }` } 
-            onClick = {handleSubmit}
-          > 
-            Save Changes 
-          </button>
+              <button 
+                className = { `${styles.txtTitle} ${ styles.btnSave }` } 
+                onClick = {handleSubmit}
+              > 
+                Save Changes 
+              </button>
 
-          <AnimatePresence mode="wait">
-          {cards.map(card => (
-              card._id === selectedCardId && (
-                <motion.div 
-                  key = {selectedCardId}
-                  className = { styles.cardEditingSection }
-                  initial = {{opacity: 0}}
-                  animate = {{opacity: 1}}
-                  exit = {{opacity: 0}}
-                  transition = {{duration: 0.2, ease: "easeInOut"}}
-                  onAnimationComplete = {() => adjustHeight(textareaRef)}
-                >
-                  <div className = { styles.card }>
-                    <div className={styles.popupImage}>
-                      {/* <img src={ images.image1 } alt={ card.areaName }/> tempoorary replace the marker.img for visualization */}
-                      
-                      {card.imagePreview ? (
-                        <div className = { styles.previewImg }>
-                          <div className = { styles.overlay }>
-                            <button className = { `${ styles.txtTitle} ${ styles.uploadBtn }` }>Upload Image</button>
-                          </div>
-
-                          <input
-                            type="file"
-                            accept=".jpg, .jpeg, .png, .gif"
-                            ref={fileInputRef}
-                            id={`image-upload-${card._id}`}
-                            onChange={(e) => handleImageUpload(e, card._id)}
-                          />
-
-                          <img src={card.imagePreview} alt="Uploaded Image Preview" />
-                        </div>  
-                      ) : card.image ? (
-                        <div className = { styles.uploadedImg }>
-                          <div className = { styles.overlay }>
-                            <button className = { `${ styles.txtTitle} ${ styles.uploadBtn }` }>
-                              Upload
-                              <input
-                              type="file"
-                              accept=".jpg, .jpeg, .png, .gif"
-                              ref={fileInputRef}
-                              id={`image-upload-${card._id}`}
-                              onChange={(e) => handleImageUpload(e, card._id)}
-                              /> 
-                            </button>
-
-                            <button 
-                              className = { `${ styles.txtTitle} ${ styles.deleteBtn }` }
-                              //type="button" onClick={() => handleDeleteBtn(card._id)}
-                              type="button" onClick={() => { setFileId(card._id); setImgToDelete(card.image); handleDeleteBtn();}}
-                            >
-                              Delete
-                            </button>
-                          </div>
-                          <img src={card.image} alt="Fetched Image Preview" />
-                        </div>
-                      ) : (
-                        <div className = { styles.noImg }>
-                          <div className = { styles.overlay }>
-                            <button className = { `${ styles.txtTitle} ${ styles.uploadBtn }` }>Upload Image</button>
-                          </div>
-
-                          <input
-                            type="file"
-                            accept=".jpg, .jpeg, .png, .gif"
-                            ref={fileInputRef}
-                            id={`image-upload-${card._id}`}
-                            onChange={(e) => handleImageUpload(e, card._id)}
-                          />
-
+              <AnimatePresence mode="wait">
+                {cards.map(card => (
+                  card._id === selectedCardId && (
+                    <motion.div 
+                      key = {selectedCardId}
+                      className = { styles.cardEditingSection }
+                      initial = {{opacity: 0}}
+                      animate = {{opacity: 1}}
+                      exit = {{opacity: 0}}
+                      transition = {{duration: 0.2, ease: "easeInOut"}}
+                      onAnimationComplete = {() => adjustHeight(textareaRef)}
+                    >
+                      <div className = { styles.card }>
+                        <div className={styles.popupImage}>
+                          {/* <img src={ images.image1 } alt={ card.areaName }/> tempoorary replace the marker.img for visualization */}
                           
-                            <span className = { styles.txtTitle }>No Image available</span>
+                          {card.imagePreview ? (
+                            <div className = { styles.previewImg }>
+                              <div className = { styles.overlay }>
+                                <button className = { `${ styles.txtTitle} ${ styles.uploadBtn }` }>Upload Image</button>
+                              </div>
+
+                              <input
+                                type="file"
+                                accept=".jpg, .jpeg, .png, .gif"
+                                ref={fileInputRef}
+                                id={`image-upload-${card._id}`}
+                                onChange={(e) => handleImageUpload(e, card._id)}
+                              />
+
+                              <img src={card.imagePreview} alt="Uploaded Image Preview" />
+                            </div>  
+                          ) : card.image ? (
+                            <div className = { styles.uploadedImg }>
+                              <div className = { styles.overlay }>
+                                <button className = { `${ styles.txtTitle} ${ styles.uploadBtn }` }>
+                                  Upload
+                                  <input
+                                  type="file"
+                                  accept=".jpg, .jpeg, .png, .gif"
+                                  ref={fileInputRef}
+                                  id={`image-upload-${card._id}`}
+                                  onChange={(e) => handleImageUpload(e, card._id)}
+                                  /> 
+                                </button>
+
+                                <button 
+                                  className = { `${ styles.txtTitle} ${ styles.deleteBtn }` }
+                                  //type="button" onClick={() => handleDeleteBtn(card._id)}
+                                  type="button" onClick={() => { setFileId(card._id); setImgToDelete(card.image); handleDeleteBtn();}}
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                              <img src={card.image} alt="Fetched Image Preview" />
+                            </div>
+                          ) : (
+                            <div className = { styles.noImg }>
+                              <div className = { styles.overlay }>
+                                <button className = { `${ styles.txtTitle} ${ styles.uploadBtn }` }>Upload Image</button>
+                              </div>
+
+                              <input
+                                type="file"
+                                accept=".jpg, .jpeg, .png, .gif"
+                                ref={fileInputRef}
+                                id={`image-upload-${card._id}`}
+                                onChange={(e) => handleImageUpload(e, card._id)}
+                              />
+
+                              
+                                <span className = { styles.txtTitle }>No Image available</span>
+                            </div>
+                          )}
+
                         </div>
-                      )}
 
-                    </div>
+                        <div className={styles.cont1}>
 
-                    <div className={styles.cont1}>
+                          {/* Modified by Lorenzo @ 04/01/2025 */}
+                          <span className = {styles.txtTitle} >
+                            { truncateText(card.areaName, 15) }
+                          </span>
 
-                      {/* Modified by Lorenzo @ 04/01/2025 */}
-                      <span className = {styles.txtTitle} >
-                        { truncateText(card.areaName, 15) }
-                      </span>
+                          <div className = { styles.line }></div>
 
-                      <div className = { styles.line }></div>
+                          <textarea 
+                            ref = {textareaRef}
+                            className = { styles.quickFacts } 
+                            value = { card.quickFacts }
+                            onInput = {() => adjustHeight(textareaRef)}
+                            onChange = {(e) => handleQuickFactsChange(e, card._id)}
+                          />
 
-                      <textarea 
-                        ref = {textareaRef}
-                        className = { styles.quickFacts } 
-                        value = { card.quickFacts }
-                        onInput = {() => adjustHeight(textareaRef)}
-                        onChange = {(e) => handleQuickFactsChange(e, card._id)}
-                      />
+                        </div>  
+                      </div>
+                    </motion.div>
+                  )
+                ))}
+              </AnimatePresence>
+            </div>
 
-                    </div>  
-                  </div>
+            {/* Confirmation Modal */}
+            <AnimatePresence>
+              {isDelete && (
+                <motion.div 
+                    className = { styles.confirmation }
+                    initial = {{opacity: 0}}
+                    animate = {{opacity: 1}}
+                    exit = {{opacity: 0}}
+                    transition = {{duration: 0.2, ease: "easeInOut"}}
+                >
+                    <Confirmation 
+                        onCancel = {() => handleDeleteBtn()}
+                        setConfirmDelete = { confirmAndDelete }
+                    />
                 </motion.div>
-              )
-            ))}
-          </AnimatePresence>
-        </div>
-
-        {/* Confirmation Modal */}
-        <AnimatePresence>
-          {isDelete && (
-            <motion.div 
-                className = { styles.confirmation }
-                initial = {{opacity: 0}}
-                animate = {{opacity: 1}}
-                exit = {{opacity: 0}}
-                transition = {{duration: 0.2, ease: "easeInOut"}}
-            >
-                <Confirmation 
-                    onCancel = {() => handleDeleteBtn()}
-                    setConfirmDelete = { confirmAndDelete }
-                />
-            </motion.div>
-          )}
-        </AnimatePresence> 
+              )}
+            </AnimatePresence> 
+          </>
+        )}
       </>
     );
-  };
+};
 
 export default Cards;

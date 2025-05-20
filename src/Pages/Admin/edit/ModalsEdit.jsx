@@ -14,7 +14,11 @@ import NavBar from './navBar/NavBar';
 import '../utility/sliderCustomStyles/sliderStyles.scss';
 import { API_URL } from '/src/config';
 
-  const Modal = () => {
+//loading content
+import useLoading from '../utility/PageLoaderComponent/useLoading';
+import LoadingAnim from '../utility/PageLoaderComponent/LoadingAnim';
+
+const Modal = () => {
     // toast alert pop up
     const mountToast = UseToast();
 
@@ -399,327 +403,333 @@ import { API_URL } from '/src/config';
     }
 
 
-    return (
+  return (
       <>
-      <NavBar /> 
-      <div className={styles.modalContainer}>
-        <div className={styles.header}>
-          <span className = { styles.txtTitle }>EDIT MODAL</span>
-        </div>
-    
         {isLoading ? (
-          <div>Loading...</div>  /* Show loading message when data is being fetched */
+            <LoadingAnim message="Loading modals..." />
         ) : (
           <>
-            <span className = { `${ styles.txtTitle} ${ styles.listHeader }` }>Select Modal</span>
-            <div className={styles.modalsList}>
-              {modals.length > 0 ? (
-                modals.map((modal) => (
-                  <div className = { styles.infoContainer } key={modal._id}>
-                    <span className = { styles.txtTitle }>{modal.title}</span>
-                    <button onClick={() => handleEditClick(modal)}>Edit</button>
-                  </div>
-                ))
+            <NavBar /> 
+            <div className={styles.modalContainer}>
+              <div className={styles.header}>
+                <span className = { styles.txtTitle }>EDIT MODAL</span>
+              </div>
+          
+              {isLoading ? (
+                <div>Loading...</div>  /* Show loading message when data is being fetched */
               ) : (
-                <p>No modals available</p>  /* Fallback when no modals are fetched */
+                <>
+                  <span className = { `${ styles.txtTitle} ${ styles.listHeader }` }>Select Modal</span>
+                  <div className={styles.modalsList}>
+                    {modals.length > 0 ? (
+                      modals.map((modal) => (
+                        <div className = { styles.infoContainer } key={modal._id}>
+                          <span className = { styles.txtTitle }>{modal.title}</span>
+                          <button onClick={() => handleEditClick(modal)}>Edit</button>
+                        </div>
+                      ))
+                    ) : (
+                      <p>No modals available</p>  /* Fallback when no modals are fetched */
+                    )}
+                  </div>
+                </>
               )}
+
+              <button 
+                className = { `${styles.txtTitle} ${ styles.btnSave }` } 
+                onClick = { handleDescTech }
+              > 
+                Save Changes 
+              </button>
+
+              <AnimatePresence>
+                {currentModal && (
+                    <motion.div 
+                      className={styles.modalEditingSection}
+                      initial = {{opacity: 0}}
+                      animate = {{opacity: 1}}
+                      exit = {{opacity: 0}}
+                      transition = {{duration: 0.2, ease: "easeInOut"}}
+                    >
+                      <div className={styles.modal}>
+                        <label className = { styles.headerBg }>
+                          {/* Modified by Lorenzo @ 05/01/2025 */}
+                          <span className = { styles.txtTitle }>
+                            { truncateText(currentModal.title, 18) }
+                          </span>
+                        </label>
+                      
+                        {/* <button className = { `${ styles.addBtn } ${ styles.onlyIcon }`} type="button" onClick={() => setUploadModalVisible(true)}>
+                          <img src = { icons.add } alt = "Add Image Button" />
+                        </button>  */}
+
+                        {modalImagePreviews.length > 0 ? (
+                          <div className = { styles.uploadedImg }>
+                            <div className={styles.imageCarousel}>
+                              
+                              <Slider {...settings}>
+                              {modalImagePreviews.map((image, index) => (
+                                  <div key={index} className = { styles.slickSlide }>
+                                    <div className = { styles.imageContainer }>
+                                      <img
+                                        src={image}
+                                        alt={`Uploaded preview ${index}`}
+                                        className={styles.carouselImage}
+                                      />
+                                      <div className = { styles.overlay }>
+                                        <div className = { styles.btnSet1 }>
+                                          <button
+                                            className={styles.saveBtn}
+                                            type="button"
+                                            onClick={() => {
+                                              setUpdateModalVisible(true);
+                                              setUpdateImageIndex(index); // Store the index of the image to update
+                                            }}
+                                          >
+                                            Update Image
+                                          </button>
+                                          <button
+                                            className={styles.deleteBtn}
+                                            onClick={() => {
+                                              //setDeleteFile(currentModal.modalImages[index]); // Set the filename to delete
+                                              setDeleteFile(currentModal.modalImages[index]); // Set the filename to archive
+                                              setFileId(currentModal._id);
+                                              setDeleteModalVisible(true); // Open delete modal
+                                            }}
+                                          >
+                                            Delete
+                                          </button>
+                                        </div>
+                                        <div className = { styles.btnSet2 }>
+                                          <button className = { `${ styles.txtTitle} ${ styles.uploadBtn }` } onClick={() => setUploadModalVisible(true)}>Add Image</button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </Slider>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className = { styles.imageContainer}>
+                            <div className = { styles.noImg }>
+                              <div className = { styles.overlay }>
+                                <button className = { `${ styles.txtTitle} ${ styles.uploadBtn }` } onClick={() => setUploadModalVisible(true)}>Add Image</button>
+                              </div>
+                              
+                              <span className = { styles.txtTitle }>No Image available</span>
+                            </div>
+
+                          </div>
+                        )}
+
+                        {/* Description and technologies */}
+                        <div className = { isInfo ? `${ styles.infoContainer } ${ styles.active }` : styles.infoContainer }>
+                          <AnimatePresence mode="wait">
+                            {!isInfo && (
+                              <motion.div 
+                                className = { styles.description }
+                                key = {"description"}
+                                initial = {{opacity: 0}}
+                                animate = {{opacity: 1, transition: {delay: 0.2}}}
+                                exit = {{opacity: 0}}
+                                transition = {{duration: 0.2,  ease: "easeInOut"}}
+                                onAnimationComplete={() => adjustHeight(descriptionRef)}
+                              >               
+                                <textarea
+                                  ref = {descriptionRef}
+                                  row = "1"
+                                  className = { styles.txtSubTitle } 
+                                  value={description}
+                                  onInput={() => adjustHeight(descriptionRef)}
+                                  onChange={(e) => setDescription(e.target.value)}
+                                  placeholder = "Enter description here..."
+                                  required
+                                />       
+
+                                <div className = { styles.line }></div>
+                              </motion.div>
+                            )}
+
+                            {isInfo && (
+                              <motion.div 
+                                className = { styles.technologies }
+                                key = {"technologies"}
+                                initial = {{opacity: 0}}
+                                animate = {{opacity: 1, transition: {delay: 0.2}}}
+                                exit = {{opacity: 0}}
+                                transition = {{duration: 0.2, ease: "easeInOut"}}
+                                onAnimationComplete={() => adjustHeight(technologiesRef)}
+                              >
+                                <textarea 
+                                  ref = {technologiesRef}
+                                  row = "1"
+                                  className ={ styles.txtSubTitle }
+                                  value = { technologies }
+                                  onInput={() => adjustHeight(technologiesRef)}
+                                  onChange={(e) => setTechnologies(e.target.value)}
+                                  placeholder = "Enter technologies here..."
+                                  required 
+                                />
+
+                                <div className = { styles.line }></div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+
+                          <div className = { styles.infoBtn }>
+                            <ul className = { styles.btns }>
+                              <li>
+                                <span 
+                                  className = { styles.descBtn }
+                                  onClick = { isInfo ? handleInfoBtn : undefined }
+                                >
+                                  DESCRIPTION
+                                </span>
+                              </li>
+                              <li>
+                                <span 
+                                  className = { styles.techBtn }
+                                  onClick = { !isInfo ? handleInfoBtn : undefined }
+                                >
+                                    TECHNOLOGIES
+                                </span>
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-          </>
-        )}
+            
+            {/* Update Modal */}
+            <AnimatePresence>
+              {updateModalVisible && (
+                <div className = { styles.popUpContainer }>
+                  <motion.div 
+                    className = { styles.uploadImageContainer }
+                    initial = {{opacity: 0}}
+                    animate = {{opacity: 1}}
+                    exit = {{opacity: 0}}
+                    transition = {{duration: 0.2, ease: "easeInOut"}}
+                  >
+                    <div className = { styles.header }>
+                      <span className = { styles.txtTitle }>Update Images</span>
+                    </div>
 
-        <button 
-          className = { `${styles.txtTitle} ${ styles.btnSave }` } 
-          onClick = { handleDescTech }
-        > 
-          Save Changes 
-        </button>
+                    <div className = { styles.customLabel }>
+                      <button className = { styles.browseBtn }>Browse...</button>
+                      <span className = { styles.fileName }>
+                        { "Temporary Placeholder" } {/* Add, file name if one, n files selected if multiple */}
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/jpeg, image/jpg, image/png"
+                        onChange={handleUpdateFileChange}
+                      />
+                    </div>
 
-        <AnimatePresence>
-          {currentModal && (
-              <motion.div 
-                className={styles.modalEditingSection}
-                initial = {{opacity: 0}}
-                animate = {{opacity: 1}}
-                exit = {{opacity: 0}}
-                transition = {{duration: 0.2, ease: "easeInOut"}}
-              >
-                <div className={styles.modal}>
-                  <label className = { styles.headerBg }>
-                    {/* Modified by Lorenzo @ 05/01/2025 */}
-                    <span className = { styles.txtTitle }>
-                      { truncateText(currentModal.title, 18) }
-                    </span>
-                  </label>
-                
-                  {/* <button className = { `${ styles.addBtn } ${ styles.onlyIcon }`} type="button" onClick={() => setUploadModalVisible(true)}>
-                    <img src = { icons.add } alt = "Add Image Button" />
-                  </button>  */}
+                    <div className={styles.updatePreview}>
+                      {updatePreviewImages.map((image, index) => (
+                        <img
+                          key={index}
+                          src={image}
+                          alt={`Preview ${index}`}
+                          className={styles.previewImage}
+                        />
+                      ))}
+                    </div>
+                    <div className = { styles.btnContainer }>
+                      <button type="button" className={styles.uploadBtn} onClick={handleUpdate}>
+                        Upload
+                      </button>
+                      <button type="button" className={styles.cancelBtn} onClick={cancelBtn}>Cancel</button>
+                    </div>
+                  </motion.div>
+                </div>
+              )}
+            </AnimatePresence>
 
-                  {modalImagePreviews.length > 0 ? (
-                    <div className = { styles.uploadedImg }>
-                      <div className={styles.imageCarousel}>
-                        
-                        <Slider {...settings}>
-                        {modalImagePreviews.map((image, index) => (
-                            <div key={index} className = { styles.slickSlide }>
-                              <div className = { styles.imageContainer }>
+            {/* Upload Modal */}
+            <AnimatePresence>
+              {uploadModalVisible && (
+                <div className = { styles.popUpContainer }>
+                  <motion.div 
+                    className = { styles.uploadImageContainer }
+                    initial = {{opacity: 0}}
+                    animate = {{opacity: 1}}
+                    exit = {{opacity: 0}}
+                    transition = {{duration: 0.2, ease: "easeInOut"}}
+                  >
+                      <div className = { styles.header }>
+                        <span className = { styles.txtTitle }>Upload New Images</span>
+                      </div>
+
+                      <div className = { styles.customLabel }>
+                        <button className = { styles.browseBtn }>Browse...</button>
+                        <span className = { styles.fileName }>
+                          { "Temporary Placholder" } {/* Add, file name if one, n files selected if multiple */}
+                        </span>
+                        <input 
+                          type="file" 
+                          accept="image/jpeg, image/jpg, image/png" 
+                          multiple 
+                          onChange={handleUploadFileChange} 
+                        />
+                      </div>
+
+                      {/* Image Carousel for Preview */}
+                      <div className = { styles.preview }>
+                      <span className = { styles.txtTitle}>Preview Image:</span>
+                        <div className={styles.imageCarousel}>
+                          <Slider {...settings}>
+                            {uploadImagePreviews.map((image, index) => (
+                              <div key={index} className="slick-slide">
                                 <img
                                   src={image}
                                   alt={`Uploaded preview ${index}`}
                                   className={styles.carouselImage}
                                 />
-                                <div className = { styles.overlay }>
-                                  <div className = { styles.btnSet1 }>
-                                    <button
-                                      className={styles.saveBtn}
-                                      type="button"
-                                      onClick={() => {
-                                        setUpdateModalVisible(true);
-                                        setUpdateImageIndex(index); // Store the index of the image to update
-                                      }}
-                                    >
-                                      Update Image
-                                    </button>
-                                    <button
-                                      className={styles.deleteBtn}
-                                      onClick={() => {
-                                        //setDeleteFile(currentModal.modalImages[index]); // Set the filename to delete
-                                        setDeleteFile(currentModal.modalImages[index]); // Set the filename to archive
-                                        setFileId(currentModal._id);
-                                        setDeleteModalVisible(true); // Open delete modal
-                                      }}
-                                    >
-                                      Delete
-                                    </button>
-                                  </div>
-                                  <div className = { styles.btnSet2 }>
-                                    <button className = { `${ styles.txtTitle} ${ styles.uploadBtn }` } onClick={() => setUploadModalVisible(true)}>Add Image</button>
-                                  </div>
-                                </div>
                               </div>
-                            </div>
-                          ))}
-                        </Slider>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className = { styles.imageContainer}>
-                      <div className = { styles.noImg }>
-                        <div className = { styles.overlay }>
-                          <button className = { `${ styles.txtTitle} ${ styles.uploadBtn }` } onClick={() => setUploadModalVisible(true)}>Add Image</button>
+                            ))}
+                          </Slider>
                         </div>
-                        
-                        <span className = { styles.txtTitle }>No Image available</span>
                       </div>
 
-                    </div>
-                  )}
-
-                  {/* Description and technologies */}
-                  <div className = { isInfo ? `${ styles.infoContainer } ${ styles.active }` : styles.infoContainer }>
-                    <AnimatePresence mode="wait">
-                      {!isInfo && (
-                        <motion.div 
-                          className = { styles.description }
-                          key = {"description"}
-                          initial = {{opacity: 0}}
-                          animate = {{opacity: 1, transition: {delay: 0.2}}}
-                          exit = {{opacity: 0}}
-                          transition = {{duration: 0.2,  ease: "easeInOut"}}
-                          onAnimationComplete={() => adjustHeight(descriptionRef)}
-                        >               
-                          <textarea
-                            ref = {descriptionRef}
-                            row = "1"
-                            className = { styles.txtSubTitle } 
-                            value={description}
-                            onInput={() => adjustHeight(descriptionRef)}
-                            onChange={(e) => setDescription(e.target.value)}
-                            placeholder = "Enter description here..."
-                            required
-                          />       
-
-                          <div className = { styles.line }></div>
-                        </motion.div>
-                      )}
-
-                      {isInfo && (
-                        <motion.div 
-                          className = { styles.technologies }
-                          key = {"technologies"}
-                          initial = {{opacity: 0}}
-                          animate = {{opacity: 1, transition: {delay: 0.2}}}
-                          exit = {{opacity: 0}}
-                          transition = {{duration: 0.2, ease: "easeInOut"}}
-                          onAnimationComplete={() => adjustHeight(technologiesRef)}
-                        >
-                          <textarea 
-                            ref = {technologiesRef}
-                            row = "1"
-                            className ={ styles.txtSubTitle }
-                            value = { technologies }
-                            onInput={() => adjustHeight(technologiesRef)}
-                            onChange={(e) => setTechnologies(e.target.value)}
-                            placeholder = "Enter technologies here..."
-                            required 
-                          />
-
-                          <div className = { styles.line }></div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-
-                    <div className = { styles.infoBtn }>
-                      <ul className = { styles.btns }>
-                        <li>
-                          <span 
-                            className = { styles.descBtn }
-                            onClick = { isInfo ? handleInfoBtn : undefined }
-                          >
-                            DESCRIPTION
-                          </span>
-                        </li>
-                        <li>
-                          <span 
-                            className = { styles.techBtn }
-                            onClick = { !isInfo ? handleInfoBtn : undefined }
-                          >
-                              TECHNOLOGIES
-                          </span>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
+                      <div className = { styles.btnContainer }>
+                        <button type="button" className={styles.uploadBtn} onClick={handleUpload}>Upload</button>
+                        <button type="button" className={styles.cancelBtn} onClick={cancelBtn}>Cancel</button>
+                      </div>
+                  </motion.div>
                 </div>
-              </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-      
-      {/* Update Modal */}
-      <AnimatePresence>
-        {updateModalVisible && (
-          <div className = { styles.popUpContainer }>
-            <motion.div 
-              className = { styles.uploadImageContainer }
-              initial = {{opacity: 0}}
-              animate = {{opacity: 1}}
-              exit = {{opacity: 0}}
-              transition = {{duration: 0.2, ease: "easeInOut"}}
-            >
-              <div className = { styles.header }>
-                <span className = { styles.txtTitle }>Update Images</span>
-              </div>
+              )}
+            </AnimatePresence>
 
-              <div className = { styles.customLabel }>
-                <button className = { styles.browseBtn }>Browse...</button>
-                <span className = { styles.fileName }>
-                  { "Temporary Placeholder" } {/* Add, file name if one, n files selected if multiple */}
-                </span>
-                <input
-                  type="file"
-                  accept="image/jpeg, image/jpg, image/png"
-                  onChange={handleUpdateFileChange}
-                />
-              </div>
-
-              <div className={styles.updatePreview}>
-                {updatePreviewImages.map((image, index) => (
-                  <img
-                    key={index}
-                    src={image}
-                    alt={`Preview ${index}`}
-                    className={styles.previewImage}
+            <AnimatePresence>
+              {/* Delete Modal */}
+              {deleteModalVisible && (
+                <motion.div 
+                  className = { styles.popUpContainer }
+                  initial = {{opacity: 0}}
+                  animate = {{opacity: 1}}
+                  exit = {{opacity: 0}}
+                  transition = {{duration: 0.2, ease: "easeInOut"}}
+                >
+                  <Confirmation 
+                    setConfirmDelete = { confirmAndDelete }
+                    onCancel = { cancelBtn }
                   />
-                ))}
-              </div>
-              <div className = { styles.btnContainer }>
-                <button type="button" className={styles.uploadBtn} onClick={handleUpdate}>
-                  Upload
-                </button>
-                <button type="button" className={styles.cancelBtn} onClick={cancelBtn}>Cancel</button>
-              </div>
-            </motion.div>
-          </div>
+                </motion.div>
+                
+              )}
+            </AnimatePresence>
+          </>
         )}
-      </AnimatePresence>
-
-      {/* Upload Modal */}
-      <AnimatePresence>
-        {uploadModalVisible && (
-          <div className = { styles.popUpContainer }>
-            <motion.div 
-              className = { styles.uploadImageContainer }
-              initial = {{opacity: 0}}
-              animate = {{opacity: 1}}
-              exit = {{opacity: 0}}
-              transition = {{duration: 0.2, ease: "easeInOut"}}
-            >
-                <div className = { styles.header }>
-                  <span className = { styles.txtTitle }>Upload New Images</span>
-                </div>
-
-                <div className = { styles.customLabel }>
-                  <button className = { styles.browseBtn }>Browse...</button>
-                  <span className = { styles.fileName }>
-                    { "Temporary Placholder" } {/* Add, file name if one, n files selected if multiple */}
-                  </span>
-                  <input 
-                    type="file" 
-                    accept="image/jpeg, image/jpg, image/png" 
-                    multiple 
-                    onChange={handleUploadFileChange} 
-                  />
-                </div>
-
-                {/* Image Carousel for Preview */}
-                <div className = { styles.preview }>
-                <span className = { styles.txtTitle}>Preview Image:</span>
-                  <div className={styles.imageCarousel}>
-                    <Slider {...settings}>
-                      {uploadImagePreviews.map((image, index) => (
-                        <div key={index} className="slick-slide">
-                          <img
-                            src={image}
-                            alt={`Uploaded preview ${index}`}
-                            className={styles.carouselImage}
-                          />
-                        </div>
-                      ))}
-                    </Slider>
-                  </div>
-                </div>
-
-                <div className = { styles.btnContainer }>
-                  <button type="button" className={styles.uploadBtn} onClick={handleUpload}>Upload</button>
-                  <button type="button" className={styles.cancelBtn} onClick={cancelBtn}>Cancel</button>
-                </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {/* Delete Modal */}
-        {deleteModalVisible && (
-          <motion.div 
-            className = { styles.popUpContainer }
-            initial = {{opacity: 0}}
-            animate = {{opacity: 1}}
-            exit = {{opacity: 0}}
-            transition = {{duration: 0.2, ease: "easeInOut"}}
-          >
-            <Confirmation 
-              setConfirmDelete = { confirmAndDelete }
-              onCancel = { cancelBtn }
-            />
-          </motion.div>
-          
-        )}
-      </AnimatePresence>
       </>
-    );
+  );
     
-  };
+};
 
 export default Modal;

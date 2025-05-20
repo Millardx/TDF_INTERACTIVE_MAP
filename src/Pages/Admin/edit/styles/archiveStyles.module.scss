@@ -55,6 +55,12 @@
 
             // Optional: to ensure the text stays in a single line visually
             display: block;
+
+            &:hover {
+                white-space: normal;
+                max-width: none;
+                width: auto;
+            }
         }
         
 

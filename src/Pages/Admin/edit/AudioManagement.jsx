@@ -14,6 +14,10 @@ import NavBar from './navBar/NavBar';
 import Confirmation from '../utility/ConfirmationComponent/Confirmation';
 import {API_URL } from '/src/config';
 
+//loading content
+import useLoading from '../utility/PageLoaderComponent/useLoading';
+import LoadingAnim from '../utility/PageLoaderComponent/LoadingAnim';
+
 const AudioManagement = () => {
   // toast alert pop up
   const mountToast = UseToast();
@@ -22,6 +26,8 @@ const AudioManagement = () => {
   const user = location.state?.user;
   
   const [audiosRef, setAudiosRef] = useState([]);
+  const [isLoading, setIsLoading] = useLoading(true);   // For loading
+
   const [audios, setAudios] = useState([]);
   const [filteredAudio, setFilteredAudio] = useState([]);
   const [logsPerPage, setLogsPerPage] = useState(5);
@@ -68,6 +74,9 @@ const AudioManagement = () => {
 
 
   const fetchAudios = async () => {
+    
+    setIsLoading(true);
+
     try {
       const response = await axios.get(`${API_URL}/api/audio`);
       setAudios(response.data);
@@ -75,6 +84,8 @@ const AudioManagement = () => {
       setAudios(response.data.slice(0, logsPerPage));
     } catch (error) {
       console.error('Error fetching audios:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -224,188 +235,194 @@ const AudioManagement = () => {
   
  return (
   <>
-    <NavBar />
+    {isLoading ? (
+        <LoadingAnim message="Loading audios..." />
+    ) : (
+      <>
+        <NavBar />
 
-    <div className={styles.audioManagementContainer}>
+        <div className={styles.audioManagementContainer}>
 
-      <div className={styles.header}>
-        <span className = { styles.txtTitle }>Audio Management</span>
-      </div>
-
-      <span className={`${styles.txtTitle} ${styles.listHeader}`}>Manage Audio</span> <br />
-
-      <div className = { styles.tblWrapper }>
-
-        <PaginationControls
-          data={filteredAudio}
-          rowsPerPageOptions={[5, 10, 15, 20]}
-          onFilterChange={handleFilterChange}
-          onPaginationChange={handlePaginationChange}
-        />
-
-        <table className={styles.audioManagementTable}>
-          <thead>
-            <tr>
-              <th></th>
-              <th>Title</th>
-              <th>File Name</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {audios.map((audio) => (
-              <tr key={audio._id}>
-                {/* Modified by lorenzo @ 05/01/2025 */}
-                <td>
-                  <div className={styles.subRow}>
-                    {/* Filipino Button */}
-                    <button
-                      onClick={() => handlePlayAudio(audio.filipinoAudio, audio._id + '-fil')}
-                      className={styles.playBtn}
-                    >
-                      <img
-                        className={`${styles.icon} ${styles.play}`}
-                        src={playingAudioId === audio._id + '-fil' ? icons.pause : icons.audio}
-                        alt="Filipino Audio"
-                      />
-                    </button>
-
-                    {/* English Button */}
-                    <button
-                      onClick={() => handlePlayAudio(audio.englishAudio, audio._id + '-eng')}
-                      className={styles.playBtn}
-                    >
-                      <img
-                        className={`${styles.icon} ${styles.play}`}
-                        src={playingAudioId === audio._id + '-eng' ? icons.pause : icons.audio}
-                        alt="English Audio"
-                      />
-                    </button>
-                  </div>
-                </td>
-
-                <td>{audio.title}</td>
-
-                {/* Modified by lorenzo @ 05/01/2025 */}
-                <td className = { styles.fileName }>
-                  <div className = { styles.subRow }>
-                      {/* Filipino */}
-                      <span>
-                        <strong>FIL: </strong>{audio.filipinoOriginalName  || 'No Audio Available'}
-                      </span><br />
-
-                      {/* English */}
-                      <span>
-                        <strong>ENG:</strong> {audio.englishOriginalName || 'No Audio Available'}
-                      </span>
-                  </div>
-                </td>
-
-                {/* Modified by lorenzo @ 05/01/2025 */}
-                {/* Milalrd IMplementation of the Dual langauge audio*/}
-                <td>
-                  <div className={styles.subRow}>
-                    {/* Filipino Actions */}
-                    <div className={styles.actionBtns}>
-                      {audio.filipinoAudio ? (
-                        <>
-                          {/* Update Filipino */}
-                          <button onClick={() => handleOpenModal(audio._id, audio.title, 'filipino')}>
-                            <img className={`${styles.icon} ${styles.pencil}`} src={icons.pencil} alt="Edit Filipino Audio" />
-                          </button>
-
-                          {/* Archive Filipino */}
-                          <button onClick={() => {
-                            setFileId(audio._id);
-                            setAudioToDelete(audio.filipinoAudio);
-                            handleDeleteBtn();
-                          }}>
-                            <img className={`${styles.icon} ${styles.remove}`} src={icons.remove} alt="Archive Filipino Audio" />
-                          </button>
-                        </>
-                      ) : (
-                        <button onClick={() => handleOpenModal(audio._id, audio.title, 'filipino')}>
-                          <img className={`${styles.icon} ${styles.add}`} src={icons.add} alt="Add Filipino Audio" />
-                        </button>
-                      )}
-                    </div>
-
-                    {/* English Actions */}
-                    <div className={styles.actionBtns}>
-                      {audio.englishAudio ? (
-                        <>
-                          {/* Update English */}
-                          <button onClick={() => handleOpenModal(audio._id, audio.title, 'english')}>
-                            <img className={`${styles.icon} ${styles.pencil}`} src={icons.pencil} alt="Edit English Audio" />
-                          </button>
-
-                          {/* Archive English */}
-                          <button onClick={() => {
-                            setFileId(audio._id);
-                            setAudioToDelete(audio.englishAudio);
-                            handleDeleteBtn();
-                          }}>
-                            <img className={`${styles.icon} ${styles.remove}`} src={icons.remove} alt="Archive English Audio" />
-                          </button>
-                        </>
-                      ) : (
-                        <button onClick={() => handleOpenModal(audio._id, audio.title, 'english')}>
-                          <img className={`${styles.icon} ${styles.add}`} src={icons.add} alt="Add English Audio" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </td>
-
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    {/* Modal for AudioUpload */}
-    <AnimatePresence>
-      {showUploadModal && (
-        <motion.div 
-          className={styles.modal}
-          initial = {{opacity: 0}}
-          animate = {{opacity: 1}}
-          exit = {{opacity: 0}}
-          transition = {{duration: 0.2, ease: "easeInOut"}}
-        >
-          <div className={styles.modalContent}>
-            <AudioUpload
-              audioId={modalProps.audioId} // Pass audioId
-              currentTitle={modalProps.currentTitle} // Pass currentTitle
-              language={modalProps.language} // ✅ now supported
-              onClose={handleCloseModal} // Pass the onClose function to close the modal
-            />
+          <div className={styles.header}>
+            <span className = { styles.txtTitle }>Audio Management</span>
           </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
 
-    {/* Confirmation Modal */}
-    <AnimatePresence>
-      {isDelete && (
-        <motion.div 
-            className = { styles.confirmation }
-            initial = {{opacity: 0}}
-            animate = {{opacity: 1}}
-            exit = {{opacity: 0}}
-            transition = {{duration: 0.2, ease: "easeInOut"}}
-        >
-            <Confirmation 
-                onCancel = {() => handleDeleteBtn()}
-                setConfirmDelete = { confirmAndDelete }
+          <span className={`${styles.txtTitle} ${styles.listHeader}`}>Manage Audio</span> <br />
+
+          <div className = { styles.tblWrapper }>
+
+            <PaginationControls
+              data={filteredAudio}
+              rowsPerPageOptions={[5, 10, 15, 20]}
+              onFilterChange={handleFilterChange}
+              onPaginationChange={handlePaginationChange}
             />
-        </motion.div>
-      )}
-    </AnimatePresence>  
-    
-    {/* Audio player */}
-    <audio ref={audioRef} hidden />
+
+            <table className={styles.audioManagementTable}>
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Title</th>
+                  <th>File Name</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {audios.map((audio) => (
+                  <tr key={audio._id}>
+                    {/* Modified by lorenzo @ 05/01/2025 */}
+                    <td>
+                      <div className={styles.subRow}>
+                        {/* Filipino Button */}
+                        <button
+                          onClick={() => handlePlayAudio(audio.filipinoAudio, audio._id + '-fil')}
+                          className={styles.playBtn}
+                        >
+                          <img
+                            className={`${styles.icon} ${styles.play}`}
+                            src={playingAudioId === audio._id + '-fil' ? icons.pause : icons.audio}
+                            alt="Filipino Audio"
+                          />
+                        </button>
+
+                        {/* English Button */}
+                        <button
+                          onClick={() => handlePlayAudio(audio.englishAudio, audio._id + '-eng')}
+                          className={styles.playBtn}
+                        >
+                          <img
+                            className={`${styles.icon} ${styles.play}`}
+                            src={playingAudioId === audio._id + '-eng' ? icons.pause : icons.audio}
+                            alt="English Audio"
+                          />
+                        </button>
+                      </div>
+                    </td>
+
+                    <td>{audio.title}</td>
+
+                    {/* Modified by lorenzo @ 05/01/2025 */}
+                    <td className = { styles.fileName }>
+                      <div className = { styles.subRow }>
+                          {/* Filipino */}
+                          <span>
+                            <strong>FIL: </strong>{audio.filipinoOriginalName  || 'No Audio Available'}
+                          </span><br />
+
+                          {/* English */}
+                          <span>
+                            <strong>ENG:</strong> {audio.englishOriginalName || 'No Audio Available'}
+                          </span>
+                      </div>
+                    </td>
+
+                    {/* Modified by lorenzo @ 05/01/2025 */}
+                    {/* Milalrd IMplementation of the Dual langauge audio*/}
+                    <td>
+                      <div className={styles.subRow}>
+                        {/* Filipino Actions */}
+                        <div className={styles.actionBtns}>
+                          {audio.filipinoAudio ? (
+                            <>
+                              {/* Update Filipino */}
+                              <button onClick={() => handleOpenModal(audio._id, audio.title, 'filipino')}>
+                                <img className={`${styles.icon} ${styles.pencil}`} src={icons.pencil} alt="Edit Filipino Audio" />
+                              </button>
+
+                              {/* Archive Filipino */}
+                              <button onClick={() => {
+                                setFileId(audio._id);
+                                setAudioToDelete(audio.filipinoAudio);
+                                handleDeleteBtn();
+                              }}>
+                                <img className={`${styles.icon} ${styles.remove}`} src={icons.remove} alt="Archive Filipino Audio" />
+                              </button>
+                            </>
+                          ) : (
+                            <button onClick={() => handleOpenModal(audio._id, audio.title, 'filipino')}>
+                              <img className={`${styles.icon} ${styles.add}`} src={icons.add} alt="Add Filipino Audio" />
+                            </button>
+                          )}
+                        </div>
+
+                        {/* English Actions */}
+                        <div className={styles.actionBtns}>
+                          {audio.englishAudio ? (
+                            <>
+                              {/* Update English */}
+                              <button onClick={() => handleOpenModal(audio._id, audio.title, 'english')}>
+                                <img className={`${styles.icon} ${styles.pencil}`} src={icons.pencil} alt="Edit English Audio" />
+                              </button>
+
+                              {/* Archive English */}
+                              <button onClick={() => {
+                                setFileId(audio._id);
+                                setAudioToDelete(audio.englishAudio);
+                                handleDeleteBtn();
+                              }}>
+                                <img className={`${styles.icon} ${styles.remove}`} src={icons.remove} alt="Archive English Audio" />
+                              </button>
+                            </>
+                          ) : (
+                            <button onClick={() => handleOpenModal(audio._id, audio.title, 'english')}>
+                              <img className={`${styles.icon} ${styles.add}`} src={icons.add} alt="Add English Audio" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Modal for AudioUpload */}
+        <AnimatePresence>
+          {showUploadModal && (
+            <motion.div 
+              className={styles.modal}
+              initial = {{opacity: 0}}
+              animate = {{opacity: 1}}
+              exit = {{opacity: 0}}
+              transition = {{duration: 0.2, ease: "easeInOut"}}
+            >
+              <div className={styles.modalContent}>
+                <AudioUpload
+                  audioId={modalProps.audioId} // Pass audioId
+                  currentTitle={modalProps.currentTitle} // Pass currentTitle
+                  language={modalProps.language} // ✅ now supported
+                  onClose={handleCloseModal} // Pass the onClose function to close the modal
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Confirmation Modal */}
+        <AnimatePresence>
+          {isDelete && (
+            <motion.div 
+                className = { styles.confirmation }
+                initial = {{opacity: 0}}
+                animate = {{opacity: 1}}
+                exit = {{opacity: 0}}
+                transition = {{duration: 0.2, ease: "easeInOut"}}
+            >
+                <Confirmation 
+                    onCancel = {() => handleDeleteBtn()}
+                    setConfirmDelete = { confirmAndDelete }
+                />
+            </motion.div>
+          )}
+        </AnimatePresence>  
+        
+        {/* Audio player */}
+        <audio ref={audioRef} hidden />
+      </>
+    )}
   </>
  )
 }

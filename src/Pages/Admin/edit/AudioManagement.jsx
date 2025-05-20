@@ -113,6 +113,11 @@ const AudioManagement = () => {
         audioRef.current.src = url;
         audioRef.current.play();
         setPlayingAudioId(audioKey);
+
+        // reset the audio icon after playing audio
+        audioRef.current.onended = () => {
+          setPlayingAudioId(null);
+        };
       } else {
         mountToast("Failed to load audio file.", "error");
       }
@@ -227,6 +232,8 @@ const AudioManagement = () => {
         <span className = { styles.txtTitle }>Audio Management</span>
       </div>
 
+      <span className={`${styles.txtTitle} ${styles.listHeader}`}>Manage Audio</span> <br />
+
       <div className = { styles.tblWrapper }>
 
         <PaginationControls
@@ -261,7 +268,6 @@ const AudioManagement = () => {
                         src={playingAudioId === audio._id + '-fil' ? icons.pause : icons.audio}
                         alt="Filipino Audio"
                       />
-                      {playingAudioId === audio._id + '-fil' && <span className={styles.nowPlaying}>Now Playing...</span>}
                     </button>
 
                     {/* English Button */}
@@ -274,7 +280,6 @@ const AudioManagement = () => {
                         src={playingAudioId === audio._id + '-eng' ? icons.pause : icons.audio}
                         alt="English Audio"
                       />
-                      {playingAudioId === audio._id + '-eng' && <span className={styles.nowPlaying}>Now Playing...</span>}
                     </button>
                   </div>
                 </td>
@@ -287,16 +292,15 @@ const AudioManagement = () => {
                       {/* Filipino */}
                       <span>
                         <strong>FIL: </strong>{audio.filipinoOriginalName  || 'No Audio Available'}
-                      </span>
+                      </span><br />
 
                       {/* English */}
                       <span>
                         <strong>ENG:</strong> {audio.englishOriginalName || 'No Audio Available'}
                       </span>
                   </div>
-                  
-                  
                 </td>
+
                 {/* Modified by lorenzo @ 05/01/2025 */}
                 {/* Milalrd IMplementation of the Dual langauge audio*/}
                 <td>

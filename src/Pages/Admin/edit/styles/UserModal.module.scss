@@ -18,6 +18,7 @@
         position: absolute;
         user-select: none;
         -webkit-tap-highlight-color: transparent; // removes blue highlight on mobile
+        -webkit-touch-callout: none;              /* iOS Safari */
 
         img {
             height: 15px;
@@ -79,6 +80,7 @@
                 transition: all 0.2s ease-in-out;
                 user-select: none;
                 -webkit-tap-highlight-color: transparent; // removes blue highlight on mobile
+                -webkit-touch-callout: none;              /* iOS Safari */
 
                 &:hover {
                     scale: 1.1;
@@ -105,21 +107,27 @@
             }
         }
 
-        .passwordWrapper {
+        .passWrapper {
             display: flex;
             align-items: center;
+            justify-content: end;
+            position: relative;
         
             input {
-                flex: 1;
+                margin: 0;
+                padding-right: 2rem;
             }
         
-            .showPasswordToggle {
-                margin-left: 8px;
-                background: none;
-                border: none;
-                color: #007bff;
+            i {
+                position: absolute ;
                 cursor: pointer;
-                font-size: 0.9rem;
+                color: #666;
+                padding: 10px;
+
+                // Pevents highlight 
+                user-select: none;
+                -webkit-tap-highlight-color: transparent; /* Android Chrome */
+                -webkit-touch-callout: none;              /* iOS Safari */
             }
         }
         

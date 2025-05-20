@@ -328,8 +328,8 @@ export default function Archive() {
                                     if (archive.originalCollection === 'AboutUs') {
                                         return (
                                             <ul className={styles.noBullets}>
-                                            <li><strong>About Us</strong>  </li>
-                                          </ul>
+                                                <li><strong>About Us</strong>  </li>
+                                            </ul>
                                         );
                                       }
                                   

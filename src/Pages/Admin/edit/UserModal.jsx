@@ -10,17 +10,21 @@ import {API_URL} from '/src/config'; // Import the API_URL constant
 import axios from 'axios';
 
 
+// Added by lorenzo @05/20/2025
+import TogglePassword from '../utility/PasswordComponent/TogglePassword';
+
 
 
 const UserModal = ({ user, onSave, onClose }) => {
    
+    // for password visibility toggle
+    const { inputType, iconClass, toggleVisibility } = TogglePassword();
     const mountToast = UseToast();
 
     const [name, setName] = useState(user ? user.name : '');
     const [email, setEmail] = useState(user ? user.email : '');
     const [password, setPassword] = useState('');  // New password state
     const [role, setRole] = useState(user ? user.role : 'staff');
-    const [showPassword, setShowPassword] = useState(false);
     const [checkingEmail, setCheckingEmail] = useState(false);
 
 
@@ -141,6 +145,7 @@ const UserModal = ({ user, onSave, onClose }) => {
                                 type="text"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
+                                placeholder="Enter Name"
                                 required
                             />
                         </div>
@@ -151,26 +156,24 @@ const UserModal = ({ user, onSave, onClose }) => {
                                 value={email}
                                 onBlur={checkEmailExists}
                                 onChange={(e) => setEmail(e.target.value)}
+                                placeholder="Enter Email"
                                 required
                             />
                         </div>
                         <div className={styles.subContainer}>
                             <label>Password:</label>
-                            <div className={styles.passwordWrapper}>
+                            <div className={styles.passWrapper}>
                                 <input
-                                    type={showPassword ? 'text' : 'password'}
-                                    value={password}
+                                    type={ inputType }
+                                    value={ password }
                                     onChange={(e) => setPassword(e.target.value)}
-                                    placeholder={user ? "Change password" : "Enter password"}
-                                    required={!user}
+                                    placeholder={ user ? "Change password" : "Enter password" }
+                                    required={ !user }
                                 />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className={styles.showPasswordToggle}
-                                >
-                                    {showPassword ? 'Hide' : 'Show'}
-                                </button>
+                                <i 
+                                    className={ iconClass }
+                                    onClick={ toggleVisibility }
+                                ></i>
                             </div>
                         </div>
                     </div>

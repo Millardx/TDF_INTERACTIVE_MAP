@@ -116,7 +116,7 @@ export default function MarkerUpload({ markerId ,setmarkerId, onClose, onRefresh
                     ) : currentImage ? (
                         <img src={currentImage} alt="Current Marker" />
                     ) : (
-                        <img src={icons.remove} alt="No Preview" />
+                        <img src={icons.fallbackIcon} alt="No Preview" />
                     )}
             </div>
           </div>

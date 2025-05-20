@@ -48,6 +48,13 @@
         
         .noBullets li {
             margin-bottom: 0.2em; /* Adds a small gap between list items */
+            max-width: 100%;              // Or a fixed width like 250px
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            // Optional: to ensure the text stays in a single line visually
+            display: block;
         }
         
 
@@ -67,6 +74,7 @@
             text-align: center;
             user-select: none;
             -webkit-tap-highlight-color: transparent; // removes blue highlight on mobile
+            -webkit-touch-callout: none;              /* iOS Safari */
         }
 
         td {

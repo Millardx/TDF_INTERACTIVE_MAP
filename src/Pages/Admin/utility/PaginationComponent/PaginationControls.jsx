@@ -75,7 +75,7 @@ export default function PaginationControls({
                     nextLabel = { 'Next' }
                     breakLabel = { '...' }
                     pageCount = { Math.ceil(data.length / logsPerPage) }
-                    marginPagesDisplayed = { 2 }
+                    marginPagesDisplayed = { 0 }
                     pageRangeDisplayed = { 3 }
                     onPageChange = { handlePageClick }
                     containerClassName = { styles.pagination }

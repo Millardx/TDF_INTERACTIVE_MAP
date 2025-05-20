@@ -227,42 +227,45 @@ export default function EditMarkers() {
                         </button>
                     </div>
                     
-                    <div className={styles.iconList}>
-                        {markerIcons.map((iconData) => (
-                        <div key={iconData._id} className={styles.marker}>
-                            <img 
-                            src={`${iconData.iconPath}`} 
-                            alt={iconData.name} 
-                            className={styles.icon} 
-                            />
-                                {isDeleteIcon && (
-                                    <div 
-                                    className={styles.iconOverlay}
-                                    onClick={() => {
-                                        setSelectedMarkerId(iconData._id);
-                                        // Trigger the archiving when the delete icon is clicked
-                                        handleIconArchive(iconData._id, iconData.iconPath, iconData.name);
-                                    }}
-                                >
-                                        <img src={icons.minus} alt="Delete Icon" />
-                                    </div>
-                                )}
-                                {isEditIcon && (
-                                    <div
-                                        className = { `${styles.iconOverlay} ${styles.editIcon}` }
-                                        onClick = {() => {setShowUploadMarker(true);
+                    {/* modified by Lorenzo @ 05/19/2025 */}
+                    <div className={styles.iconListWrapper}>
+                        <div className={styles.iconList}>
+                            {markerIcons.map((iconData) => (
+                            <div key={iconData._id} className={styles.marker}>
+                                <img 
+                                src={`${iconData.iconPath}`} 
+                                alt={iconData.name} 
+                                className={styles.icon} 
+                                />
+                                    {isDeleteIcon && (
+                                        <div 
+                                        className={styles.iconOverlay}
+                                        onClick={() => {
                                             setSelectedMarkerId(iconData._id);
-                                             }}
+                                            // Trigger the archiving when the delete icon is clicked
+                                            handleIconArchive(iconData._id, iconData.iconPath, iconData.name);
+                                        }}
                                     >
-                                        <div className = { styles.bg }>
-                                            <img src={icons.pen} alt="Edit Icon" />
+                                            <img src={icons.minus} alt="Delete Icon" />
                                         </div>
-                                    </div>
-                                )}
-                            </div>
+                                    )}
+                                    {isEditIcon && (
+                                        <div
+                                            className = { `${styles.iconOverlay} ${styles.editIcon}` }
+                                            onClick = {() => {setShowUploadMarker(true);
+                                                setSelectedMarkerId(iconData._id);
+                                                }}
+                                        >
+                                            <div className = { styles.bg }>
+                                                <img src={icons.pen} alt="Edit Icon" />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
 
-                            
-                        ))}
+                                
+                            ))}
+                        </div>
                     </div>
                 </div>
 
@@ -343,7 +346,6 @@ export default function EditMarkers() {
             </AnimatePresence>
 
             {/* Upload Marker Icon */}
-            
             <AnimatePresence>
             {showUploadMarker && (
                 <motion.div

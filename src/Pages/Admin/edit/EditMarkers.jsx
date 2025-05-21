@@ -25,6 +25,7 @@ export default function EditMarkers() {
     // For loading
     const [isIconLoaded, setIsIconLoaded] = useState(false);
     const [isMarkerLoaded, setIsMarkerLoaded] = useState(false);
+    const [isFirstLoad, setIsFirstLoad] = useState(true);
     const [isLoading, setIsLoading] = useLoading(true);
     const [isDeleting, setIsDeleting] = useState(false);     
 
@@ -41,7 +42,6 @@ export default function EditMarkers() {
     const [selectedMarkerId, setSelectedMarkerId] = useState(null);
     
     const [markerIcons, setMarkerIcons] = useState([]);  
-
 
     // Fetch MarkerIcons
     const fetchMarkerIcons = async () => {
@@ -204,9 +204,9 @@ export default function EditMarkers() {
         } else {
           rootDiv.classList.remove(styles.rootDiv);
         }
-      }, [location])
+    }, [location])
 
-          // pagination 
+    // pagination 
     const handleFilterChange = (searchTerm, limit, currentPage) => {
         const filtered = markers.filter((markers) =>
             [markers.areaName, markers.iconType]
@@ -228,8 +228,12 @@ export default function EditMarkers() {
 
     // stop loading if both are fully loaded 
     useEffect(() => {
+
+        if (isFirstLoad) setIsLoading(true);    // Start loading
+
         if (isIconLoaded && isMarkerLoaded) {
             setIsLoading(false);
+            setIsFirstLoad(false);    // Mark that first load is done
         }
     }, [isIconLoaded, isMarkerLoaded]);
 

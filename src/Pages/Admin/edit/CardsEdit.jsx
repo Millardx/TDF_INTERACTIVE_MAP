@@ -25,6 +25,7 @@ const Cards = () => {
 
     // toast alert pop up
     const mountToast = UseToast();
+    const [isFirstLoad, setIsFirstLoad] = useState(true);
     const [isLoading, setIsLoading] = useLoading(true);     // For loading
 
     const location = useLocation();
@@ -58,7 +59,7 @@ const Cards = () => {
     
     // Fetch cards from the database
     const fetchCards = async () => {
-      setIsLoading(true);
+      if (isFirstLoad) setIsLoading(true);    // Start loading
 
       try {
         const response = await axios.get(`${API_URL}/api/cards`);
@@ -72,6 +73,7 @@ const Cards = () => {
         console.error('Error fetching all cards:', error);
       } finally {
         setIsLoading(false);
+        setIsFirstLoad(false);    // Mark that first load is done
       }
     };
 

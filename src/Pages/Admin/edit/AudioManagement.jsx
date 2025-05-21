@@ -21,6 +21,8 @@ import LoadingAnim from '../utility/PageLoaderComponent/LoadingAnim';
 const AudioManagement = () => {
 
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
+  const [isLoading, setIsLoading] = useLoading(true);   // For loading
 
   
   // toast alert pop up
@@ -30,7 +32,6 @@ const AudioManagement = () => {
   const user = location.state?.user;
   
   const [audiosRef, setAudiosRef] = useState([]);
-  const [isLoading, setIsLoading] = useLoading(true);   // For loading
 
   const [audios, setAudios] = useState([]);
   const [filteredAudio, setFilteredAudio] = useState([]);
@@ -79,7 +80,7 @@ const AudioManagement = () => {
 
   const fetchAudios = async () => {
     
-    setIsLoading(true);
+    if (isFirstLoad) setIsLoading(true);    // Start loading
 
     try {
       const response = await axios.get(`${API_URL}/api/audio`);
@@ -90,6 +91,7 @@ const AudioManagement = () => {
       console.error('Error fetching audios:', error);
     } finally {
       setIsLoading(false);
+      setIsFirstLoad(false);    // Mark that first load is done
     }
   };
 

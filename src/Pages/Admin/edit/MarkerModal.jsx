@@ -6,6 +6,7 @@ import UseToast from '../utility/AlertComponent/UseToast';
 import {API_URL } from '/src/config';
 
 export default function MarkerModal({ onClose ,markerData }) {
+    const [isSaving, setIsSaving] = useState(false);
     const mountToast = UseToast();
     const [isMarker, setMarker] = useState(null);
     const [areaName, setAreaName] = useState(markerData?.areaName || "");
@@ -65,6 +66,8 @@ const handleIconTypeChange = (e) => {
             mountToast('No changes detected for Marker Name or Icon Type', 'warn');
             return;
         }
+        
+        setIsSaving(true);
         try {
             const response = await axios.put(`${API_URL}/api/markers/${markerData._id}`, {
                 areaName,
@@ -77,6 +80,8 @@ const handleIconTypeChange = (e) => {
         } catch (error) {
             console.error('Error updating marker:', error);
             mountToast('Error updating marker', 'error');
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -135,7 +140,13 @@ const handleIconTypeChange = (e) => {
                             onClick={handleSave}
                             // onClick={handleUpdate}
                         >
-                            Save
+                            {isSaving ? (
+                            <>
+                                <span className = { styles.loadingSpinner }></span>
+                            </>
+                            ) : (
+                                'Save'
+                            )}
                         </button>
                         <button 
                             className = { `${styles.cancelBtn} ${styles.txtTitle}` } 

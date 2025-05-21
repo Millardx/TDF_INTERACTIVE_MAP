@@ -35,6 +35,7 @@ const UserManagement = () => {
     const userProp = location.state?.user;
 
     const [users, setUsers] = useState([]);
+    const [isFirstLoad, setIsFirstLoad] = useState(true);
     const [isLoading, setIsLoading] = useLoading(true);     // For loading
 
     const [modalOpen, setModalOpen] = useState(false);
@@ -66,7 +67,7 @@ const UserManagement = () => {
     const fetchUsers = async () => {
         console.log("Attempting to fetch users...");
 
-        setIsLoading(true);
+        if (isFirstLoad) setIsLoading(true);    // Start loading
         try {
             const token = localStorage.getItem('token');
             const response = await axios.get(`${API_URL}/api/users/all`, {
@@ -80,6 +81,8 @@ const UserManagement = () => {
             console.error("Failed to fetch users:", error);
         } finally {
             setIsLoading(false);
+            setIsFirstLoad(false);    // Mark that first load is done
+            
         }
     };
 

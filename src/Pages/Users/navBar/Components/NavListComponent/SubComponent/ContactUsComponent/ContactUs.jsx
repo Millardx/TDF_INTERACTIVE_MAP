@@ -146,21 +146,21 @@ export default function ContactUs({ setCurrentModal, handleClickOutside, current
                                
 
                                 <div className =  { styles.contacts }>
-                                {/* <span>Click to view</span> */}
-                                <div className = { styles.info }>
-                                    <p className = { activeInfo === "location" ? `${ styles.txtSubTitle } ${ styles.location } ${ styles.active }` : `${ styles.txtSubTitle } ${ styles.location }` }>
-                                        {contactUsData.location}
-                                    </p>
-                                    <p className = { activeInfo === "number" ? `${ styles.txtSubTitle } ${ styles.number } ${ styles.active }` : `${ styles.txtSubTitle } ${ styles.number }` }>
-                                        {contactUsData.telephone}
-                                    </p>
-                                    <p className = { activeInfo === "email" ? `${ styles.txtSubTitle } ${ styles.email } ${ styles.active }` : `${ styles.txtSubTitle } ${ styles.email }` }>
-                                        {contactUsData.email}
-                                    </p>
-                                    <p className = { activeInfo === "facebook" ? `${ styles.txtSubTitle } ${ styles.facebook } ${ styles.active }` : `${ styles.txtSubTitle } ${ styles.facebook }` }>
-                                        {contactUsData.facebookPage}
-                                    </p>
-                                </div>
+                                    <div className = { styles.info }>
+                                        <small className = { activeInfo === "location" ? `${ styles.txtSubTitle } ${ styles.location } ${ styles.active }` : `${ styles.txtSubTitle } ${ styles.location }` }>
+                                            {contactUsData.location}
+                                        </small>
+                                        <small className = { activeInfo === "number" ? `${ styles.txtSubTitle } ${ styles.number } ${ styles.active }` : `${ styles.txtSubTitle } ${ styles.number }` }>
+                                            {contactUsData.telephone}
+                                        </small>
+                                        <small className = { activeInfo === "email" ? `${ styles.txtSubTitle } ${ styles.email } ${ styles.active }` : `${ styles.txtSubTitle } ${ styles.email }` }>
+                                            {contactUsData.email}
+                                        </small>
+                                        <small className = { activeInfo === "facebook" ? `${ styles.txtSubTitle } ${ styles.facebook } ${ styles.active }` : `${ styles.txtSubTitle } ${ styles.facebook }` }>
+                                            {contactUsData.facebookPage}
+                                        </small>
+                                    </div>
+
                                     <img onClick = {() => handleContactClick('location')} src = { icons.location} alt = "Location" />
                                     <img onClick = {() => handleContactClick('number')} src = { icons.contact} alt = "Contact Number" />
                                     <img onClick = {() => handleContactClick('email')} src = { icons.email} alt = "Email" />

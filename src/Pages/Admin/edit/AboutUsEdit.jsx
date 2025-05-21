@@ -10,6 +10,8 @@ import icons from '../../../assets/for_landingPage/Icons'
 import { API_URL } from '/src/config';
 
 export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClickOutside }) {
+    const [isSaving, setIsSaving] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     // toast alert pop up
     const mountToast = UseToast();
@@ -52,6 +54,9 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
             mountToast("Please fill in all fields before saving!", "error");
             return;
         }
+
+        if (isSaving) return;        // function guard
+        setIsSaving(true);
     
         try {
             const response = await axios.put(`${API_URL}/api/aboutus`, aboutUsData);
@@ -64,10 +69,12 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
             if (error.response && error.response.status === 400 && 
                 error.response.data.message === 'No changes detected in the data.') {
                 mountToast("No changes detected. Details was not updated.", "error");
-                setCurrentModal("aboutUs");
+                setCurrentModal("aboutUsEdit");  // Close modal after saving
             } else {
-                console.error("Error saving About Us data:", error);
+                mountToast(`Error saving About Us data: ${error}`, 'error');
             }
+        } finally {
+            setIsSaving(false);
         }
     };
     
@@ -85,6 +92,9 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
             return;
         }
 
+        if (isSaving) return;        // function guard
+        setIsSaving(true);
+
         const formData = new FormData();
         formData.append('image', selectedImage);
 
@@ -98,11 +108,17 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
             setPreviewImage(null); // Clear blob image preview
             setCurrentModal("aboutUs"); 
         } catch (error) {
-            console.error("Error updating image:", error);
+            mountToast(`Error updating image: ${error}`, 'error');
+            setCurrentModal("aboutUsEdit");  // Close modal after saving
+        } finally {
+            setIsSaving(false);
         }
     };
 
     const handleArchiveImage = async () => {
+        if(isDeleting) return;      // function guard
+        setIsDeleting(true);
+
         try {
             const response = await axios.put(`${API_URL}/api/archive/aboutUs`, {
                 imagePath: aboutUsData.image, // Pass the image path from your state
@@ -111,10 +127,15 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
             if (response.status === 200) {
                 mountToast('AboutUs image archived successfully.', 'success');
                 fetchAboutUsData(); // Refresh the data
+                setDeleteModalVisible(false);
+                setCurrentModal("aboutUs");  // Close modal after saving
             }
         } catch (error) {
-            console.error('Error archiving AboutUs image:', error);
+            // console.error('Error archiving AboutUs image:', error);
             mountToast('Failed to archive image. Please try again.', 'error');
+            setCurrentModal("aboutUsEdit");  // Close modal after saving
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -138,8 +159,8 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
     }
 
     useEffect(() => {
-        if (confirmDelete && selectedImage) {
-            handleDeleteImage();
+        if (confirmDelete) {
+            handleArchiveImage();
             setConfirmDelete(false);
         }
     }, [confirmDelete, selectedImage]);
@@ -209,7 +230,7 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
                                                     className = { `${ styles.txtTitle} ${ styles.deleteBtn }` } 
                                                     //onClick={() => {setDeleteModalVisible(true); setSelectedImage(aboutUsData.image);} } //handleDeleteImage
                                                     //onClick={handleDeleteImage}
-                                                    onClick={() => handleArchiveImage()}
+                                                    onClick={() => {setDeleteModalVisible(true);}}
                                                 >
                                                     Delete Image
                                                 </button>
@@ -233,7 +254,15 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
                                     )}
 
                                     <button className = { styles.saveBtn }>
-                                        <span className = { styles.txtTitle } onClick = {() => { handleUpdateImage(aboutUsData.image); }}>Save Image</span>
+                                        <span className = { styles.txtTitle } onClick = {() => { handleUpdateImage(aboutUsData.image); }}>
+                                            {isSaving ? (
+                                                <>
+                                                    <span className = { styles.loadingSpinner }></span>
+                                                </>
+                                            ) : (
+                                                'Save Image'
+                                            )}
+                                        </span>
                                     </button>
                                     
 
@@ -303,7 +332,15 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
                             exit = {{opacity: 0}}
                             transition = {{ duration: 0.3, ease: "easeInOut"}}
                         >
-                            <span className = { styles.txtTitle } onClick = {() => { handleSaveDetails(); }}>Save Changes</span>
+                            <span className = { styles.txtTitle } onClick = {() => { handleSaveDetails(); }}>
+                                {isSaving ? (
+                                    <>
+                                        <span className = { styles.loadingSpinner }></span>
+                                    </>
+                                ) : (
+                                    'Save Changes'
+                                )}
+                            </span>
                         </motion.button>
                     </div>
                 )}
@@ -323,6 +360,7 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
                         <Confirmation 
                             setConfirmDelete = { confirmAndDelete }
                             onCancel = { cancelBtn }
+                            isDeleting = { isDeleting }
                         />
                    </motion.div>
                 )}

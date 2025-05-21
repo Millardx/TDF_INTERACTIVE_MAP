@@ -196,6 +196,7 @@
     margin-top: 20px;
     pointer-events: all;
     user-select: none;
+    min-width: 150px;
     -webkit-tap-highlight-color: transparent; // removes blue highlight on mobile
 
     span {
@@ -206,7 +207,8 @@
         padding: 5px 30px;
         transition: all 0.2s ease-in-out;
 
-        &:hover {
+        &:hover, 
+        &:hover .loadingSpinner{
             background-color: $secondary;
             color: $primary;
         }

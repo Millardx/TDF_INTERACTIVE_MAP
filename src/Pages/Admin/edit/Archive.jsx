@@ -25,6 +25,7 @@ import LoadingAnim from '../utility/PageLoaderComponent/LoadingAnim';
 export default function Archive() {
     const [archives, setArchives] = useState([]);
     const [isLoading, setIsLoading] = useLoading(true);     // For loading
+    const [isFirstLoad, setIsFirstLoad] = useState(true);
     const [isDeleting, setIsDeleting] = useState(false);
     const [isRestoring, setIsRestoring] = useState(false);
 
@@ -114,7 +115,7 @@ export default function Archive() {
     
 
     const fetchArchives = async (limit) => {
-        setIsLoading(true);
+        if (isFirstLoad) setIsLoading(true);    // Start loading
 
         try {
             const response = await axios.get(`${API_URL}/api/archive/archivesData?limit=${limit}`);
@@ -131,6 +132,7 @@ export default function Archive() {
             console.error('Error fetching archives:', error);
         } finally {
             setIsLoading(false);
+            setIsFirstLoad(false);    // Mark that first load is done
         }
     };
     
@@ -141,6 +143,9 @@ export default function Archive() {
   
     // Delete handler
     const handleDelete = async (archiveId) => {
+        //function guard
+        if (isDeleting) return;    // break execution if already loading
+
         setIsDeleting(true);    // run loading
 
         try {
@@ -169,6 +174,9 @@ export default function Archive() {
         
 
     const handleRestore = async (archiveId, type) => {
+        //function guard
+        if (isRestoring) return;    // break execution if already loading
+
         setIsRestoring(true);   // run loading
 
         try {

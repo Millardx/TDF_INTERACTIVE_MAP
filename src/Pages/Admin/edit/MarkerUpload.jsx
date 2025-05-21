@@ -19,21 +19,21 @@ export default function MarkerUpload({ markerId ,setmarkerId, onClose, onRefresh
 
   const  notify  = UseToast();
 
-      // Fetch marker details when markerId changes
-      useEffect(() => {
-        const fetchMarkerDetails = async () => {
-            try {
-                const response = await axios.get(`${API_URL}/api/markerIcons/${markerId}`);
-                const { name: fetchedName, iconPath } = response.data;
-                setName(fetchedName); // Set the current name
-                setCurrentImage(`${API_URL}/uploads/icons/${iconPath}`); // Set the current image
-            } catch (error) {
-                console.error("Error fetching marker details:", error);
-            }
-        };
+  // Fetch marker details when markerId changes
+  useEffect(() => {
+      const fetchMarkerDetails = async () => {
+          try {
+              const response = await axios.get(`${API_URL}/api/markerIcons/${markerId}`);
+              const { name: fetchedName, iconPath } = response.data;
+              setName(fetchedName); // Set the current name
+              setCurrentImage(`${API_URL}/uploads/icons/${iconPath}`); // Set the current image
+          } catch (error) {
+              console.error("Error fetching marker details:", error);
+          }
+      };
 
-        if (markerId) fetchMarkerDetails();
-    }, [markerId]);
+      if (markerId) fetchMarkerDetails();
+  }, [markerId]);
 
   // Handle file selection and preview
   const handleFileChange = (e) => {
@@ -54,6 +54,9 @@ export default function MarkerUpload({ markerId ,setmarkerId, onClose, onRefresh
       notify('Please provide all required fields.', 'error');
       return;
     }
+
+    //function guard
+    if (isSaving) return;    // break execution if already loading
 
     setIsSaving(true);
 

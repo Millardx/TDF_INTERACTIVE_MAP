@@ -64,6 +64,9 @@ export default function EditMarkers() {
     }, []);
 
     const handleIconArchive = async (markerId, iconPath , name) => {
+        //function guard
+        if (isDeleting) return;    // break execution if already loading
+
         setIsDeleting(true);
 
         try {
@@ -130,6 +133,7 @@ export default function EditMarkers() {
     
 
     const handleDeleteBtn = () => {
+        setIsDeleting(false);
         setIsDelete(!isDelete);
         setIsMarker(null);
         setIconToDelete(null);
@@ -153,6 +157,9 @@ export default function EditMarkers() {
     
     {/*handle delete for the Markers*/}
     const handleConfirmDelete = async (markerId) => {
+        //function guard
+        if (isDeleting) return;    // break execution if already loading
+
         setIsDeleting(true);
 
         try {

@@ -98,9 +98,14 @@ const AudioUpload = ({ audioId, currentTitle, onClose, language}) => {
     if (language === 'filipino' && filipinoFile) {
       formData.append('filipinoAudio', filipinoFile);
     }
+
+    //function guard
+    if (isSaving) return;    // break execution if already loading
+    
+    setIsSaving(true);
   
     try {
-      setIsSaving(true);
+      
 
       await axios.put(`${API_URL}/api/audio/update/${audioId}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }

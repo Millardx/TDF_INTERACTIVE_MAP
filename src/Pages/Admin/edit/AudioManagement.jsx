@@ -48,6 +48,7 @@ const AudioManagement = () => {
   const [fileId, setFileId] = useState(null);
 
   const handleDeleteBtn = () => {
+      setIsDeleting(false);
       setIsDelete(!isDelete);
   }
 
@@ -149,6 +150,8 @@ const AudioManagement = () => {
 
 
   const handleAudioArchive = async (audioId, englishUrl, filipinoUrl) => {
+    //function guard
+    if (isDeleting) return;    // break execution if already loading
 
     setIsDeleting(true);
 

@@ -42,6 +42,7 @@ const Cards = () => {
     const [fileId, setFileId] = useState(null);
 
     const handleDeleteBtn = () => {
+      setIsDeleting(false);
       setIsDelete(!isDelete);
     }
 
@@ -127,6 +128,8 @@ const Cards = () => {
   // Handle submit to save only changed cards to the database
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevent default form submission
+    //function guard
+    if (isSaving) return;    // break execution if already loading
 
     let changesMade = false; // Flag to track if any changes are made
 
@@ -180,6 +183,9 @@ const Cards = () => {
 
 
     const handleImageArchive = async (imageId, imagePath) => {
+      //function guard
+      if (isDeleting) return;    // break execution if already loading
+
       setIsDeleting(true);
 
       try {

@@ -87,6 +87,9 @@ const UserManagement = () => {
     };
 
     const handleAddOrUpdateUser = async (user) => {
+        //function guard
+        if (isSaving) return;    // break execution if already loading
+
         setIsSaving(true);
 
         try {
@@ -120,6 +123,9 @@ const UserManagement = () => {
     
 
     const handleArchiveUser = async () => {
+        //function guard
+        if (isDeleting) return;    // break execution if already loading
+        
         setIsDeleting(true);
 
         try {

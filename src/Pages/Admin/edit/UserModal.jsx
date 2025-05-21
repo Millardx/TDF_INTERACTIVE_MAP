@@ -22,6 +22,7 @@ const UserModal = ({ user, onSave, onClose, isSaving }) => {
     const { inputType, iconClass, toggleVisibility } = TogglePassword();
     const mountToast = UseToast();
 
+    const [isProcessing, setIsProcessing] = useState(false);
 
     // validate password
     const { isPasswordValid } = ValidatePassword(mountToast);
@@ -72,7 +73,11 @@ const UserModal = ({ user, onSave, onClose, isSaving }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-    
+
+        // function guard
+        if (isProcessing || isSaving) return;       // break execution if already loading
+        setIsProcessing(true);                      // Lock until external saving completes
+        
         // Validation...
         if (!name.trim()) {
             mountToast('Name is required', 'error');
@@ -127,9 +132,13 @@ const UserModal = ({ user, onSave, onClose, isSaving }) => {
     
         onSave(payload);
     };
-    
-    
-    
+
+    useEffect(() => {
+        if (!isSaving) {
+            setIsProcessing(false); // Re-enable form after save completes
+        }
+    }, [isSaving]);
+        
 
     return (
         <>

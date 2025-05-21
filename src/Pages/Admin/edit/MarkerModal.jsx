@@ -43,20 +43,20 @@ export default function MarkerModal({ onClose ,markerData }) {
     }, [markerIcons, markerData]);
     
 
-  // Handle changes to areaName or iconType
-  useEffect(() => {
-    setIsAreaNameEdited(areaName !== markerData?.areaName);
-    setIsIconTypeEdited(iconType !== markerData?.iconType);
-}, [areaName, iconType, markerData]);
-  
-const handleIconTypeChange = (e) => {
-    const selectedType = e.target.value;
-    setIconType(selectedType); // Update selected icon type
-    const selectedMarker = markerIcons.find((icon) => icon.name === selectedType);
-    setMarker(
-        selectedMarker ? `${selectedMarker.iconPath}` : ""
-    ); // Dynamically set the corresponding marker icon
-};
+    // Handle changes to areaName or iconType
+    useEffect(() => {
+        setIsAreaNameEdited(areaName !== markerData?.areaName);
+        setIsIconTypeEdited(iconType !== markerData?.iconType);
+    }, [areaName, iconType, markerData]);
+    
+    const handleIconTypeChange = (e) => {
+        const selectedType = e.target.value;
+        setIconType(selectedType); // Update selected icon type
+        const selectedMarker = markerIcons.find((icon) => icon.name === selectedType);
+        setMarker(
+            selectedMarker ? `${selectedMarker.iconPath}` : ""
+        ); // Dynamically set the corresponding marker icon
+    };
 
 
     const handleSave = async (e) => {
@@ -66,6 +66,9 @@ const handleIconTypeChange = (e) => {
             mountToast('No changes detected for Marker Name or Icon Type', 'warn');
             return;
         }
+
+        //function guard
+        if (isSaving) return;    // break execution if already loading
         
         setIsSaving(true);
         try {

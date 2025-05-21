@@ -187,6 +187,9 @@ const Modal = () => {
           return;
         }
 
+        //function guard
+        if (isSaving) return;    // break execution if already loading
+
         setIsSaving(true);
       
         try {
@@ -243,6 +246,9 @@ const Modal = () => {
         return;
       }
 
+      //function guard
+      if (isSaving) return;    // break execution if already loading
+
       setIsSaving(true);
       try {
         const formData = new FormData();
@@ -287,6 +293,9 @@ const Modal = () => {
 
   // Archive handler for ModalsEdit.jsx
   const handleImageArchive = async (modalId, imagePath) => {
+    //function guard
+    if (isDeleting) return;    // break execution if already loading
+
     setIsDeleting(true);
 
     try {
@@ -332,6 +341,9 @@ const Modal = () => {
       mountToast("No changes in description or technologies data.", "error");
       return;
     }
+
+    //function guard
+    if (isSaving) return;    // break execution if already loading
 
     setIsSaving(true);
     try {

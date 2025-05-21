@@ -7,6 +7,8 @@ import UseToast from '../utility/AlertComponent/UseToast';
 import { API_URL } from '/src/config';
 
 const AudioUpload = ({ audioId, currentTitle, onClose, language}) => {
+  const [isSaving, setIsSaving] = useState(false);
+
   // toast alert pop up
   const mountToast = UseToast();
 
@@ -98,6 +100,8 @@ const AudioUpload = ({ audioId, currentTitle, onClose, language}) => {
     }
   
     try {
+      setIsSaving(true);
+
       await axios.put(`${API_URL}/api/audio/update/${audioId}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
@@ -107,6 +111,8 @@ const AudioUpload = ({ audioId, currentTitle, onClose, language}) => {
     } catch (error) {
       console.error('Update error:', error);
       mountToast("Error updating audio. Please try again.", "error");
+    } finally {
+      setIsSaving(false);
     }
   };
   
@@ -179,7 +185,13 @@ const AudioUpload = ({ audioId, currentTitle, onClose, language}) => {
               type="submit" 
               onClick={handleUpdate}
             >
-              Save
+              {isSaving ? (
+                <>
+                  <span className = { styles.loadingSpinner }></span>
+                </>
+              ) : (
+                'Save'
+              )}
             </button>
             <button 
               className = { `${styles.cancelBtn} ${styles.txtTitle}` } 

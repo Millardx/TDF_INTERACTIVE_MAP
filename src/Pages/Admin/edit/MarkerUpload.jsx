@@ -7,6 +7,9 @@ import styles from "./styles/markerUploadStyles.module.scss";
 import { API_URL } from '/src/config';
 
 export default function MarkerUpload({ markerId ,setmarkerId, onClose, onRefresh  }) {
+
+  const [isSaving, setIsSaving] = useState(false);
+
   const [file, setFile] = useState(null); // Store selected file
   const [fileName, setFileName] = useState('No File Selected...');
   const [preview, setPreview] = useState(null); // For image preview
@@ -52,6 +55,8 @@ export default function MarkerUpload({ markerId ,setmarkerId, onClose, onRefresh
       return;
     }
 
+    setIsSaving(true);
+
     const formData = new FormData();
     formData.append('name', name);
     formData.append('icon', file);
@@ -80,6 +85,8 @@ export default function MarkerUpload({ markerId ,setmarkerId, onClose, onRefresh
     } catch (error) {
       console.error('Error saving marker icon:', error);
       alert('An unexpected error occurred.', 'error');
+    } finally {
+      setIsSaving(false);
     }
   };
   
@@ -137,7 +144,14 @@ export default function MarkerUpload({ markerId ,setmarkerId, onClose, onRefresh
                     className={`${styles.saveBtn} ${styles.txtTitle}`}
                     onClick={handleSave}
                 >
-                    Save
+                  {isSaving ? (
+                    <>
+                      <span className = { styles.loadingSpinner }></span>
+                    </>
+                  ) : (
+                    'Save'
+                  )}
+                    
                 </button>
             <button
               className={`${styles.cancelBtn} ${styles.txtTitle}`}

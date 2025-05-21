@@ -19,6 +19,9 @@ import useLoading from '../utility/PageLoaderComponent/useLoading';
 import LoadingAnim from '../utility/PageLoaderComponent/LoadingAnim';
 
 const Modal = () => {
+    const [isSaving, setIsSaving] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+
     // toast alert pop up
     const mountToast = UseToast();
 
@@ -33,6 +36,7 @@ const Modal = () => {
     const [modalImages, setModalImages] = useState([]);
     const [modalImagePreviews, setModalImagePreviews] = useState([]);
     const [isLoading, setIsLoading] = useState(true); // Add for Pagination and UX
+    const [isFirstLoad, setIsFirstLoad] = useState(true);
     const [isOpen, setIsOpen] = useState(false); // Control modal visibility
 
     const [uploadModalVisible, setUploadModalVisible] = useState(false); // Toggle for upload modal
@@ -58,17 +62,18 @@ const Modal = () => {
     }, [confirmDelete, deleteFile, fileId]);
 
 
-    // Fetch all modals on component mount
+  // Fetch all modals on component mount
   useEffect(() => {
     const fetchModals = async () => {
-      setIsLoading(true); // Set loading to true before fetching
+      if (isFirstLoad) setIsLoading(true); // Set loading to true before fetching
       try {
         const response = await axios.get(`${API_URL}/api/modal`);
         setModals(response.data);
       } catch (error) {
         console.error('Error fetching modals:', error);
       } finally {
-        setIsLoading(false); // Set loading to false after fetching
+        setIsLoading(false);        // Set loading to false after fetching
+        setIsFirstLoad(false);      // Mark that first load is done
       }
     };
     fetchModals();
@@ -77,7 +82,7 @@ const Modal = () => {
   // Fetch the latest Data from DB using ID, Updates preview whenever action made.
   const fetchModalData = async () => {
     if (currentModal) {
-      setIsLoading(true); // Start loading
+      if (isFirstLoad) setIsLoading(true);  // Start loading
       try {
         const response = await axios.get(`${API_URL}/api/modal/${currentModal._id}`);
         
@@ -103,7 +108,8 @@ const Modal = () => {
       } catch (error) {
         console.error('Error fetching modal images:', error);
       } finally {
-        setIsLoading(false); // End loading
+        setIsLoading(false);      // End loading
+        setIsFirstLoad(false);    // Mark that first load is done
       }
     }
   };
@@ -180,6 +186,8 @@ const Modal = () => {
           mountToast("No modal selected for uploading images.", "error");
           return;
         }
+
+        setIsSaving(true);
       
         try {
           const formData = new FormData();
@@ -207,6 +215,8 @@ const Modal = () => {
         } catch (error) {
           console.error('Error uploading images:', error);
           mountToast("Error uploading images. Please try again.", "error");
+        } finally {
+          setIsSaving(false);
         }
       };
       
@@ -232,7 +242,8 @@ const Modal = () => {
         mountToast("No modal or image index selected for updating.", "error");
         return;
       }
-    
+
+      setIsSaving(true);
       try {
         const formData = new FormData();
         formData.append('title', originalModalImages.title); // Keep the fixed title
@@ -266,6 +277,8 @@ const Modal = () => {
       } catch (error) {
         console.error('Error updating image:', error);
         mountToast("Error updating the image. Please try again.", "error");
+      } finally {
+        setIsSaving(false);
       }
     };
 
@@ -274,6 +287,8 @@ const Modal = () => {
 
   // Archive handler for ModalsEdit.jsx
   const handleImageArchive = async (modalId, imagePath) => {
+    setIsDeleting(true);
+
     try {
       console.log('Archiving modal image...', modalId, imagePath);
       const response = await axios.put(`${API_URL}/api/archive/modal/${modalId}`, { imagePath });
@@ -299,6 +314,8 @@ const Modal = () => {
     } catch (error) {
       console.error('Error archiving modal image:', error);
       mountToast("Error archiving modal image. Please try again.", "error");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -316,6 +333,7 @@ const Modal = () => {
       return;
     }
 
+    setIsSaving(true);
     try {
       const response = await axios.put(`${API_URL}/api/modal/${currentModal._id}/description`, {
         description,
@@ -331,6 +349,8 @@ const Modal = () => {
     } catch (error) {
       console.error('Error saving description:', error);
       mountToast("Error saving description. Please try again.", "error");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -439,7 +459,13 @@ const Modal = () => {
                 className = { `${styles.txtTitle} ${ styles.btnSave }` } 
                 onClick = { handleDescTech }
               > 
-                Save Changes 
+                {isSaving ? (
+                  <>
+                      <span className = { styles.loadingSpinner }></span>
+                  </>
+                ) : (
+                    'Save Changes'
+                )}
               </button>
 
               <AnimatePresence>
@@ -604,7 +630,7 @@ const Modal = () => {
               </AnimatePresence>
             </div>
             
-            {/* Update Modal */}
+            {/* Update Modal (single)*/}
             <AnimatePresence>
               {updateModalVisible && (
                 <div className = { styles.popUpContainer }>
@@ -643,7 +669,13 @@ const Modal = () => {
                     </div>
                     <div className = { styles.btnContainer }>
                       <button type="button" className={styles.uploadBtn} onClick={handleUpdate}>
-                        Upload
+                        {isSaving ? (
+                            <>
+                                <span className = { styles.loadingSpinner }></span>
+                            </>
+                        ) : (
+                            'Upload'
+                        )}
                       </button>
                       <button type="button" className={styles.cancelBtn} onClick={cancelBtn}>Cancel</button>
                     </div>
@@ -652,7 +684,7 @@ const Modal = () => {
               )}
             </AnimatePresence>
 
-            {/* Upload Modal */}
+            {/* Add image Modal (multiple) */}
             <AnimatePresence>
               {uploadModalVisible && (
                 <div className = { styles.popUpContainer }>
@@ -699,7 +731,19 @@ const Modal = () => {
                       </div>
 
                       <div className = { styles.btnContainer }>
-                        <button type="button" className={styles.uploadBtn} onClick={handleUpload}>Upload</button>
+                        <button 
+                          type="button" 
+                          className={styles.uploadBtn} 
+                          onClick={handleUpload}
+                        >
+                          {isSaving ? (
+                            <>
+                                <span className = { styles.loadingSpinner }></span>
+                            </>
+                          ) : (
+                              'Upload'
+                          )}
+                        </button>
                         <button type="button" className={styles.cancelBtn} onClick={cancelBtn}>Cancel</button>
                       </div>
                   </motion.div>
@@ -720,6 +764,7 @@ const Modal = () => {
                   <Confirmation 
                     setConfirmDelete = { confirmAndDelete }
                     onCancel = { cancelBtn }
+                    isDeleting = { isDeleting }
                   />
                 </motion.div>
                 

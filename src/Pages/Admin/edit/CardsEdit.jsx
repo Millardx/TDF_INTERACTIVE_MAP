@@ -20,6 +20,9 @@ import useLoading from '../utility/PageLoaderComponent/useLoading';
 import LoadingAnim from '../utility/PageLoaderComponent/LoadingAnim';
 
 const Cards = () => {
+    const [isSaving, setIsSaving] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+
     // toast alert pop up
     const mountToast = UseToast();
     const [isLoading, setIsLoading] = useLoading(true);     // For loading
@@ -125,6 +128,7 @@ const Cards = () => {
 
     let changesMade = false; // Flag to track if any changes are made
 
+    setIsSaving(true);
     try {
       for (const card of cards) {
         const originalCard = originalCards.find((c) => c._id === card._id); // Get the original card
@@ -167,11 +171,15 @@ const Cards = () => {
     } catch (error) {
       console.error('Error saving card data:', error);
       mountToast("Error saving data. Please try again.", "error"); // Optional: Show error message
+    } finally {
+      setIsSaving(false);
     }
   };
 
 
     const handleImageArchive = async (imageId, imagePath) => {
+      setIsDeleting(true);
+
       try {
         console.log('Archiving image...', imageId, imagePath);
         const response = await axios.put(`${API_URL}/api/archive/cards/${imageId}`, { imagePath });
@@ -192,6 +200,8 @@ const Cards = () => {
       } catch (error) {
         console.error('Error archiving image:', error);
         mountToast("Error archiving image. Please try again.", "error");
+      } finally {
+        setIsDeleting(false);
       }
     };
 
@@ -258,7 +268,13 @@ const Cards = () => {
                 className = { `${styles.txtTitle} ${ styles.btnSave }` } 
                 onClick = {handleSubmit}
               > 
-                Save Changes 
+                {isSaving ? (
+                  <>
+                      <span className = { styles.loadingSpinner }></span>
+                  </>
+                ) : (
+                    'Save Changes'
+                )}
               </button>
 
               <AnimatePresence mode="wait">
@@ -376,6 +392,7 @@ const Cards = () => {
                     <Confirmation 
                         onCancel = {() => handleDeleteBtn()}
                         setConfirmDelete = { confirmAndDelete }
+                        isDeleting = { isDeleting }
                     />
                 </motion.div>
               )}

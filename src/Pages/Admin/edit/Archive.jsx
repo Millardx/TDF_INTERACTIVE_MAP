@@ -25,6 +25,8 @@ import LoadingAnim from '../utility/PageLoaderComponent/LoadingAnim';
 export default function Archive() {
     const [archives, setArchives] = useState([]);
     const [isLoading, setIsLoading] = useLoading(true);     // For loading
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [isRestoring, setIsRestoring] = useState(false);
 
     //for deletion
     const [itemToDelete, setItemToDelete] = useState(null);
@@ -137,71 +139,79 @@ export default function Archive() {
         fetchArchives(fetchLimit); // Fetch archives with the current limit
     }, [fetchLimit]); // Re-run when fetchLimit changes
   
-        // Delete handler
-        const handleDelete = async (archiveId) => {
-            try {
-                const token = localStorage.getItem('token');
-                const response = await axios.delete(`${API_URL}/api/delete/archive/${archiveId}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
-                mountToast(response.data.message, 'success');
-                fetchArchives(fetchLimit);
-                setConfirmDelete(false);
-                setItemToDelete(null);
-                setIsDelete(false);
-        
-                // Update UI by filtering out the deleted item
-                setArchives((prev) => prev.filter((archive) => archive._id !== archiveId));
-            } catch (error) {
-                console.error('Error deleting archive entry:', error.response?.data || error.message);
-                mountToast(error.response?.data?.error || 'Error deleting archive entry', 'error');
-            }
-        };
+    // Delete handler
+    const handleDelete = async (archiveId) => {
+        setIsDeleting(true);    // run loading
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.delete(`${API_URL}/api/delete/archive/${archiveId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            mountToast(response.data.message, 'success');
+            fetchArchives(fetchLimit);
+            setConfirmDelete(false);
+            setItemToDelete(null);
+            setIsDelete(false);
+    
+            // Update UI by filtering out the deleted item
+            setArchives((prev) => prev.filter((archive) => archive._id !== archiveId));
+        } catch (error) {
+            console.error('Error deleting archive entry:', error.response?.data || error.message);
+            mountToast(error.response?.data?.error || 'Error deleting archive entry', 'error');
+        } finally {
+            setIsDeleting(false);
+        }
+    };
         
         
 
-        const handleRestore = async (archiveId, type) => {
-            try {
-                const token = localStorage.getItem('token');
-        
-                // Determine the correct endpoint based on the type
-                let endpoint = '';
-                if (type === 'document') {
-                    endpoint = `${API_URL}/api/restore/user/${archiveId}`;
-                } else if (type === 'markerIcon') {
-                    endpoint = `${API_URL}/api/restore/markerIcon/${archiveId}`;
-                } else {
-                    // Handle other types (e.g., card, audio, etc.)
-                    endpoint = `${API_URL}/api/restore/${archiveId}`;
-                }
-        
-                // Make the API call to restore the archive with Authorization header
-                const response = await axios.put(endpoint, {}, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
-        
-                mountToast(response.data.message, 'success');
-        
-                // Close the confirmation modal and reset states
-                setConfirmRestore(false);
-                setItemToRestore(null);
-                setItemId(null);
-                setIsRestore(false);
-        
-                // Refresh the archive list
-                fetchArchives(fetchLimit);
-        
-                // Remove restored item from UI
-                setArchives((prev) => prev.filter((archive) => archive._id !== archiveId));
-            } catch (error) {
-                console.error('Error restoring archive entry:', error.response?.data || error.message);
-                mountToast(error.response?.data?.error || 'Error restoring archive entry', 'error');
+    const handleRestore = async (archiveId, type) => {
+        setIsRestoring(true);   // run loading
+
+        try {
+            const token = localStorage.getItem('token');
+    
+            // Determine the correct endpoint based on the type
+            let endpoint = '';
+            if (type === 'document') {
+                endpoint = `${API_URL}/api/restore/user/${archiveId}`;
+            } else if (type === 'markerIcon') {
+                endpoint = `${API_URL}/api/restore/markerIcon/${archiveId}`;
+            } else {
+                // Handle other types (e.g., card, audio, etc.)
+                endpoint = `${API_URL}/api/restore/${archiveId}`;
             }
-        };
+    
+            // Make the API call to restore the archive with Authorization header
+            const response = await axios.put(endpoint, {}, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+    
+            mountToast(response.data.message, 'success');
+    
+            // Close the confirmation modal and reset states
+            setConfirmRestore(false);
+            setItemToRestore(null);
+            setItemId(null);
+            setIsRestore(false);
+    
+            // Refresh the archive list
+            fetchArchives(fetchLimit);
+    
+            // Remove restored item from UI
+            setArchives((prev) => prev.filter((archive) => archive._id !== archiveId));
+        } catch (error) {
+            console.error('Error restoring archive entry:', error.response?.data || error.message);
+            mountToast(error.response?.data?.error || 'Error restoring archive entry', 'error');
+        } finally {
+            setIsRestoring(false);
+        }
+    };
         
 
     // Added by Lorenzo @ 05/01/2025
@@ -405,6 +415,7 @@ export default function Archive() {
                             <Confirmation 
                                 onCancel = {() => handleDeleteBtn()}
                                 setConfirmDelete={ confirmAndDelete }
+                                isDeleting={ isDeleting }
                             />
                         </motion.div>
                     )}
@@ -423,6 +434,7 @@ export default function Archive() {
                             <ConfirmRestore 
                                 onCancel = {() => handleRestoreBtn()}
                                 setConfirmDelete={ confirmAndRestore }
+                                isRestoring = { isRestoring }
                             />
                         </motion.div>
                     )}

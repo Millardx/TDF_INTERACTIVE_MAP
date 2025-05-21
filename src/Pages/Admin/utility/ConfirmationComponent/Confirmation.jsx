@@ -1,7 +1,7 @@
 
 import styles from "./styles/confirmationStyles.module.scss"
 
-export default function Confirmation({ onCancel, setConfirmDelete }) {
+export default function Confirmation({ onCancel, setConfirmDelete, isDeleting }) {
     
     return (
         <>
@@ -18,7 +18,13 @@ export default function Confirmation({ onCancel, setConfirmDelete }) {
                                 className = { styles.txtTitle}
                                 onClick = { setConfirmDelete }    
                             >
-                                Delete
+                                {isDeleting ? (
+                                    <>
+                                        <span className = { styles.loadingSpinner }></span>
+                                    </>
+                                ) : (
+                                    'Delete'
+                                )}
                             </button>
                         </div>
                         <div className = { styles.cancel }>

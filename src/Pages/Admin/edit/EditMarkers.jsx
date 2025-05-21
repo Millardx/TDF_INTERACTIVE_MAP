@@ -25,11 +25,13 @@ export default function EditMarkers() {
     // For loading
     const [isIconLoaded, setIsIconLoaded] = useState(false);
     const [isMarkerLoaded, setIsMarkerLoaded] = useState(false);
-    const [isLoading, setIsLoading] = useLoading(true);     
+    const [isLoading, setIsLoading] = useLoading(true);
+    const [isDeleting, setIsDeleting] = useState(false);     
 
     const [showUploadMarker, setShowUploadMarker] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [confirmDelete, setConfirmDelete] = useState(false);
+    const [iconToDelete, setIconToDelete] = useState(null);     // targets icon to delete
     const [isMarker, setIsMarker] = useState(null);
     const [isDelete, setIsDelete] = useState(false); // Confirmation Modal 
     const [markers, setMarkers] = useState([]); // State for fetched markers
@@ -62,6 +64,8 @@ export default function EditMarkers() {
     }, []);
 
     const handleIconArchive = async (markerId, iconPath , name) => {
+        setIsDeleting(true);
+
         try {
           console.log('Archiving marker icon...', markerId, name,  iconPath);
       
@@ -83,12 +87,16 @@ export default function EditMarkers() {
             console.log('Marker Icon archived successfully');
             mountToast("Marker icon archived successfully", "success");
             setIsDeleteIcon(false);
-            setSelectedMarkerId(null);
+            setIsDelete(false);
+            setIconToDelete(null);
             fetchMarkerIcons();
           }
         } catch (error) {
           console.error('Error archiving marker icon:', error);
           mountToast("Error archiving marker icon. Please try again.", "error");
+          setIconToDelete(null);
+        } finally {
+            setIsDeleting(false);
         }
     };
       
@@ -96,7 +104,6 @@ export default function EditMarkers() {
 
     // icon delete
     const [isEditIcon, setIsEditIcon] = useState(false);
-
     const [isDeleteIcon, setIsDeleteIcon] = useState(false);
 
     const handleIconDelete = () => {
@@ -124,6 +131,8 @@ export default function EditMarkers() {
 
     const handleDeleteBtn = () => {
         setIsDelete(!isDelete);
+        setIsMarker(null);
+        setIconToDelete(null);
     }
 
     const confirmAndDelete = () => {
@@ -131,14 +140,21 @@ export default function EditMarkers() {
     }
 
     useEffect(() => {
-        if (confirmDelete && isMarker) {
-            handleConfirmDelete(isMarker); 
+        if (confirmDelete) {
+            if (isMarker) {
+                handleConfirmDelete(isMarker); 
+            } else if (iconToDelete) {
+                handleIconArchive(iconToDelete.id, iconToDelete.path, iconToDelete.name);
+            }
+            
             setConfirmDelete(false);
         }
-      }, [confirmDelete, isMarker]);
+    }, [confirmDelete, isMarker, iconToDelete]);
     
     {/*handle delete for the Markers*/}
     const handleConfirmDelete = async (markerId) => {
+        setIsDeleting(true);
+
         try {
           const response = await axios.delete(`${API_URL}/api/markers/${markerId}`);
           setMarkers(markers.filter(marker => marker._id !== confirmDelete)); // Remove the deleted marker from the list
@@ -150,6 +166,8 @@ export default function EditMarkers() {
           console.error('Error deleting marker:', error);
           mountToast('Error deleting marker', 'error');
           setIsDelete(false);
+        } finally {
+            setIsDeleting(false);
         }
     };
       
@@ -267,9 +285,15 @@ export default function EditMarkers() {
                                                 <div 
                                                 className={styles.iconOverlay}
                                                 onClick={() => {
-                                                    setSelectedMarkerId(iconData._id);
+                                                    // setSelectedMarkerId(iconData._id);
                                                     // Trigger the archiving when the delete icon is clicked
-                                                    handleIconArchive(iconData._id, iconData.iconPath, iconData.name);
+                                                    setIconToDelete({
+                                                        id: iconData._id,
+                                                        path: iconData.iconPath,
+                                                        name: iconData.name,
+                                                    });
+
+                                                    setIsDelete(true);      // Open the modal
                                                 }}
                                             >
                                                     <img src={icons.minus} alt="Delete Icon" />
@@ -406,6 +430,7 @@ export default function EditMarkers() {
                             <Confirmation 
                                 onCancel = {() => handleDeleteBtn()}
                                 setConfirmDelete={ confirmAndDelete }
+                                isDeleting={ isDeleting }
                             />
                         </motion.div>
                     )}

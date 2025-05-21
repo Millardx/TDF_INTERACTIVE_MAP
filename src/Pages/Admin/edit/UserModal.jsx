@@ -15,8 +15,8 @@ import TogglePassword from '../utility/PasswordComponent/TogglePassword';
 
 
 
-const UserModal = ({ user, onSave, onClose }) => {
-   
+const UserModal = ({ user, onSave, onClose, isSaving }) => {
+
     // for password visibility toggle
     const { inputType, iconClass, toggleVisibility } = TogglePassword();
     const mountToast = UseToast();
@@ -185,7 +185,15 @@ const UserModal = ({ user, onSave, onClose }) => {
                                 <option value="admin">Admin</option>
                             </select>
                         </div>
-                        <button type="submit">Save</button>
+                        <button type="submit">
+                            {isSaving ? (
+                                <>
+                                    <span className = { styles.loadingSpinner }></span>
+                                </>
+                            ) : (
+                                'Save'
+                            )}
+                        </button>
                     </div>
                     
                 </form>

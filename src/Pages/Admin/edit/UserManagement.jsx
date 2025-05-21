@@ -24,6 +24,9 @@ import useLoading from '../utility/PageLoaderComponent/useLoading';
 import LoadingAnim from '../utility/PageLoaderComponent/LoadingAnim';
 
 const UserManagement = () => {
+    const [isSaving, setIsSaving] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    
     // toast alert pop up
     const mountToast = UseToast();
 
@@ -81,6 +84,8 @@ const UserManagement = () => {
     };
 
     const handleAddOrUpdateUser = async (user) => {
+        setIsSaving(true);
+
         try {
             const token = localStorage.getItem('token');
             if (currentUser) {
@@ -104,12 +109,16 @@ const UserManagement = () => {
         } catch (error) {
             console.error('Failed to save user:', error);
             mountToast('Failed to save user', 'error');
+        } finally {
+            setIsSaving(false);
         }
     };
     
     
 
     const handleArchiveUser = async () => {
+        setIsDeleting(true);
+
         try {
             const token = localStorage.getItem('token'); // Get the token
     
@@ -135,6 +144,8 @@ const UserManagement = () => {
         } catch (error) {
             console.error('Error archiving user:', error.response?.data || error.message);
             mountToast("Failed to archive user. Please try again.", "error");
+        } finally {
+            setIsDeleting(false);
         }
     };
     
@@ -247,7 +258,12 @@ const UserManagement = () => {
                             exit = {{opacity: 0}}
                             transition = {{duration: 0.2, ease: "easeInOut"}}
                         >
-                            <UserModal user={currentUser} onSave={handleAddOrUpdateUser} onClose={() => setModalOpen(false)} />
+                            <UserModal 
+                                user={currentUser} 
+                                onSave={handleAddOrUpdateUser} 
+                                onClose={() => setModalOpen(false)}
+                                isSaving={ isSaving }
+                            />
                         </motion.div>
                     }
                     </AnimatePresence>
@@ -265,6 +281,7 @@ const UserManagement = () => {
                                 <Confirmation 
                                     onCancel = {() => handleDeleteBtn()}
                                     setConfirmDelete = { confirmAndDelete }
+                                    isDeleting={ isDeleting }
                                 />
                             </motion.div>
                         )}

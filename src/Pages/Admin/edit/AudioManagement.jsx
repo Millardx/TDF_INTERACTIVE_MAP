@@ -19,6 +19,10 @@ import useLoading from '../utility/PageLoaderComponent/useLoading';
 import LoadingAnim from '../utility/PageLoaderComponent/LoadingAnim';
 
 const AudioManagement = () => {
+
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  
   // toast alert pop up
   const mountToast = UseToast();
 
@@ -143,6 +147,9 @@ const AudioManagement = () => {
 
 
   const handleAudioArchive = async (audioId, englishUrl, filipinoUrl) => {
+
+    setIsDeleting(true);
+
     try {
       console.log('📦 Archiving audio...', audioId);
   
@@ -178,6 +185,8 @@ const AudioManagement = () => {
     } catch (error) {
       console.error('❌ Error archiving audio:', error);
       mountToast("Error archiving audio. Please try again.", "error");
+    } finally {
+      setIsDeleting(false);
     }
   };
   
@@ -414,6 +423,7 @@ const AudioManagement = () => {
                 <Confirmation 
                     onCancel = {() => handleDeleteBtn()}
                     setConfirmDelete = { confirmAndDelete }
+                    isDeleting={ isDeleting }
                 />
             </motion.div>
           )}

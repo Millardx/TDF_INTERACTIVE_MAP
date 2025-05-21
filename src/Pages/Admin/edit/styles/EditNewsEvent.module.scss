@@ -1,6 +1,19 @@
 @import "../../../Users/landing/signInModule/global.scss";
 @import "../../../Users/landing/signInModule/stylesVariables.scss";
 
+// Crucial for smooth animation transition
+.holder {
+    position: absolute;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    pointer-events: all;
+    max-height: 500px;
+    height: 70%;
+}
+
 .editNewsEventContainer, .uploadImgContainer, .updateImgContainer, .confirmDltContainer {
   align-items: center;
   display: flex;

@@ -310,10 +310,10 @@ export default function NewsEventImage({ setCurrentModal, currentModal, handleCl
         <>
             <AnimatePresence>
                 {currentModal === "editNewsEvent" && !isAddImageModalOpen && !isUpdateModalOpen  && !deleteModalVisible && (
-                    <>
+                    <div className = { styles.holder}>
                         <motion.div 
                             className={styles.editNewsEventContainer}
-                            id = "editNewsEvent"
+                            key = "editNewsEvent"
                             initial = {{opacity: 0}}
                             animate = {{opacity: 1}}
                             exit = {{opacity: 0}}
@@ -430,7 +430,7 @@ export default function NewsEventImage({ setCurrentModal, currentModal, handleCl
                                 )}
                             </span>  {/*For saving the newsHeader and Description */}
                         </motion.button>
-                    </>
+                    </div>
                 )}
             </AnimatePresence>
 

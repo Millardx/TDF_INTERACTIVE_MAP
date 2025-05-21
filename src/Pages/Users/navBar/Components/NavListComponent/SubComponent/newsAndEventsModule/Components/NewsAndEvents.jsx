@@ -69,7 +69,7 @@ export default function NewsAndEvents({ setCurrentModal, handleClickOutside, cur
                     <>
                         <motion.div
                             className={ styles.newsAndEventContainer }
-                            id="newsAndEvents"
+                            key="newsAndEvents"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}

@@ -12,6 +12,7 @@ import axios from 'axios';
 
 // Added by lorenzo @05/20/2025
 import TogglePassword from '../utility/PasswordComponent/TogglePassword';
+import ValidatePassword from '../utility/PasswordComponent/ValidatePassword';
 
 
 
@@ -20,6 +21,10 @@ const UserModal = ({ user, onSave, onClose, isSaving }) => {
     // for password visibility toggle
     const { inputType, iconClass, toggleVisibility } = TogglePassword();
     const mountToast = UseToast();
+
+
+    // validate password
+    const { isPasswordValid } = ValidatePassword(mountToast);
 
     const [name, setName] = useState(user ? user.name : '');
     const [email, setEmail] = useState(user ? user.email : '');
@@ -63,7 +68,7 @@ const UserModal = ({ user, onSave, onClose, isSaving }) => {
     
     
 
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+    // const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -79,14 +84,12 @@ const UserModal = ({ user, onSave, onClose, isSaving }) => {
             return;
         }
     
-        if (!user && !passwordRegex.test(password)) {
-            mountToast('Password must be at least 8 characters, include 1 uppercase, 1 lowercase, 1 number, and 1 special character', 'error');
-            return;
-        }
-    
-        if (user && password && !passwordRegex.test(password)) {
-            mountToast('Password must be at least 8 characters, include 1 uppercase, 1 lowercase, 1 number, and 1 special character', 'error');
-            return;
+        if (!user) {
+            // Creating a new user — password is required
+            if (!isPasswordValid(password)) return;
+        } else {
+            // Updating a user — validate only if password is filled
+            if (password.trim() !== '' && !isPasswordValid(password)) return;
         }
     
         const emailExists = await checkEmailExists();
@@ -140,7 +143,7 @@ const UserModal = ({ user, onSave, onClose, isSaving }) => {
                 <form className ={styles.form} onSubmit={handleSubmit}>
                     <div className = { styles.container1 }>
                         <div className = { styles.subContainer }>
-                            <label>Name:</label>
+                            <label>Name </label>
                             <input
                                 type="text"
                                 value={name}
@@ -150,7 +153,7 @@ const UserModal = ({ user, onSave, onClose, isSaving }) => {
                             />
                         </div>
                         <div className = { styles.subContainer }>
-                            <label>Email:</label>
+                            <label>Email </label>
                             <input
                                 type="email"
                                 value={email}
@@ -161,7 +164,17 @@ const UserModal = ({ user, onSave, onClose, isSaving }) => {
                             />
                         </div>
                         <div className={styles.subContainer}>
-                            <label>Password:</label>
+                            <label>
+                                Password 
+                                <div className = { styles.passToolTip }> 
+                                    <i className="bi bi-question-circle"></i>
+                                    <small className =  { styles.toolTipText }>
+                                        Password should be 8 characters long and have
+                                        at least 1 number, uppercase, lowercase
+                                        and special character 
+                                    </small>
+                                </div>
+                            </label>
                             <div className={styles.passWrapper}>
                                 <input
                                     type={ inputType }

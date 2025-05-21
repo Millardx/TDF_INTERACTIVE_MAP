@@ -51,7 +51,7 @@
             flex-direction: column;
             height: 100%;
             justify-content: center;
-            margin-top: -10px;
+            margin-top: 20px;
             width: 100%;
             position: relative;
             z-index: -1;
@@ -60,6 +60,7 @@
                 border-radius: 20px;
                 width: 100%;
             }
+            
             .noImg {
                 align-items: center;
                 background-color: $outOfFocus;

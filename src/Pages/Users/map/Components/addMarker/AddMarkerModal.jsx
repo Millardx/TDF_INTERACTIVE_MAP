@@ -9,13 +9,19 @@ const Modal = ({ isVisible, onSave, onClose , worldPosition, icon, iconName }) =
   // toast alert pop up
   const mountToast = UseToast();
 
+  const [isSaving, setIsSaving] = useState(false);
+
   const [areaName, setAreaName] = useState('');
 
   const handleSubmit = async () => {
+    if(isSaving) return     // function guard
+
     if (!areaName.trim()) {
       mountToast("Please enter a site name!", "error");
       return;
     }
+
+    setIsSaving(true);
 
     const markerData = {
       areaName,
@@ -46,6 +52,8 @@ const Modal = ({ isVisible, onSave, onClose , worldPosition, icon, iconName }) =
     } catch (error) {
       console.error('Error saving marker:', error.message);
       mountToast("Server error. Could not save marker.", "error");
+    } finally {
+        setIsSaving(false);
     }
   };
   
@@ -86,7 +94,15 @@ const Modal = ({ isVisible, onSave, onClose , worldPosition, icon, iconName }) =
                 maxLength={ 25 }
               />
               <div className={styles.modalButtons}>
-                <button onClick={handleSubmit}>Save</button>
+                <button onClick={handleSubmit}>
+                  {isSaving ? (
+                      <>
+                        <span className = { styles.loadingSpinner }></span>
+                      </>
+                  ) : (
+                      'Save'
+                  )}
+                </button>
                 <button onClick={handleClose}>Close</button>
               </div>
             </div>

@@ -112,6 +112,7 @@ export default function MarkerModal({ onClose ,markerData }) {
                             type="text"
                             value={areaName}
                             onChange={(e) => setAreaName(e.target.value)}
+                            maxLength={ 20 }
                             required
                         />
                      <div className={styles.iconType}>

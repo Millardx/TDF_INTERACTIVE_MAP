@@ -137,6 +137,7 @@ export default function MarkerUpload({ markerId ,setmarkerId, onClose, onRefresh
               placeholder="Enter Marker Icon Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              maxLength={ 20 }
               required
               className={styles.inputField}
             />

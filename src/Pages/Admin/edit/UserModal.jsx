@@ -159,6 +159,7 @@ const UserModal = ({ user, onSave, onClose, isSaving }) => {
                                 onChange={(e) => setName(e.target.value)}
                                 placeholder="Enter Name"
                                 required
+                                maxLength={ 25 }
                             />
                         </div>
                         <div className = { styles.subContainer }>

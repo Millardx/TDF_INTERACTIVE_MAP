@@ -1,7 +1,13 @@
 @import '../../../../Users/landing/signInModule/stylesVariables.scss';
 @import '../../../../Users/landing/signInModule/global.scss';
 
-.loaderWrapper {
+// for modal - specific styling
+.modalLoader {
+    height: 100% !important;
+}
+
+
+.loaderWrapper, .modalLoader {
     display: flex;
     flex-direction: column;
     align-items: center;

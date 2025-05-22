@@ -9,8 +9,17 @@ import images from '../../../../../../../assets/for_landingPage/Images.jsx'
 import icons from '../../../../../../../assets/for_landingPage/Icons.jsx'
 import { API_URL } from '/src/config';
 
+import UseToast from '../../../../../../Admin/utility/AlertComponent/UseToast.jsx';
+import useLoading from '../../../../../../Admin/utility/PageLoaderComponent/useLoading.jsx';
+import LoadingAnim from '../../../../../../Admin/utility/PageLoaderComponent/LoadingAnim.jsx';
 
 export default function AboutUs({ setCurrentModal, handleClickOutside, currentModal, nodeRef, ...props }) {
+
+    const [isLoading, setIsLoading] = useLoading(false);
+    const [isFirstLoad, setIsFirstLoad] = useState(true);
+
+    // toast alert pop up
+    const mountToast = UseToast();
 
     // State to store About Us data
     const [aboutUsData, setAboutUsData] = useState({
@@ -24,11 +33,17 @@ export default function AboutUs({ setCurrentModal, handleClickOutside, currentMo
 
     // Fetch About Us data from the backend
     const fetchAboutUsData = async () => {
+
+        if (isFirstLoad) setIsLoading(true);
+
         try {
             const response = await axios.get(`${API_URL}/api/aboutus`);
             setAboutUsData(response.data); // Update state with fetched data
         } catch (error) {
-            console.error("Error fetching About Us data:", error);
+            mountToast("Error fetching About Us data:", 'error');
+        } finally {
+            setIsLoading(false);
+            setIsFirstLoad(false);    // Mark that first load is done
         }
     };
 
@@ -70,58 +85,62 @@ export default function AboutUs({ setCurrentModal, handleClickOutside, currentMo
                             exit = {{opacity: 0}}
                             transition = {{ duration: 0.3, ease: "easeInOut"}}
                         >   
-                            <div className = { styles.aboutUsContent }>
-                                <div className = { styles.close } onClick = { function() { setCurrentModal(null); }}>
-                                    <img src = { icons.close } alt = "Close" />
-                                </div>
+                            {isLoading ? (
+                                <LoadingAnim message="Loading content..." target="loadModal"/>
+                            ) : (
+                                <div className = { styles.aboutUsContent }>
+                                    <div className = { styles.close } onClick = { function() { setCurrentModal(null); }}>
+                                        <img src = { icons.close } alt = "Close" />
+                                    </div>
 
-                                <div className = { styles.header }>
-                                    <span className = { styles.txtTitle }>About Us</span>
-                                </div>
+                                    <div className = { styles.header }>
+                                        <span className = { styles.txtTitle }>About Us</span>
+                                    </div>
 
-                                <div className = { styles.content }>
-                                    {/* <img src = { images.aboutUs } alt = "Extension Services Image" /> */}
-                                    {/* Display Image */}
-                                    {aboutUsData.image ? (
-                                        <img
-                                            src={`${aboutUsData.image}`}
-                                            alt="About Us"
-                                            className={styles.aboutUsImage}
-                                        />
-                                    ) : (
-                                        <div className = { styles.noImg }>
-                                            <span className={styles.txtTitle}>No Image Uploaded</span>
+                                    <div className = { styles.content }>
+                                        {/* <img src = { images.aboutUs } alt = "Extension Services Image" /> */}
+                                        {/* Display Image */}
+                                        {aboutUsData.image ? (
+                                            <img
+                                                src={`${aboutUsData.image}`}
+                                                alt="About Us"
+                                                className={styles.aboutUsImage}
+                                            />
+                                        ) : (
+                                            <div className = { styles.noImg }>
+                                                <span className={styles.txtTitle}>No Image Uploaded</span>
+                                            </div>
+                                        )}
+
+                                        <div className = { styles.history }>
+                                            <span className = { styles.txtTitle }>Historical Background</span>
+                                            <p className = { styles.txtSubTitle }>{aboutUsData.historicalBackground}</p>
                                         </div>
-                                    )}
 
-                                    <div className = { styles.history }>
-                                        <span className = { styles.txtTitle }>Historical Background</span>
-                                        <p className = { styles.txtSubTitle }>{aboutUsData.historicalBackground}</p>
+                                        <div className = { styles.vision}>
+                                            <span className = { styles.txtTitle }>Vision</span>
+                                            <p className = { styles.txtSubTitle }>{aboutUsData.vision}</p>
+                                        </div>
+
+                                        <div className = { styles.mission}>
+                                            <span className = { styles.txtTitle }>Mission</span>
+                                            <p className = { styles.txtSubTitle }>{aboutUsData.mission}</p>
+                                        </div>
+
+                                        <div className = { styles.goal}>
+                                            <span className = { styles.txtTitle }>Goal</span>
+                                            <p className = { styles.txtSubTitle }>{aboutUsData.goal}</p>
+                                        </div>
+
+                                        <div className = { styles.objective}>
+                                            <span className = { styles.txtTitle }>Objectives</span>
+                                            <p className = { styles.txtSubTitle }>{aboutUsData.objectives}</p>
+                                        </div>
+
+
                                     </div>
-
-                                    <div className = { styles.vision}>
-                                        <span className = { styles.txtTitle }>Vision</span>
-                                        <p className = { styles.txtSubTitle }>{aboutUsData.vision}</p>
-                                    </div>
-
-                                    <div className = { styles.mission}>
-                                        <span className = { styles.txtTitle }>Mission</span>
-                                        <p className = { styles.txtSubTitle }>{aboutUsData.mission}</p>
-                                    </div>
-
-                                    <div className = { styles.goal}>
-                                        <span className = { styles.txtTitle }>Goal</span>
-                                        <p className = { styles.txtSubTitle }>{aboutUsData.goal}</p>
-                                    </div>
-
-                                    <div className = { styles.objective}>
-                                        <span className = { styles.txtTitle }>Objectives</span>
-                                        <p className = { styles.txtSubTitle }>{aboutUsData.objectives}</p>
-                                    </div>
-
-
                                 </div>
-                            </div>
+                            )}
                         </motion.div>
                         {(user?.role === "staff" || user?.role === "admin") && (
                             <motion.button 

@@ -9,7 +9,8 @@
     align-items: center;
     flex-direction: column;
     pointer-events: all;
-    height: 90%;
+    max-height: 750px;
+    height: 100%;
 }
 
 .editContainer {

@@ -9,8 +9,8 @@
     align-items: center;
     flex-direction: column;
     pointer-events: all;
-    max-height: 500px;
-    height: 70%;
+    max-height: 600px;
+    height: 100%;
 }
 
 .editContainer {
@@ -180,12 +180,13 @@
                     margin-bottom: 15px;
                     font-size: 10px;
                     height: 100px;
-                    padding: 5px;
+                    padding: 5px 10px;
                     resize: none;
                     outline: transparent;
                     width: 100%;
                     text-align: justify;
                     text-justify: inter-word;
+                    overflow-x: hidden;
                 }
             }
         }
@@ -193,7 +194,6 @@
 }
 
 .saveBtn {
-    margin-top: 20px;
     pointer-events: all;
     user-select: none;
     min-width: 150px;

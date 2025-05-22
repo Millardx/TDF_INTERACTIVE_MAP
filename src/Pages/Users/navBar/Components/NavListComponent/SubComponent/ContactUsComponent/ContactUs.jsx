@@ -18,6 +18,8 @@ import { API_URL } from '/src/config';
 
 export default function ContactUs({ setCurrentModal, handleClickOutside, currentModal, nodeRef, ...props }) { // isModalActive is a prop from NavListComponent
 
+    const [isLoading, setIsLoading] = useState(false);      // for loading animation
+
     // toast alert pop up
     const mountToast = UseToast();
     
@@ -33,7 +35,7 @@ export default function ContactUs({ setCurrentModal, handleClickOutside, current
             const response = await axios.get(`${API_URL}/api/contact`);
             setContactUsData(response.data);
         } catch (error) {
-            console.error("Error fetching Contact Us data:", error);
+            mountToast("Error fetching Contact Us data:", 'error');
         }
     };
 
@@ -72,6 +74,10 @@ export default function ContactUs({ setCurrentModal, handleClickOutside, current
     // Handler for user message sent to client email
     const onSubmit = async (event) => {
         event.preventDefault();
+
+        if(isLoading) return;   // Function guard - prevents spam
+        setIsLoading(true);     // start loading
+
         const formData = new FormData(event.target);
     
         formData.append("access_key", "bc61024f-bc8c-407c-8805-b5d73b18ae51"); // using web3forms, replace with the access key for the client email
@@ -90,10 +96,12 @@ export default function ContactUs({ setCurrentModal, handleClickOutside, current
     
         if (res.success) {
             mountToast("Message sent!", "success");
+            setIsLoading(false);    // stop loading
         } else {
             mountToast("Message not sent!", "error");
+            setIsLoading(false);    // stop loading
         }
-      };
+    };
 
     return (
         <>
@@ -123,6 +131,7 @@ export default function ContactUs({ setCurrentModal, handleClickOutside, current
                                         autoComplete = "off"
                                         name = "name"
                                         type = "text"
+                                        maxLength={ 20 }
                                         required
                                     />
 
@@ -137,10 +146,19 @@ export default function ContactUs({ setCurrentModal, handleClickOutside, current
                                     <label htmlFor = "question">Question</label>
                                     <textarea 
                                         name = "question"
+                                        maxLength={ 1000 }
                                         required
                                     />
 
-                                    <button className = { styles.submitBtn } type="submit">Submit</button>
+                                    <button className = { styles.submitBtn } type="submit">
+                                        {isLoading ? (
+                                            <>
+                                                <span className = { styles.loadingSpinner }></span>
+                                            </>
+                                        ) : (
+                                            'Submit'
+                                        )}
+                                    </button>
                                 </form>
 
                                

@@ -15,8 +15,12 @@ import icons from '../../../../../../../assets/for_landingPage/Icons.jsx';
 import { API_URL } from '/src/config';
 
 
+
+
 export default function NewsAndEvents({ setCurrentModal, handleClickOutside, currentModal, nodeRef, ...props }) {
 
+    const [isLoading, setIsLoading] = useState(false);      // for loading animation
+    
     // toast alert pop up
     const mountToast = UseToast();
 
@@ -53,6 +57,9 @@ export default function NewsAndEvents({ setCurrentModal, handleClickOutside, cur
             mountToast("Comment exceeded the limit!", "error");
             return; // Prevent submission if over limit
         }
+
+        if(isLoading) return;   // Function guard - prevents spam
+        setIsLoading(true);     // start loading
     
         const feedbackData = {
             guestId,
@@ -77,11 +84,15 @@ export default function NewsAndEvents({ setCurrentModal, handleClickOutside, cur
                 //window.location.reload(); // Reload the page
             } else {
                 mountToast("Failed to submit feedback", "error");
+                setIsLoading(false);    // stop loading
             }
 
         } catch (error) {
             // console.error('Error submitting feedback:', error.response ? error.response.data : error.message);
             mountToast("Admin and Staff accounts cannot submit feedback!", "error");
+            setIsLoading(false);    // stop loading
+        } finally {
+            setIsLoading(false);    // stop loading
         }
     };
     
@@ -147,7 +158,15 @@ export default function NewsAndEvents({ setCurrentModal, handleClickOutside, cur
                                         {300 - comment.length} characters remaining
                                     </span> {/* Show remaining characters */}
                                 </div>
-                                <button className={styles.submitBtn} type="submit" >Submit</button>
+                                <button className={styles.submitBtn} type="submit">
+                                    {isLoading ? (
+                                        <>
+                                            <span className = { styles.loadingSpinner }></span>
+                                        </>
+                                    ) : (
+                                        'Submit'
+                                    )}
+                                </button>
                             </form>
                     </div>
                     </motion.div>

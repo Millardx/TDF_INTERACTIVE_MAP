@@ -276,6 +276,16 @@ const ThreeCanvas = () => {
     console.log("User role on /map:", user?.role);
   }, [user]);
 
+  useEffect(() => {
+    const setVh = () => {
+      document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+    };
+
+    setVh();
+    window.addEventListener('resize', setVh);
+    return () => window.removeEventListener('resize', setVh);
+  }, []);
+
   return(
     <div id="container" ref={containerRef}>
       <Preloader />

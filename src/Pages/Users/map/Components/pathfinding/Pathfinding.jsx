@@ -10,6 +10,8 @@ function Pick({pos, moveArrow, removeLine, cameraPF, togglePathfinding, isPathfi
     // toast alert pop up
     const mountToast = UseToast();
 
+    // for closing container when user click outside
+    const pathfindingRef = useRef(null);
 
     const [isPfBtn, setIsPfBtn] = useState(true);
     const [buttonHidden, setButtonHidden] = useState(false);
@@ -230,10 +232,30 @@ function Pick({pos, moveArrow, removeLine, cameraPF, togglePathfinding, isPathfi
         }
     }
 
+    // close modal when user click outside of pathfinding
+    useEffect(() => {
+        function handleOutsideClick(event) {
+            if (
+                pathfindingRef.current &&
+                !pathfindingRef.current.contains(event.target) &&
+                !isPfBtn // Only run if modal is open
+            ) {
+                handleButtonClick('Close');
+            }
+        }
+
+        document.addEventListener('mousedown', handleOutsideClick);
+
+        return () => {
+            document.removeEventListener('mousedown', handleOutsideClick);
+        };
+    }, [isPfBtn]);
+
+
     return (
         <>
 
-            <div id="pathfinding">
+            <div id="pathfinding" ref={pathfindingRef}>
                 {isPfBtn && 
                     <button 
                         className={`${styles.pfBtn} ${buttonHidden ? styles.hidden : ''}`} 

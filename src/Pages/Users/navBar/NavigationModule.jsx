@@ -2,7 +2,6 @@ import React, { useState, useRef } from 'react'
 // import { CSSTransition, TransitionGroup } from 'react-transition-group'
 import { motion, AnimatePresence } from 'framer-motion'
 
-
 import navListItemsStyles from './Components/NavListComponent/styles/navListItemsStyles.module.scss';
 
 // ------- Navigation Components Section -------
@@ -19,7 +18,7 @@ import NewsEventImage from '../../Admin/edit/EditNewsEvent.jsx';
 import AboutUsEdit from '../../Admin/edit/AboutUsEdit.jsx';
 import ContactUsEdit from '../../Admin/edit/ContactUsEdit.jsx';
 
-export default function NavigationModule () {
+export default function NavigationModule ({ currentModal, setCurrentModal}) {
 
 // ------- Global -------
 
@@ -52,7 +51,7 @@ export default function NavigationModule () {
     const nodeRef = useRef(null)
     
     const [isNavListClosed, setIsNavListClosed] = useState(true);
-    const [currentModal, setCurrentModal] = useState(null);
+    // const [currentModal, setCurrentModal] = useState(null);
     const [isEditContent, setIsEditContent] = useState(false);
 
     // ----------- For Edit News and Event Modal --------------

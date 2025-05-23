@@ -3,7 +3,14 @@ import styles from './Pathfinding.module.scss';
 import { arrow } from './assets/index';
 import { positionGeometry } from 'three/webgpu';
 
-function Pick({pos, moveArrow, removeLine, cameraPF, togglePathfinding, isPathfindingActive}) {
+import UseToast from '../../../../Admin/utility/AlertComponent/UseToast';
+
+function Pick({pos, moveArrow, removeLine, cameraPF, togglePathfinding, isPathfindingActive, setCurrentModal}) {
+
+    // toast alert pop up
+    const mountToast = UseToast();
+
+
     const [isPfBtn, setIsPfBtn] = useState(true);
     const [buttonHidden, setButtonHidden] = useState(false);
     const headerRef = useRef(null);
@@ -136,10 +143,24 @@ function Pick({pos, moveArrow, removeLine, cameraPF, togglePathfinding, isPathfi
             setTimeout(() => {
                 setIsPfBtn(false);
             }, 300)
-            console.log('open modal');
+            // console.log('open modal');
         }
         else if(type === 'Enter'){
-            if(!current && !destination) return;
+            if(!current && !destination) {
+                mountToast("Please select your current location and destination", "error");
+                return;
+            }
+
+            if (!current) {
+                mountToast("Please select your current location.", "error");
+                return;
+            }
+
+            if (!destination) {
+                mountToast("Please select your destination.", "error");
+                return;
+            }
+            
             togglePathfinding();
             setButtonHidden(false)
             setTimeout(() => {
@@ -150,9 +171,21 @@ function Pick({pos, moveArrow, removeLine, cameraPF, togglePathfinding, isPathfi
             setDname('Destination');
             setCurrent(null);
             setDestination(null);
-            console.log('enter');
+            // console.log('enter');
+
+            mountToast(
+                "We'd love your feedback — help us improve!",
+                "info",
+                {
+                    position: "bottom-right",
+                    autoClose: 8000,
+                    onClick: () => setCurrentModal("submitFeedback")
+                }
+            );
 
         }
+
+
         else if(type === 'Close'){
             togglePathfinding();
             setButtonHidden(false)
@@ -198,58 +231,61 @@ function Pick({pos, moveArrow, removeLine, cameraPF, togglePathfinding, isPathfi
     }
 
     return (
-        <div id="pathfinding">
-            {isPfBtn && 
-                <button 
-                    className={`${styles.pfBtn} ${buttonHidden ? styles.hidden : ''}`} 
-                    onClick={() => handleButtonClick('Open')}
-                >
-                    <p>CVSU-TDF</p>
-                    <h1>Search for your path</h1>
-                </button>
-            }
-            
-            <div className={`${styles.pfCont} ${isPathfindingActive ? styles.active : ''}`}>
-                {/* contents */}
-                <div className={styles.tooltipWrapper}>
-                    <button className={styles.logo} onClick={() => handleButtonClick('Close')}>
-                        <p>INTERACTIVE MAP</p>
-                        <h1>CVSU-TDF</h1>
-                    </button>
+        <>
 
-                    <small 
-                        className={styles.toolTipText} 
-                        style={{ visibility: showTooltip ? 'visible' : 'hidden', opacity: showTooltip ? 1 : 0 }}
+            <div id="pathfinding">
+                {isPfBtn && 
+                    <button 
+                        className={`${styles.pfBtn} ${buttonHidden ? styles.hidden : ''}`} 
+                        onClick={() => handleButtonClick('Open')}
                     >
-                        Click to close path search.
-                    </small>
+                        <p>CVSU-TDF</p>
+                        <h1>Search for your path</h1>
+                    </button>
+                }
+                
+                <div className={`${styles.pfCont} ${isPathfindingActive ? styles.active : ''}`}>
+                    {/* contents */}
+                    <div className={styles.tooltipWrapper}>
+                        <button className={styles.logo} onClick={() => handleButtonClick('Close')}>
+                            <p>INTERACTIVE MAP</p>
+                            <h1>CVSU-TDF</h1>
+                        </button>
+
+                        <small 
+                            className={styles.toolTipText} 
+                            style={{ visibility: showTooltip ? 'visible' : 'hidden', opacity: showTooltip ? 1 : 0 }}
+                        >
+                            Click to close path search.
+                        </small>
+                    </div>
+                    <button className={styles.current}
+                        data-id='Current'
+                        onClick={()=> toggleModal('Current')}
+                    >
+                        <span>{cname}</span>
+                        <div className={styles.arrow}>
+                            <img src={arrow} alt="arrow" />
+                        </div>
+                    </button>
+                    <button className={styles.destination}
+                        data-id='Destination'
+                        onClick={()=> toggleModal('Destination')}
+                    >
+                        <span>{dname}</span>
+                        <div className={styles.arrow}>
+                            <img src={arrow} alt="arrow" />
+                        </div>
+                    </button>
+                    <button 
+                        className={styles.enter}
+                        onClick={() => handleButtonClick('Enter')}
+                    >
+                        Enter
+                    </button>
                 </div>
-                <button className={styles.current}
-                    data-id='Current'
-                    onClick={()=> toggleModal('Current')}
-                >
-                    <span>{cname}</span>
-                    <div className={styles.arrow}>
-                        <img src={arrow} alt="arrow" />
-                    </div>
-                </button>
-                <button className={styles.destination}
-                    data-id='Destination'
-                    onClick={()=> toggleModal('Destination')}
-                >
-                    <span>{dname}</span>
-                    <div className={styles.arrow}>
-                        <img src={arrow} alt="arrow" />
-                    </div>
-                </button>
-                <button 
-                    className={styles.enter}
-                    onClick={() => handleButtonClick('Enter')}
-                >
-                    Enter
-                </button>
             </div>
-        </div>
+        </>
     )
 }
 

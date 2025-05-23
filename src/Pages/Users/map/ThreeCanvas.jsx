@@ -24,6 +24,8 @@ import AddMarker from './Components/addMarker/AddMarker';
 
 const ThreeCanvas = () => {
   
+  const [currentModal, setCurrentModal] = useState(null);
+
   const location = useLocation();
   // const user = location.state?.user;
 
@@ -278,7 +280,11 @@ const ThreeCanvas = () => {
     <div id="container" ref={containerRef}>
       <Preloader />
       {!isOnAddMarker && (
-        <NavigationModule user = { user }/>
+        <NavigationModule 
+          user = { user }
+          currentModal={currentModal}
+          setCurrentModal={setCurrentModal}
+        />
       )}
 
       {/* 
@@ -313,6 +319,7 @@ const ThreeCanvas = () => {
           togglePathfinding={togglePathfinding} 
           getCamControls={getCamControls}
           isPathfindingActive={ isPathfindingActive }
+          setCurrentModal={ setCurrentModal }
             />
         {/* AddMarker component */}
         <div id='addMarkerWrapper'></div>

@@ -448,7 +448,7 @@ const Modal = () => {
               </div>
           
               {isLoading ? (
-                <div>Loading...</div>  /* Show loading message when data is being fetched */
+                <div>{/*Loading...*/}</div>  /* Show loading message when data is being fetched */
               ) : (
                 <>
                   <span className = { `${ styles.txtTitle} ${ styles.listHeader }` }>Select Modal</span>

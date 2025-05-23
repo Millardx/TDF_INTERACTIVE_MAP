@@ -214,7 +214,7 @@ export default function NewsEventImage({ setCurrentModal, currentModal, handleCl
                 if (response.status === 200) {
                     mountToast("Image archived successfully!", "success");
                     fetchnewsEvent(); // Refresh the list to show updated data
-                    setCurrentModal("newsAndEvents");
+                    setCurrentModal("editNewsEvent");
                     setDeleteModalVisible(null);
                 }
             } else {

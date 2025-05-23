@@ -40,7 +40,6 @@
 
     
     .timeframeButtons {
-
         display: flex;
         align-items: center;
         justify-content: center;
@@ -145,6 +144,29 @@
             display: flex;
             flex-direction: column;
             margin: 40px 15px 0 15px;
+
+            .commentToggleButtons {
+                display: flex;
+                gap: 10px;
+                padding-bottom: 20px;
+            
+                button {
+                    font-size: 10px;
+                    border-radius: 10px;
+                    padding: 10px;
+                    color: $tertiary;
+                    background-color: $primary;
+                    transition: all 0.3s ease-in-out;
+                
+                    &:hover {
+                        transform: scale(1.1);
+                    }
+                
+                    &.active {
+                        background-color: $secondary;
+                    }
+                }
+            }
     
             table {
                 width: 100%;
@@ -159,6 +181,7 @@
                     text-align: center;
                     user-select: none;
                     -webkit-tap-highlight-color: transparent; // removes blue highlight on mobile
+                    -webkit-touch-callout: none;              /* iOS Safari */
                 }
             }
         }
@@ -211,32 +234,5 @@
                 }
             }
         }
-    }
-    .commentToggleButtons {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 20px;
-      
-        button {
-          padding: 6px 14px;
-          border: 1px solid #ccc;
-          border-radius: 6px;
-          background-color: #fff;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.2s ease-in-out;
-          font-size: 14px;
-      
-          &:hover {
-            background-color: #f2f2f2;
-          }
-      
-          &.active {
-            background-color: #FF7B00;
-            color: #fff;
-            border-color: #FF7B00;
-          }
-        }
-      }
-      
+    }      
 }

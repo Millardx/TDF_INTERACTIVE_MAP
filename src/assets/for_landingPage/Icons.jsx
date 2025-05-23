@@ -47,6 +47,9 @@ import compass from '/for_landingPage/icons/compass.png'
 
 import sliderArrow from '/for_landingPage/icons/sliderArrow.png'
 
+import pause from '/for_landingPage/icons/pause.png'
+import fallbackIcon from '/for_landingPage/icons/fallbackIcon.png'
+
 export default { 
         arrow, // globas
         mapIcon, hamburger, close, user, // navBar assets
@@ -57,5 +60,6 @@ export default {
         add, remove, pencil, undo, minus,pen,
         card, edit, profile, upload, analytics, email, facebook, archive,
         compass, 
-        sliderArrow
+        sliderArrow,
+        pause, fallbackIcon
     }; 

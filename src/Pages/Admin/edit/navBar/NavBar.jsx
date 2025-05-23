@@ -26,13 +26,14 @@ export default function NavBar () {
 
     // 🚨 Ensure NavBar waits until auth is ready
     if (!isAuthReady) {
-        return (
-            <div className={styles.navBar}>
-                <div className={styles.greeting}>
-                    <span className={styles.txtTitle}>Loading...</span>
-                </div>
-            </div>
-        );
+        return 
+        // (
+        //     <div className={styles.navBar}>
+        //         <div className={styles.greeting}>
+        //             <span className={styles.txtTitle}>Loading...</span>
+        //         </div>
+        //     </div>
+        // );
     }
     
 

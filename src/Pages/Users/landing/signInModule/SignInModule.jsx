@@ -1,5 +1,6 @@
 // import { CSSTransition } from 'react-transition-group';
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion'
 import { UserProvider } from '/src/Pages/Admin/ACMfiles/UserContext';
 import Option from './Components/OptionComponent/Option.jsx';
 import SignIn from './Components/SignInComponent/SignIn.jsx';
@@ -26,6 +27,21 @@ export default function SignInModule() {
         return function() {
             root.classList.remove(styles.rootContainer);
         };
+    }, []);
+
+    // added by Lorenzo @ 05/18/2025
+    const [shouldRender, setShouldRender] = useState(false);
+
+    useEffect(() => {
+        const reloaded = sessionStorage.getItem('reloadedAfterLogout');
+
+        if (!reloaded) {
+            sessionStorage.setItem('reloadedAfterLogout', 'true');
+            window.location.reload(); // Force reload before rendering
+        } else {
+            sessionStorage.removeItem('reloadedAfterLogout'); // Clean up
+            setShouldRender(true); // Safe to render now
+        }
     }, []);
 
     // --------- Option Component ---------
@@ -62,29 +78,42 @@ export default function SignInModule() {
         console.log(`${user} logged in with ID: ${role}`); // Log the user role
 
     };
-    
+
+    // added by lorenzo @ 05/18/2025
+    // For UX
+    if (!shouldRender) return null; // Prevent rendering during reload
 
     return(
         <UserProvider>
         <div className = { styles.overlay }></div>
         <div className={styles.mainContainer}>
+            {/* Modified by Lorenzo @ 05/18/2025 */}
             <div className = { styles.loginContainer }> {/* Main container for option and login form*/}
-                <div className = { styles.firstContainer }>
-                    {optionUnmountDelay && (
-                        <SignIn 
-                            handleBtnClick = { handleBtnClick }
-                            isBtnClicked = {isBtnClicked}
-                            handleUser = { handleUser }
-                        />
-                    )} 
-                    {signinUnmountDelay && ( 
-                        <Option 
-                            handleBtnClick = { handleBtnClick }
-                            isBtnClicked = {isBtnClicked}
-                            handleUser = { handleUser }
-                        /> 
-                    )}   
-                </div>
+                <AnimatePresence mode="wait">
+                    <motion.div 
+                        className = { styles.firstContainer }
+                        key={isBtnClicked ? "signin" : "option"}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.25, ease: "easeInOut" }}
+                    >
+                        {isBtnClicked ? (
+                            <SignIn
+                                handleBtnClick={handleBtnClick}
+                                isBtnClicked={isBtnClicked}
+                                handleUser={handleUser}
+                            />
+                        ) : (
+                            <Option
+                                handleBtnClick={handleBtnClick}
+                                isBtnClicked={isBtnClicked}
+                                handleUser={handleUser}
+                            />
+                        )}
+                    
+                    </motion.div>
+                </AnimatePresence>
                 <Greeting />
             </div>
         </div>

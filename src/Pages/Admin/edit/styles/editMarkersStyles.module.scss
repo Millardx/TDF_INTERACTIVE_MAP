@@ -28,6 +28,7 @@
     .listHeader {
         font-size: 21px;
         margin-left: 35px; 
+        margin-bottom: 30px;
     }
 
     .listCont {
@@ -80,38 +81,76 @@
             }
         }
 
-        .iconList {
+        .iconListWrapper {
+
+            margin-top: 20px;
+            width: 100%;
+            overflow-x: hidden;
+            overflow-y: hidden;
+            display: flex;
             border-bottom: 1.5px solid $outOfFocus;
             border-top: 1.5px solid $outOfFocus;
-            display: flex;
-            gap: 30px;
-            justify-content: center;
-            padding: 10px 0;
-            margin-top: 15px;
-            overflow-y: scroll;
+            justify-content: center; // centers the inner list if it fits
+            align-items: center;
+        
 
-            .marker {
-                position: relative;
+            .iconList {
+                display: flex;
+                gap: 30px;
+                justify-content: flex-start;
+                overflow-x: scroll;
+                width: 90%;
+                padding: 10px;
+                margin-top: 5px;
+                max-width: max-content;
+                
+                user-select: none;
+                -webkit-tap-highlight-color: transparent; /* Android Chrome */
+                -webkit-touch-callout: none;              /* iOS Safari */
 
-                img {
-                    height: 25px;
-                    width: 25px;
+                &::-webkit-scrollbar {
+                    width: 3px;       // Width of vertical scrollbar
+                    height: 3px;      // Height of horizontal scrollbar (if applicable)
+                }
+            
+                &::-webkit-scrollbar-track {
+                    // background-color: $secondary; // Background color of the track
+                    border-radius: 10px;
+                }
+            
+                &::-webkit-scrollbar-thumb {
+                    background-color: $primary !important;    // Color of the scrollbar thumb
+                    border-radius: 10px;
+                    // border: 2px solid $tertiary; // Padding around thumb for space from track
                 }
 
-                .iconOverlay {
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    cursor: pointer;
-                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-                    
+                .marker {
+                    position: relative;
+
                     img {
-                        position: absolute;
-                        top: -5px;
-                        right: -10px;
-                        width: 20px;
-                        height: 20px;
+                        height: 25px;
+                        width: 25px;
+                    }
+
+                    .iconOverlay {
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: pointer;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                        
+                        user-select: none;
+                        -webkit-tap-highlight-color: transparent; /* Android Chrome */
+                        -webkit-touch-callout: none;              /* iOS Safari */
+
+                        img {
+                            position: absolute;
+                            top: -5px;
+                            right: -10px;
+                            width: 20px;
+                            height: 20px;
+                        }
                     }
                 }
             }

@@ -47,6 +47,18 @@
             margin-bottom: 20px;
             gap: 20px;
 
+            // for marker name input field
+              .inputField {
+                padding: 5px;
+                outline: transparent;
+                transition: all 0.2s ease-in-out;
+                border: 2px solid black;
+
+                &:focus {
+                  border: 2px solid $secondary;
+                }
+              }
+
             .customLabel {
                 align-items: center;
                 display: flex;

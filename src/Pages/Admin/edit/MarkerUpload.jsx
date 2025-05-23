@@ -7,6 +7,9 @@ import styles from "./styles/markerUploadStyles.module.scss";
 import { API_URL } from '/src/config';
 
 export default function MarkerUpload({ markerId ,setmarkerId, onClose, onRefresh  }) {
+
+  const [isSaving, setIsSaving] = useState(false);
+
   const [file, setFile] = useState(null); // Store selected file
   const [fileName, setFileName] = useState('No File Selected...');
   const [preview, setPreview] = useState(null); // For image preview
@@ -16,21 +19,21 @@ export default function MarkerUpload({ markerId ,setmarkerId, onClose, onRefresh
 
   const  notify  = UseToast();
 
-      // Fetch marker details when markerId changes
-      useEffect(() => {
-        const fetchMarkerDetails = async () => {
-            try {
-                const response = await axios.get(`${API_URL}/api/markerIcons/${markerId}`);
-                const { name: fetchedName, iconPath } = response.data;
-                setName(fetchedName); // Set the current name
-                setCurrentImage(`${API_URL}/uploads/icons/${iconPath}`); // Set the current image
-            } catch (error) {
-                console.error("Error fetching marker details:", error);
-            }
-        };
+  // Fetch marker details when markerId changes
+  useEffect(() => {
+      const fetchMarkerDetails = async () => {
+          try {
+              const response = await axios.get(`${API_URL}/api/markerIcons/${markerId}`);
+              const { name: fetchedName, iconPath } = response.data;
+              setName(fetchedName); // Set the current name
+              setCurrentImage(`${API_URL}/uploads/icons/${iconPath}`); // Set the current image
+          } catch (error) {
+              console.error("Error fetching marker details:", error);
+          }
+      };
 
-        if (markerId) fetchMarkerDetails();
-    }, [markerId]);
+      if (markerId) fetchMarkerDetails();
+  }, [markerId]);
 
   // Handle file selection and preview
   const handleFileChange = (e) => {
@@ -51,6 +54,11 @@ export default function MarkerUpload({ markerId ,setmarkerId, onClose, onRefresh
       notify('Please provide all required fields.', 'error');
       return;
     }
+
+    //function guard
+    if (isSaving) return;    // break execution if already loading
+
+    setIsSaving(true);
 
     const formData = new FormData();
     formData.append('name', name);
@@ -80,6 +88,8 @@ export default function MarkerUpload({ markerId ,setmarkerId, onClose, onRefresh
     } catch (error) {
       console.error('Error saving marker icon:', error);
       alert('An unexpected error occurred.', 'error');
+    } finally {
+      setIsSaving(false);
     }
   };
   
@@ -116,7 +126,7 @@ export default function MarkerUpload({ markerId ,setmarkerId, onClose, onRefresh
                     ) : currentImage ? (
                         <img src={currentImage} alt="Current Marker" />
                     ) : (
-                        <img src={icons.remove} alt="No Preview" />
+                        <img src={icons.fallbackIcon} alt="No Preview" />
                     )}
             </div>
           </div>
@@ -127,6 +137,7 @@ export default function MarkerUpload({ markerId ,setmarkerId, onClose, onRefresh
               placeholder="Enter Marker Icon Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              maxLength={ 20 }
               required
               className={styles.inputField}
             />
@@ -137,7 +148,14 @@ export default function MarkerUpload({ markerId ,setmarkerId, onClose, onRefresh
                     className={`${styles.saveBtn} ${styles.txtTitle}`}
                     onClick={handleSave}
                 >
-                    Save
+                  {isSaving ? (
+                    <>
+                      <span className = { styles.loadingSpinner }></span>
+                    </>
+                  ) : (
+                    'Save'
+                  )}
+                    
                 </button>
             <button
               className={`${styles.cancelBtn} ${styles.txtTitle}`}

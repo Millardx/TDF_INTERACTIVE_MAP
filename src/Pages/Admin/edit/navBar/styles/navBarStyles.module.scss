@@ -45,6 +45,7 @@
     .greeting {
         align-items: center;
         display: flex;
+        flex: 0 0 auto;
         justify-content: space-evenly;
         padding: 30px 0;
         width: 90%;
@@ -53,6 +54,7 @@
             color: $tertiary;
             font-size: 20px;
             line-height: 1.2;
+            text-align: center;
         }
 
         .iconContainer { //add a dropdown for the user icon
@@ -60,6 +62,7 @@
             background-color: $guest;
             border-radius: 50%;
             display: flex;
+            flex-shrink: 0;
             height: 50px;
             justify-content: center;
             width: 50px;

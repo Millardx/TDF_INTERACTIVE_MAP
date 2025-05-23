@@ -9,7 +9,15 @@ import styles from './styles/AboutUsEdit.module.scss'
 import icons from '../../../assets/for_landingPage/Icons'
 import { API_URL } from '/src/config';
 
+import useLoading from '../utility/PageLoaderComponent/useLoading';
+import LoadingAnim from '../utility/PageLoaderComponent/LoadingAnim';
+
 export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClickOutside }) {
+    const [isSaving, setIsSaving] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const [isLoading, setIsLoading] = useLoading(false);
+    const [isFirstLoad, setIsFirstLoad] = useState(true);
 
     // toast alert pop up
     const mountToast = UseToast();
@@ -26,11 +34,17 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
     const [previewImage, setPreviewImage] = useState(null);   // State to store the image preview URL
 
     const fetchAboutUsData = async () => {
+
+        if (isFirstLoad) setIsLoading(true);
+
         try {
             const response = await axios.get(`${API_URL}/api/aboutus`);
             setAboutUsData(response.data);
         } catch (error) {
             console.error("Error fetching About Us data:", error);
+        } finally {
+            setIsLoading(false);
+            setIsFirstLoad(false);    // Mark that first load is done
         }
     };
     useEffect(() => {
@@ -52,6 +66,9 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
             mountToast("Please fill in all fields before saving!", "error");
             return;
         }
+
+        if (isSaving) return;        // function guard
+        setIsSaving(true);
     
         try {
             const response = await axios.put(`${API_URL}/api/aboutus`, aboutUsData);
@@ -64,10 +81,12 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
             if (error.response && error.response.status === 400 && 
                 error.response.data.message === 'No changes detected in the data.') {
                 mountToast("No changes detected. Details was not updated.", "error");
-                setCurrentModal("aboutUs");
+                setCurrentModal("aboutUsEdit");  // Close modal after saving
             } else {
-                console.error("Error saving About Us data:", error);
+                mountToast(`Error saving About Us data: ${error}`, 'error');
             }
+        } finally {
+            setIsSaving(false);
         }
     };
     
@@ -85,6 +104,9 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
             return;
         }
 
+        if (isSaving) return;        // function guard
+        setIsSaving(true);
+
         const formData = new FormData();
         formData.append('image', selectedImage);
 
@@ -98,11 +120,17 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
             setPreviewImage(null); // Clear blob image preview
             setCurrentModal("aboutUs"); 
         } catch (error) {
-            console.error("Error updating image:", error);
+            mountToast(`Error updating image: ${error}`, 'error');
+            setCurrentModal("aboutUsEdit");  // Close modal after saving
+        } finally {
+            setIsSaving(false);
         }
     };
 
     const handleArchiveImage = async () => {
+        if(isDeleting) return;      // function guard
+        setIsDeleting(true);
+
         try {
             const response = await axios.put(`${API_URL}/api/archive/aboutUs`, {
                 imagePath: aboutUsData.image, // Pass the image path from your state
@@ -111,10 +139,15 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
             if (response.status === 200) {
                 mountToast('AboutUs image archived successfully.', 'success');
                 fetchAboutUsData(); // Refresh the data
+                setDeleteModalVisible(false);
+                setCurrentModal("aboutUs");  // Close modal after saving
             }
         } catch (error) {
-            console.error('Error archiving AboutUs image:', error);
+            // console.error('Error archiving AboutUs image:', error);
             mountToast('Failed to archive image. Please try again.', 'error');
+            setCurrentModal("aboutUsEdit");  // Close modal after saving
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -138,8 +171,8 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
     }
 
     useEffect(() => {
-        if (confirmDelete && selectedImage) {
-            handleDeleteImage();
+        if (confirmDelete) {
+            handleArchiveImage();
             setConfirmDelete(false);
         }
     }, [confirmDelete, selectedImage]);
@@ -162,137 +195,149 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
                             exit = {{ opacity: 0 }}
                             transition = {{ duration: 0.2, ease: 'easeInOut' }}
                         >
-                            <div className = { styles.editingSection }>
-                                <div className = { styles.close } onClick = { function() { setCurrentModal("aboutUs"); }}>
-                                    <img src = { icons.close } alt = "Close" />
-                                </div>
-                                
-                                <div className = { styles.header }>
-                                    <span className = { styles.txtTitle }>About Us</span>
-                                </div>
-
-                                <div className = { styles.content }>
-                                    {/* Show the preview if available, else show the stored image or placeholder */}
-                                    {previewImage ? (
-                                        <div className = { styles.preview }>
-                                            <img src={previewImage} alt="Preview" className={styles.imgPreview} />
-
-                                            <div className = { styles.overlay }>
-                                                <button className = { `${ styles.txtTitle} ${ styles.uploadBtn }` }>Upload Image</button>
-                                            </div>
-
-                                            <input
-                                                type="file"
-                                                onChange={handleImageChange}
-                                                accept="image/*"
-                                            />
-                                        </div>
-                                    ) : aboutUsData.image ? (
-                                        <div className = { styles.uploaded }>
-                                            <img 
-                                                src={`${aboutUsData.image}`} 
-                                                alt="About Us" 
-                                                className={styles.imgPreview} 
-                                            />
-
-                                            <div className = { styles.overlay }>
-                                                <button className = { `${ styles.txtTitle} ${ styles.uploadBtn }` }>
-                                                    Upload Image
-                                                    <input
-                                                        type="file"
-                                                        onChange={handleImageChange}
-                                                        accept="image/*"
-                                                    />
-                                                </button>
-
-                                                <button 
-                                                    className = { `${ styles.txtTitle} ${ styles.deleteBtn }` } 
-                                                    //onClick={() => {setDeleteModalVisible(true); setSelectedImage(aboutUsData.image);} } //handleDeleteImage
-                                                    //onClick={handleDeleteImage}
-                                                    onClick={() => handleArchiveImage()}
-                                                >
-                                                    Delete Image
-                                                </button>
-
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className = { styles.noImg }>
-                                            <div className = { styles.overlay }>
-                                                <button className = { `${ styles.txtTitle} ${ styles.uploadBtn }` }>Upload Image</button>
-                                            </div>
-
-                                            <input
-                                                type="file"
-                                                onChange={handleImageChange}
-                                                accept="image/*"
-                                            />
-
-                                            <span className={styles.txtTitle}>No Image Uploaded</span>
-                                        </div>
-                                    )}
-
-                                    <button className = { styles.saveBtn }>
-                                        <span className = { styles.txtTitle } onClick = {() => { handleUpdateImage(aboutUsData.image); }}>Save Image</span>
-                                    </button>
+                            {isLoading ? (
+                                <LoadingAnim message="Loading content..." target="loadModal"/>
+                            ) : (
+                                <div className = { styles.editingSection }>
+                                    <div className = { styles.close } onClick = { function() { setCurrentModal("aboutUs"); }}>
+                                        <img src = { icons.close } alt = "Close" />
+                                    </div>
                                     
-
-                                    <div className = { styles.history }>
-                                        <span className = { styles.txtTitle }>Historical Background</span>
-                                        <textarea
-                                            className = { styles.txtSubTitle } 
-                                            placeholder = "Place information here..."
-                                            name="historicalBackground"
-                                            value={aboutUsData.historicalBackground}
-                                            onChange={handleChangeDetails}
-                                        />
+                                    <div className = { styles.header }>
+                                        <span className = { styles.txtTitle }>About Us</span>
                                     </div>
 
-                                    <div className = { styles.vision}>
-                                        <span className = { styles.txtTitle }>Vision</span>
-                                        <textarea
-                                            className = { styles.txtSubTitle } 
-                                            placeholder = "Place information here..."
-                                            name="vision"
-                                            value={aboutUsData.vision}
-                                            onChange={handleChangeDetails}
-                                        />
-                                    </div>
+                                    <div className = { styles.content }>
+                                        {/* Show the preview if available, else show the stored image or placeholder */}
+                                        {previewImage ? (
+                                            <div className = { styles.preview }>
+                                                <img src={previewImage} alt="Preview" className={styles.imgPreview} />
 
-                                    <div className = { styles.mission}>
-                                        <span className = { styles.txtTitle }>Mission</span>
-                                        <textarea
-                                            className = { styles.txtSubTitle } 
-                                            placeholder = "Place information here..."
-                                            name="mission"
-                                            value={aboutUsData.mission}
-                                            onChange={handleChangeDetails}
-                                        />
-                                    </div>
+                                                <div className = { styles.overlay }>
+                                                    <button className = { `${ styles.txtTitle} ${ styles.uploadBtn }` }>Upload Image</button>
+                                                </div>
 
-                                    <div className = { styles.goal}>
-                                        <span className = { styles.txtTitle }>Goal</span>
-                                        <textarea
-                                            className = { styles.txtSubTitle } 
-                                            placeholder = "Place information here..."
-                                            name="goal"
-                                            value={aboutUsData.goal}
-                                            onChange={handleChangeDetails}
-                                        />
-                                    </div>
+                                                <input
+                                                    type="file"
+                                                    onChange={handleImageChange}
+                                                    accept="image/*"
+                                                />
+                                            </div>
+                                        ) : aboutUsData.image ? (
+                                            <div className = { styles.uploaded }>
+                                                <img 
+                                                    src={`${aboutUsData.image}`} 
+                                                    alt="About Us" 
+                                                    className={styles.imgPreview} 
+                                                />
 
-                                    <div className = { styles.objective}>
-                                        <span className = { styles.txtTitle }>Objectives</span>
-                                        <textarea
-                                            className = { styles.txtSubTitle } 
-                                            placeholder = "Place information here..."
-                                            name="objectives"
-                                            value={aboutUsData.objectives}
-                                            onChange={handleChangeDetails}
-                                        />
+                                                <div className = { styles.overlay }>
+                                                    <button className = { `${ styles.txtTitle} ${ styles.uploadBtn }` }>
+                                                        Upload Image
+                                                        <input
+                                                            type="file"
+                                                            onChange={handleImageChange}
+                                                            accept="image/*"
+                                                        />
+                                                    </button>
+
+                                                    <button 
+                                                        className = { `${ styles.txtTitle} ${ styles.deleteBtn }` } 
+                                                        //onClick={() => {setDeleteModalVisible(true); setSelectedImage(aboutUsData.image);} } //handleDeleteImage
+                                                        //onClick={handleDeleteImage}
+                                                        onClick={() => {setDeleteModalVisible(true);}}
+                                                    >
+                                                        Delete Image
+                                                    </button>
+
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className = { styles.noImg }>
+                                                <div className = { styles.overlay }>
+                                                    <button className = { `${ styles.txtTitle} ${ styles.uploadBtn }` }>Upload Image</button>
+                                                </div>
+
+                                                <input
+                                                    type="file"
+                                                    onChange={handleImageChange}
+                                                    accept="image/*"
+                                                />
+
+                                                <span className={styles.txtTitle}>No Image Uploaded</span>
+                                            </div>
+                                        )}
+
+                                        <button className = { styles.saveBtn }>
+                                            <span className = { styles.txtTitle } onClick = {() => { handleUpdateImage(aboutUsData.image); }}>
+                                                {isSaving ? (
+                                                    <>
+                                                        <span className = { styles.loadingSpinner }></span>
+                                                    </>
+                                                ) : (
+                                                    'Save Image'
+                                                )}
+                                            </span>
+                                        </button>
+                                        
+
+                                        <div className = { styles.history }>
+                                            <span className = { styles.txtTitle }>Historical Background</span>
+                                            <textarea
+                                                className = { styles.txtSubTitle } 
+                                                placeholder = "Place information here..."
+                                                name="historicalBackground"
+                                                value={aboutUsData.historicalBackground}
+                                                onChange={handleChangeDetails}
+                                            />
+                                        </div>
+
+                                        <div className = { styles.vision}>
+                                            <span className = { styles.txtTitle }>Vision</span>
+                                            <textarea
+                                                className = { styles.txtSubTitle } 
+                                                placeholder = "Place information here..."
+                                                name="vision"
+                                                value={aboutUsData.vision}
+                                                onChange={handleChangeDetails}
+                                            />
+                                        </div>
+
+                                        <div className = { styles.mission}>
+                                            <span className = { styles.txtTitle }>Mission</span>
+                                            <textarea
+                                                className = { styles.txtSubTitle } 
+                                                placeholder = "Place information here..."
+                                                name="mission"
+                                                value={aboutUsData.mission}
+                                                onChange={handleChangeDetails}
+                                            />
+                                        </div>
+
+                                        <div className = { styles.goal}>
+                                            <span className = { styles.txtTitle }>Goal</span>
+                                            <textarea
+                                                className = { styles.txtSubTitle } 
+                                                placeholder = "Place information here..."
+                                                name="goal"
+                                                value={aboutUsData.goal}
+                                                onChange={handleChangeDetails}
+                                            />
+                                        </div>
+
+                                        <div className = { styles.objective}>
+                                            <span className = { styles.txtTitle }>Objectives</span>
+                                            <textarea
+                                                className = { styles.txtSubTitle } 
+                                                placeholder = "Place information here..."
+                                                name="objectives"
+                                                value={aboutUsData.objectives}
+                                                onChange={handleChangeDetails}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            )}
 
                         </motion.div>
 
@@ -303,7 +348,15 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
                             exit = {{opacity: 0}}
                             transition = {{ duration: 0.3, ease: "easeInOut"}}
                         >
-                            <span className = { styles.txtTitle } onClick = {() => { handleSaveDetails(); }}>Save Changes</span>
+                            <span className = { styles.txtTitle } onClick = {() => { handleSaveDetails(); }}>
+                                {isSaving ? (
+                                    <>
+                                        <span className = { styles.loadingSpinner }></span>
+                                    </>
+                                ) : (
+                                    'Save Changes'
+                                )}
+                            </span>
                         </motion.button>
                     </div>
                 )}
@@ -323,6 +376,7 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
                         <Confirmation 
                             setConfirmDelete = { confirmAndDelete }
                             onCancel = { cancelBtn }
+                            isDeleting = { isDeleting }
                         />
                    </motion.div>
                 )}

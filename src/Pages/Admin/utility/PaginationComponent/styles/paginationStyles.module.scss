@@ -44,20 +44,31 @@
 
     .pageItem {
         margin: 0 5px;
-        padding: 8px 12px;
         cursor: pointer;
-        border: 1px solid #ddd;
         font-size: 13px;
-        border-radius: 5px;
         font-family: $subTitle;
         transition: all 0.3s ease-in-out;
+        
+        // Pevents highlight 
         user-select: none;
+        -webkit-tap-highlight-color: transparent; /* Android Chrome */
+        -webkit-touch-callout: none;              /* iOS Safari */
 
-        &:hover {
-            background-color: #f0f0f0;
+        // Target the anchor inside
+        a {
+            display: inline-block; // ensures padding works
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            text-decoration: none;
+            color: inherit;
+
+            &:hover {
+                background-color: #f0f0f0;
+            }
         }
 
-        &.active {
+        &.active a{
             background-color: $primary;
             color: white;
             border: none;

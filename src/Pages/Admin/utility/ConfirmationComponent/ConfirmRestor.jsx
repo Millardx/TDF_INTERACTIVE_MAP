@@ -1,7 +1,7 @@
 
 import styles from "./styles/confirmationStyles.module.scss"
 
-export default function ConfirmRestore({ onCancel, setConfirmDelete }) {
+export default function ConfirmRestore({ onCancel, setConfirmDelete, isRestoring }) {
     
     return (
         <>
@@ -17,7 +17,13 @@ export default function ConfirmRestore({ onCancel, setConfirmDelete }) {
                                 className = { styles.txtTitle}
                                 onClick = { setConfirmDelete }    
                             >
-                                Restore
+                                {isRestoring ? (
+                                    <>
+                                        <span className = { styles.loadingSpinner }></span>
+                                    </>
+                                ) : (
+                                    'Restore'
+                                )}
                             </button>
                         </div>
                         <div className = { styles.cancel }>

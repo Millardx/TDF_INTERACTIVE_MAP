@@ -6,6 +6,10 @@ import "slick-carousel/slick/slick-theme.css";
 import icons from './guideIcons/Icons'
 const StartingModal = () => {
 
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [showClose, setShowClose] = useState(false);
+  const [hasShownClose, setHasShownClose] = useState(false);
+
   const settings = {
     dots: true,
     infinite: false,
@@ -16,6 +20,23 @@ const StartingModal = () => {
     swipe: true, // Enable swipe gestures
     touchMove: true, // Allow touch gestures
     draggable: true, // Enable mouse dragging for desktop
+    afterChange: (index) => {
+      setCurrentSlide(index);
+
+      if (index === 1 && !hasShownClose) {
+        // Only show with delay the first time reaching slide 1
+        setTimeout(() => {
+          setShowClose(true);
+          setHasShownClose(true); // Mark as shown permanently
+        }, 500);
+      } else if (hasShownClose) {
+        // Already shown before, keep it visible
+        setShowClose(true);
+      } else {
+        // Not yet reached slide 1, hide it
+        setShowClose(false);
+      }
+    }
   };
 
   const [isClose, setIsClose] = useState(false);
@@ -28,7 +49,13 @@ const StartingModal = () => {
     {!isClose &&(
         <div id="startingModal">
           <div className={styles.container}>
-                <button onClick={handleClose} className={styles.close}>Close</button>
+
+            <button onClick={handleClose} className={styles.close}>
+              {showClose && (
+                'Finish'
+              )}
+            </button>
+
             <Slider {...settings}>
               {/* First Slide: Instructions */}
               <div className={styles.content}>

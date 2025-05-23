@@ -3,7 +3,16 @@ import styles from './Pathfinding.module.scss';
 import { arrow } from './assets/index';
 import { positionGeometry } from 'three/webgpu';
 
-function Pick({pos, moveArrow, removeLine, cameraPF, togglePathfinding}) {
+import UseToast from '../../../../Admin/utility/AlertComponent/UseToast';
+
+function Pick({pos, moveArrow, removeLine, cameraPF, togglePathfinding, isPathfindingActive, setCurrentModal}) {
+
+    // toast alert pop up
+    const mountToast = UseToast();
+
+    // for closing container when user click outside
+    const pathfindingRef = useRef(null);
+
     const [isPfBtn, setIsPfBtn] = useState(true);
     const [buttonHidden, setButtonHidden] = useState(false);
     const headerRef = useRef(null);
@@ -12,6 +21,10 @@ function Pick({pos, moveArrow, removeLine, cameraPF, togglePathfinding}) {
     const [cname, setCname]= useState('Current');
     const [destination, setDestination] = useState(null);
     const [dname, setDname]= useState('Destination');
+
+    // for close button indicator
+    const [showTooltip, setShowTooltip] = useState(false);
+
     useEffect(() =>{
         const container = document.getElementById('container');
         if(container && !modalWrapperRef.current){
@@ -115,16 +128,41 @@ function Pick({pos, moveArrow, removeLine, cameraPF, togglePathfinding}) {
 
     // pathfinding methods
     const handleButtonClick = (type) =>{
+
+        // for close button indicator
+        if (type === 'Open') {
+            setShowTooltip(true); // Show tooltip immediately
+
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                setShowTooltip(false);
+            }, 3000);
+        }
+
         if(type === 'Open'){
             togglePathfinding();
             setButtonHidden(true)
             setTimeout(() => {
                 setIsPfBtn(false);
             }, 300)
-            console.log('open modal');
+            // console.log('open modal');
         }
         else if(type === 'Enter'){
-            if(!current && !destination) return;
+            if(!current && !destination) {
+                mountToast("Please select your current location and destination", "error");
+                return;
+            }
+
+            if (!current) {
+                mountToast("Please select your current location.", "error");
+                return;
+            }
+
+            if (!destination) {
+                mountToast("Please select your destination.", "error");
+                return;
+            }
+            
             togglePathfinding();
             setButtonHidden(false)
             setTimeout(() => {
@@ -135,9 +173,21 @@ function Pick({pos, moveArrow, removeLine, cameraPF, togglePathfinding}) {
             setDname('Destination');
             setCurrent(null);
             setDestination(null);
-            console.log('enter');
+            // console.log('enter');
+
+            mountToast(
+                "We'd love your feedback — help us improve!",
+                "info",
+                {
+                    position: "bottom-right",
+                    autoClose: 8000,
+                    onClick: () => setCurrentModal("submitFeedback")
+                }
+            );
 
         }
+
+
         else if(type === 'Close'){
             togglePathfinding();
             setButtonHidden(false)
@@ -182,23 +232,58 @@ function Pick({pos, moveArrow, removeLine, cameraPF, togglePathfinding}) {
         }
     }
 
+    // close modal when user click outside of pathfinding
+    useEffect(() => {
+        function handleOutsideClick(event) {
+            if (
+                pathfindingRef.current &&
+                !pathfindingRef.current.contains(event.target) &&
+                !isPfBtn // Only run if modal is open
+            ) {
+                handleButtonClick('Close');
+            }
+        }
+
+        document.addEventListener('mousedown', handleOutsideClick);
+
+        return () => {
+            document.removeEventListener('mousedown', handleOutsideClick);
+        };
+    }, [isPfBtn]);
+
+
     return (
-        <div id="pathfinding">
-            {isPfBtn && 
-            <button className={`${styles.pfBtn} ${buttonHidden ? styles.hidden : ''}`} onClick={() => handleButtonClick('Open')}>
-                <p>CVSU-TDF</p>
-                <h1>Search for your path</h1>
-            </button>}
-            
-            <div className={styles.pfCont}>
-                {/* contents */}
-                <button className={styles.logo} onClick={() => handleButtonClick('Close')}>
-                    <p>INTERACTIVE MAP</p>
-                    <h1>CVSU-TDF</h1>
-                </button>
+        <>
+
+            <div id="pathfinding" ref={pathfindingRef}>
+                {isPfBtn && 
+                    <button 
+                        className={`${styles.pfBtn} ${buttonHidden ? styles.hidden : ''}`} 
+                        onClick={() => handleButtonClick('Open')}
+                    >
+                        <p>CVSU-TDF</p>
+                        <h1>Search for your path</h1>
+                    </button>
+                }
+                
+                <div className={`${styles.pfCont} ${isPathfindingActive ? styles.active : ''}`}>
+                    {/* contents */}
+                    <div className={styles.tooltipWrapper}>
+                        <button className={styles.logo} onClick={() => handleButtonClick('Close')}>
+                            <p>INTERACTIVE MAP</p>
+                            <h1>CVSU-TDF</h1>
+                        </button>
+
+                        <small 
+                            className={styles.toolTipText} 
+                            style={{ visibility: showTooltip ? 'visible' : 'hidden', opacity: showTooltip ? 1 : 0 }}
+                        >
+                            Click to close path search.
+                        </small>
+                    </div>
                     <button className={styles.current}
-                    data-id='Current'
-                    onClick={()=> toggleModal('Current')}
+                        data-id='Current'
+                        onClick={()=> toggleModal('Current')}
                     >
                         <span>{cname}</span>
                         <div className={styles.arrow}>
@@ -206,18 +291,23 @@ function Pick({pos, moveArrow, removeLine, cameraPF, togglePathfinding}) {
                         </div>
                     </button>
                     <button className={styles.destination}
-                    data-id='Destination'
-                    onClick={()=> toggleModal('Destination')}
+                        data-id='Destination'
+                        onClick={()=> toggleModal('Destination')}
                     >
                         <span>{dname}</span>
                         <div className={styles.arrow}>
                             <img src={arrow} alt="arrow" />
                         </div>
                     </button>
-                <button className={styles.enter}
-                onClick={() => handleButtonClick('Enter')}>Enter</button>
+                    <button 
+                        className={styles.enter}
+                        onClick={() => handleButtonClick('Enter')}
+                    >
+                        Enter
+                    </button>
+                </div>
             </div>
-        </div>
+        </>
     )
 }
 

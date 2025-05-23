@@ -63,18 +63,20 @@ export default function Legend() {
                             <div className={styles.header}>
                                 <span className={styles.txtTitle}>Map Legend</span>
                             </div>
-                            <ul className={styles.legendList}>
-                                {markerIcons.map((icon, index) => (
-                                    <li key={`legend-${index}`}>
-                                        <span className={styles.text}>{icon.name}</span>
-                                        <img
-                                            className={`${styles.icon} ${styles.signin}`}
-                                            src={icon.icon}
-                                            alt={icon.name}
-                                        />
-                                    </li>
-                                ))}
-                            </ul>
+                            <div className = { styles.listWrapper }>
+                                <ul className={styles.legendList}>
+                                    {markerIcons.map((icon, index) => (
+                                        <li key={`legend-${index}`}>
+                                            <span className={styles.text}>{icon.name}</span>
+                                            <img
+                                                className={`${styles.icon} ${styles.signin}`}
+                                                src={icon.icon}
+                                                alt={icon.name}
+                                            />
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
                         </section>
                         </div>
                     </motion.div>

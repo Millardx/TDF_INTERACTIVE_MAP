@@ -192,6 +192,9 @@ const ThreeCanvas = () => {
       controlsRef.current.enabled = true;
     }
   }
+
+  const [isPathfindingActive, setIsPathfindingActive] = useState(false);
+
   const togglePathfinding = () => {
     const pathfinding = document.getElementById("pathfinding");
     const map = document.getElementById("mapCont");
@@ -199,10 +202,17 @@ const ThreeCanvas = () => {
         pathfinding.classList.add("active");
         map.classList.add("shrink");
 
+        // When you open pathfinding
+        setIsPathfindingActive(true); 
+
     } else {
         pathfinding.classList.remove("active");
         if (!map.classList.contains("active")) {
             map.classList.remove("shrink");
+
+            
+            // When you close pathfinding
+            setIsPathfindingActive(false); 
         }
     }
 }
@@ -302,6 +312,7 @@ const ThreeCanvas = () => {
           cameraPF={cameraPF}
           togglePathfinding={togglePathfinding} 
           getCamControls={getCamControls}
+          isPathfindingActive={ isPathfindingActive }
             />
         {/* AddMarker component */}
         <div id='addMarkerWrapper'></div>

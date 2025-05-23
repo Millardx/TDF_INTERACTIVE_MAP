@@ -40,10 +40,14 @@ canvas{
     overflow: hidden;
 }
 #pathfinding{
-    overflow: hidden;
-    display: none;
     z-index: 1000;
-    flex: 0;
+    height: 0%;
+    background-color: $primary;
+    transition: height 0.5s ease-in-out;
+
+    // overflow: hidden;
+    // display: none;
+    // flex: 0;
 }
 #pfModal-wrapper{
     position: absolute;
@@ -88,18 +92,18 @@ canvas{
         &::-webkit-scrollbar {
             width: 8px;       // Width of vertical scrollbar
             height: 8px;      // Height of horizontal scrollbar (if applicable)
-          }
-      
-          &::-webkit-scrollbar-track {
+        }
+    
+        &::-webkit-scrollbar-track {
             background-color: $primary; // Background color of the track
             border-radius: 10px;
-          }
-      
-          &::-webkit-scrollbar-thumb {
+        }
+    
+        &::-webkit-scrollbar-thumb {
             background-color: $primary;    // Color of the scrollbar thumb
             border-radius: 10px;
             border: 2px solid $primary; // Padding around thumb for space from track
-          }
+        }
 
         &.active{
             opacity: 1;
@@ -140,7 +144,9 @@ canvas{
 }
 
 #pathfinding.active{
-    flex: 0.3;
+    // flex: 0.3;
+    opacity: 1;
+    height: 100px;
     @media (max-width: 800px){
         position: absolute;
         width: 100%;

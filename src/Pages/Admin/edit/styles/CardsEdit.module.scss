@@ -101,6 +101,7 @@
     align-self: flex-end;
     margin: 20px 20px 5px 20px;
     padding: 5px 20px;
+    width: 130px;
     transition: all 0.2s ease-in-out;
     user-select: none;
     -webkit-tap-highlight-color: transparent; // removes blue highlight on mobile
@@ -255,11 +256,11 @@
           border-radius: 5px;
           font-family: $subTitle;
           font-size: 13px;
-          justify-self: center;
+          text-align: justify !important;
           margin-top: 10px;
           max-height: 100px;
           max-width: 210px;
-          padding: 5px;
+          padding: 5px 10px;
           resize: none;
           outline: transparent;
           // overflow: hidden;

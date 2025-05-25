@@ -1,24 +1,45 @@
 @import "../../../Users/landing/signInModule/global.scss";
 @import "../../../Users/landing/signInModule/stylesVariables.scss";
 
-.editNewsEventContainer, .uploadImgContainer, .updateImgContainer, .confirmDltContainer {
+// Crucial for smooth animation transition
+.holder {
+    position: absolute;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    pointer-events: all;
+    max-height: 800px;
+    height: 100%;
+}
+
+.editNewsEventContainer, 
+.uploadImgContainer, 
+.updateImgContainer, 
+.confirmDltContainer {
   align-items: center;
   display: flex;
   justify-content: center;
   pointer-events: all;
   width: 100%;
 
+  .modalContent{
+    max-height: 400px;
+  }
+
   .modalEditingSection, .modalContent {
     align-items: center;
     background-color: $tertiary;
     padding: 20px; 
+    padding-top: 15px;
     border-radius: 8px;
     gap: 15px;
     display: flex;
     flex-direction: column;
-    max-height: 400px;
+    height: 100%;
     max-width: 500px;
-    width: 90%;
+    width: 60%;
     overflow-y: scroll;
     overflow-x: hidden;
     justify-content: space-between; 
@@ -27,7 +48,7 @@
       background-color: $secondary;
       border-radius: 0 0 50px 50px;
       text-align: center;
-      margin: -20px 0 20px 0;
+      margin: -20px 0 0 0;
       padding: 20px 20px;
       width: 70%;
 
@@ -63,24 +84,35 @@
 }
 
 .editNewsEventContainer {
+
+  min-height: 150px;
+  max-height: 500px;
+  
+  
   .modalEditingSection {
+    min-width: 360px;
+    max-width: 700px;
 
     .close { // adapts styles from global
-      position: absolute;
+      position: relative;
       user-select: none;
+      margin-bottom: -10px;
       -webkit-tap-highlight-color: transparent; // removes blue highlight on mobile
 
       img {
-          height: 15px;
-          width: 15px;
+          position: absolute;
+          top: 5px;
+          right: 5px;
+          height: 20px;
+          width: 20px;
       }
     }
 
     .imageCarousel {
       margin-top: 20px;
       width: 100%;
-      max-width: 400px;
-      height: 250px;
+      max-width: 600px;
+      // height: 250px;
       margin: 0 auto;
       padding: 2px;
       
@@ -200,6 +232,7 @@
       .newsHeader {
         height: 50px;
         overflow: hidden;
+        margin-bottom: 10px
       }
 
       .newsDesc {
@@ -224,7 +257,9 @@
   }
 }
 
-.uploadImgContainer, .updateImgContainer, .confirmDltContainer {
+.uploadImgContainer, 
+.updateImgContainer, 
+.confirmDltContainer {
   height: 100%;
   width: 100%;
   background-color: rgba(0, 0, 0, 0.5);

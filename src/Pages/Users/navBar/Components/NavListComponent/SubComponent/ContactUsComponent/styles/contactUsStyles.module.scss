@@ -46,62 +46,6 @@
             }
         }
 
-        .contacts {
-            position: relative;
-            display: flex;
-            flex-grow: 0;
-            flex-shrink: 0;
-            gap: 30px;
-            justify-content: center;
-            width: 100%;
-            margin-top: 20px;
-
-            .info {
-                // margin: 20px 0 0px 0; 
-                position: absolute;
-                top: -10%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                height: auto;
-                transform: translate(-50%, -50%);
-                text-align: center;
-                font-family: $subTitle;
-                font-size: 0.7rem;
-                color: grey;
-                .location, .number, .email, .facebook {
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    width: 10rem;
-                    height: 2rem;
-                    opacity: 0;
-                    transition: all 0.2s ease-in-out;
-                    position: absolute;
-                }
-    
-                .location.active, .number.active, .email.active, .facebook.active {
-                    opacity: 1;
-                }
-            }
-
-            span{
-                
-            }
-
-            img {
-                filter: brightness(0) saturate(100%) invert(30%) sepia(12%) saturate(1582%) hue-rotate(102deg) brightness(95%) contrast(86%);
-                height: 20px;
-                width: 20px;
-                cursor: pointer;
-            }
-
-            .txtSubTitle {
-                font-size: 12px;
-                margin: -5px 0 10px 0;
-                width: 100%;
-                word-wrap: break-word;
-            }
-        }
-
         .form {
             display: flex;
             flex-direction: column;
@@ -146,6 +90,80 @@
                 }
             }
      
+        }
+
+        .contacts {
+            position: relative;
+            display: flex;
+            flex-grow: 0;
+            flex-shrink: 0;
+            gap: 30px;
+            justify-content: center;
+            width: 100%;
+            margin-top: 40px;
+            padding-bottom: 10px;
+
+            .info {
+                // margin: 20px 0 0px 0; 
+                position: absolute;
+                top: -35%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                height: auto;
+                text-align: center;
+                font-family: $subTitle;
+                // font-size: 0.7rem;
+                color: grey;
+                .location, .number, .email, .facebook {
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    width: 10rem;
+                    height: 2rem;
+                    opacity: 0;
+                    transition: all 0.2s ease-in-out;
+                    position: absolute;
+
+                    user-select: none;
+                    -webkit-tap-highlight-color: transparent; /* Android Chrome */
+                    -webkit-touch-callout: none;              /* iOS Safari */
+                }
+    
+                .location.active, .number.active, .email.active, .facebook.active {
+                    opacity: 1;
+                }
+            }
+
+            img {
+                filter: brightness(0) saturate(100%) invert(30%) sepia(12%) saturate(1582%) hue-rotate(102deg) brightness(95%) contrast(86%);
+                height: 20px;
+                width: 20px;
+                cursor: pointer;
+            }
+
+            .txtSubTitle {
+                font-size: unset;
+                margin: -5px 0 10px 0;
+                width: 100%;
+                max-width: 250px;
+                overflow-x: scroll;
+
+
+                &::-webkit-scrollbar {
+                    width: 2px;       // Width of vertical scrollbar
+                    height: 2px;      // Height of horizontal scrollbar (if applicable)
+                }
+                
+                &::-webkit-scrollbar-track {
+                    // background-color: $secondary; // Background color of the track
+                    border-radius: 10px;
+                }
+                
+                    &::-webkit-scrollbar-thumb {
+                    background-color: $primary;    // Color of the scrollbar thumb
+                    border-radius: 10px;
+                    // border: 2px solid $tertiary; // Padding around thumb for space from track
+                }
+            }
         }
     }
 }
@@ -208,7 +226,7 @@
             .contacts {
 
                 .txtSubTitle {
-                    font-size: 18px;
+                    font-size: 13px;
                 }
 
             }

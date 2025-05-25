@@ -17,10 +17,21 @@ import UseToast from "../../../../../Admin/utility/AlertComponent/UseToast.jsx";
 import { useEffect } from "react";
 import { motion, AnimatePresence } from 'framer-motion'
 
+// Added by Lorenzo @ 05/18/2025
+import 'bootstrap-icons/font/bootstrap-icons.css';
+import TogglePassword from "../../../../../Admin/utility/PasswordComponent/TogglePassword.jsx";
+
 // import axios from 'axios'
 
 
 export default function SignIn ({ handleBtnClick, isBtnClicked, handleUser }) {
+    // for password visibility toggle
+    const { inputType, iconClass, toggleVisibility } = TogglePassword();
+
+    // added by lorenzo @ 05/18/2025
+    const [isLoading, setIsLoading] = useState(false);      // for loading animation
+
+
     const { login: setUser } = useUser();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -30,8 +41,14 @@ export default function SignIn ({ handleBtnClick, isBtnClicked, handleUser }) {
     // toast alert pop up
     const mountToast = UseToast();
 
+    // Modified by lorenzo @ 05/18/2025
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if(isLoading) return;   // Function guard - prevents spam
+
+        setIsLoading(true);     // start loading
+
         try {
             const userData = { email, password };
             const response = await login(userData);
@@ -49,6 +66,9 @@ export default function SignIn ({ handleBtnClick, isBtnClicked, handleUser }) {
             }
         } catch (error) {
             mountToast("Failed to login!", "error");
+            setIsLoading(false);    // stop loading
+        } finally {
+            setIsLoading(false);    // stop loading
         }
     };
 
@@ -79,17 +99,45 @@ export default function SignIn ({ handleBtnClick, isBtnClicked, handleUser }) {
                                 onChange = {(e) => setEmail(e.target.value)}
                             />
 
-                            <label htmlFor = "password">Password</label>
-                            <input 
-                                autoComplete = "off"
-                                name = "password"
-                                type = "password" 
-                                required
-                                onChange = {(e) => setPassword(e.target.value)}
-                            />
+                            <label htmlFor = "password">
+                                Password
+                                <div className = { styles.passToolTip }> 
+                                    <i className="bi bi-question-circle"></i>
+                                    <small className =  { styles.toolTipText }>
+                                        Password should be 8 characters long and have
+                                        at least 1 number, uppercase, lowercase
+                                        and special character 
+                                    </small>
+                                </div>
+                            </label>
+                            <div className = { styles.passWrapper }>
+                                <input
+                                    autoComplete = "off"
+                                    name = "password"
+                                    type = { inputType }
+                                    required
+                                    onChange = {(e) => setPassword(e.target.value)}
+                                />
+
+                                <i 
+                                    className={ iconClass }
+                                    onClick={ toggleVisibility }
+                                ></i>
+                            </div>
+                            
                             {/* Change button names into general names */}
-                            <button className = { `${styles.button } ${styles.submitBtn }` } type = "submit">
-                                Sign in
+                            <button 
+                                className = { `${styles.button } ${styles.submitBtn } ${isLoading ? styles.loading : ''}` } 
+                                type = "submit"    
+                                disabled = { isLoading }
+                            >
+                                {isLoading ? (
+                                    <>
+                                        <span className = { styles.loadingSpinner }></span>
+                                    </>
+                                ) : (
+                                    'Sign in'
+                                )}
                             </button>
                         </form>
                     </motion.div>   

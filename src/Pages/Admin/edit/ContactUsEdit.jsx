@@ -11,6 +11,8 @@ import { API_URL } from '/src/config';
 
 export default function ContactUsEdit ({ setCurrentModal, currentModal, handleClickOutside }) {
 
+    const [isSaving, setIsSaving] = useState(false);
+
     // toast alert pop up
     const mountToast = UseToast();
 
@@ -43,6 +45,9 @@ export default function ContactUsEdit ({ setCurrentModal, currentModal, handleCl
     };
 
     const handleSaveDetails = async () => {
+        if(isSaving) return;    // function guard
+        setIsSaving(true);
+
         // Destructure fields for validation
         const { location, telephone, email, facebookPage } = contactUsData;
     
@@ -68,7 +73,10 @@ export default function ContactUsEdit ({ setCurrentModal, currentModal, handleCl
                 setCurrentModal("contactUs");
             } else {
                 console.error("Error saving Contact Us data:", error);
+                setCurrentModal("contactUsEdit");
             }
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -149,13 +157,21 @@ export default function ContactUsEdit ({ setCurrentModal, currentModal, handleCl
                         </motion.div>
 
                         <motion.button 
-                        className = { styles.saveBtn }
-                        initial = {{opacity: 0}}
-                        animate = {{opacity: 1}}
-                        exit = {{opacity: 0}}
-                        transition = {{ duration: 0.3, ease: "easeInOut"}}
+                            className = { styles.saveBtn }
+                            initial = {{opacity: 0}}
+                            animate = {{opacity: 1}}
+                            exit = {{opacity: 0}}
+                            transition = {{ duration: 0.3, ease: "easeInOut"}}
                         >
-                            <span className = { styles.txtTitle } onClick = { handleSaveDetails }>Save Changes</span>
+                            <span className = { styles.txtTitle } onClick = { handleSaveDetails }>
+                                {isSaving ? (
+                                    <>
+                                        <span className = { styles.loadingSpinner }></span>
+                                    </>
+                                ) : (
+                                    'Save Changes'
+                                )}
+                            </span>
                         </motion.button>
                     </div>
                 )}

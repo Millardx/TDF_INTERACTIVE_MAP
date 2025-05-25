@@ -14,11 +14,17 @@
     height: 100px;
     justify-content: center;
     width: 86%;
+    margin-bottom: 20px;
 
     .txtTitle {
       color: $tertiary;
       font-size: 21px;
     }
+  }
+
+  .listHeader {
+      font-size: 21px;
+      margin-left: 35px; 
   }
 
   .tblWrapper {
@@ -69,8 +75,22 @@
       }
 
       .fileName {
-        overflow: none;
-        word-wrap: break-word;
+        .subRow {
+          display: flex;
+          flex-direction: column; 
+          max-width: 250px;       
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          display: block;    
+          cursor: pointer;
+          
+          &:hover{
+            white-space: normal;
+            max-width: none;
+            width: auto;
+          }
+        }
       }
   
       .actionBtns {
@@ -107,6 +127,10 @@
           .txtTitle {
               font-size: 40px;
           }
+      }
+
+      .listHeader {
+          font-size: 31px;
       }
 
     .tblWrapper {

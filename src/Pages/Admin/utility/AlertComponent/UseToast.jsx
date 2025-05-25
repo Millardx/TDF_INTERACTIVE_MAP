@@ -6,7 +6,7 @@ const MAX_TOASTS = 2;   // define max message to accomodate
 
 const UseToast = () => {
 
-    const mountToast = (message, type ) => {
+    const mountToast = (message, type, customOptions = {}) => {
 
         // added by lorenzo - 05/01/2025
         if (toast.toastCount >= MAX_TOASTS) return;     // terminate execution if request exceeds limit
@@ -23,6 +23,7 @@ const UseToast = () => {
             theme: "light",
             progress: null,
             transition: Slide,
+            ...customOptions        // submit feedback reminder specific properties
         }
 
         switch (type) {
@@ -34,6 +35,9 @@ const UseToast = () => {
                 break;
             case "warn":
                 toast.warn(message, toastSettings);
+                break;
+            case "info":
+                toast.info(message, toastSettings);
                 break;
             default:
                 toast.success(message, toastSettings);

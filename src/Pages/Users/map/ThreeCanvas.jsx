@@ -7,6 +7,9 @@ import Preloader from '../preloader/Preloader';
 import StartingModal from './Components/startingModal/StartingModal';
 import DragAndScroll from '@utils/DragAndScroll'
 
+// Added by Lorenzo @ 05/18/2025
+import { useAuth } from '../../Admin/ACMfiles/authContext'
+
 import './ThreeCanvas.scss'; // global styles for the map
 
 import NavigationModule from '../navBar/NavigationModule';
@@ -21,8 +24,17 @@ import AddMarker from './Components/addMarker/AddMarker';
 
 const ThreeCanvas = () => {
   
+  const [currentModal, setCurrentModal] = useState(null);
+
   const location = useLocation();
-  const user = location.state?.user;
+  // const user = location.state?.user;
+
+  // Added by Lorenzo - 05/19/2025
+  // Get the currently logged in consistently
+  const [user, setUser] = useState(() => {
+    return JSON.parse(localStorage.getItem('user'));
+  });
+
 
   const containerRef = useRef(null);
   const mapContainerRef = useRef(null);
@@ -182,6 +194,9 @@ const ThreeCanvas = () => {
       controlsRef.current.enabled = true;
     }
   }
+
+  const [isPathfindingActive, setIsPathfindingActive] = useState(false);
+
   const togglePathfinding = () => {
     const pathfinding = document.getElementById("pathfinding");
     const map = document.getElementById("mapCont");
@@ -189,10 +204,17 @@ const ThreeCanvas = () => {
         pathfinding.classList.add("active");
         map.classList.add("shrink");
 
+        // When you open pathfinding
+        setIsPathfindingActive(true); 
+
     } else {
         pathfinding.classList.remove("active");
         if (!map.classList.contains("active")) {
             map.classList.remove("shrink");
+
+            
+            // When you close pathfinding
+            setIsPathfindingActive(false); 
         }
     }
 }
@@ -250,13 +272,40 @@ const ThreeCanvas = () => {
     offVisibility();
   }
 
+  useEffect(() => {
+    console.log("User role on /map:", user?.role);
+  }, [user]);
+
+  useEffect(() => {
+    const setVh = () => {
+      document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+    };
+
+    setVh();
+    window.addEventListener('resize', setVh);
+    return () => window.removeEventListener('resize', setVh);
+  }, []);
+
   return(
     <div id="container" ref={containerRef}>
       <Preloader />
       {!isOnAddMarker && (
-        <NavigationModule user = { user }/>
+        <NavigationModule 
+          user = { user }
+          currentModal={currentModal}
+          setCurrentModal={setCurrentModal}
+        />
       )}
-      <StartingModal />
+
+      {/* 
+        Modified @ 05/18/2025 
+        -- Only show tutorial for guest only  
+        
+      */}
+      {(user?.role !== "staff" && user?.role !== "admin") && (
+        <StartingModal />
+      )}
+
       {sceneAndCamera && (
         <Markers
         scene={sceneAndCamera.scene}
@@ -279,6 +328,8 @@ const ThreeCanvas = () => {
           cameraPF={cameraPF}
           togglePathfinding={togglePathfinding} 
           getCamControls={getCamControls}
+          isPathfindingActive={ isPathfindingActive }
+          setCurrentModal={ setCurrentModal }
             />
         {/* AddMarker component */}
         <div id='addMarkerWrapper'></div>

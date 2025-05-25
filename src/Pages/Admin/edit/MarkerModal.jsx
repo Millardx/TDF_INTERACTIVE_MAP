@@ -6,6 +6,7 @@ import UseToast from '../utility/AlertComponent/UseToast';
 import {API_URL } from '/src/config';
 
 export default function MarkerModal({ onClose ,markerData }) {
+    const [isSaving, setIsSaving] = useState(false);
     const mountToast = UseToast();
     const [isMarker, setMarker] = useState(null);
     const [areaName, setAreaName] = useState(markerData?.areaName || "");
@@ -42,20 +43,20 @@ export default function MarkerModal({ onClose ,markerData }) {
     }, [markerIcons, markerData]);
     
 
-  // Handle changes to areaName or iconType
-  useEffect(() => {
-    setIsAreaNameEdited(areaName !== markerData?.areaName);
-    setIsIconTypeEdited(iconType !== markerData?.iconType);
-}, [areaName, iconType, markerData]);
-  
-const handleIconTypeChange = (e) => {
-    const selectedType = e.target.value;
-    setIconType(selectedType); // Update selected icon type
-    const selectedMarker = markerIcons.find((icon) => icon.name === selectedType);
-    setMarker(
-        selectedMarker ? `${selectedMarker.iconPath}` : ""
-    ); // Dynamically set the corresponding marker icon
-};
+    // Handle changes to areaName or iconType
+    useEffect(() => {
+        setIsAreaNameEdited(areaName !== markerData?.areaName);
+        setIsIconTypeEdited(iconType !== markerData?.iconType);
+    }, [areaName, iconType, markerData]);
+    
+    const handleIconTypeChange = (e) => {
+        const selectedType = e.target.value;
+        setIconType(selectedType); // Update selected icon type
+        const selectedMarker = markerIcons.find((icon) => icon.name === selectedType);
+        setMarker(
+            selectedMarker ? `${selectedMarker.iconPath}` : ""
+        ); // Dynamically set the corresponding marker icon
+    };
 
 
     const handleSave = async (e) => {
@@ -65,6 +66,11 @@ const handleIconTypeChange = (e) => {
             mountToast('No changes detected for Marker Name or Icon Type', 'warn');
             return;
         }
+
+        //function guard
+        if (isSaving) return;    // break execution if already loading
+        
+        setIsSaving(true);
         try {
             const response = await axios.put(`${API_URL}/api/markers/${markerData._id}`, {
                 areaName,
@@ -77,6 +83,8 @@ const handleIconTypeChange = (e) => {
         } catch (error) {
             console.error('Error updating marker:', error);
             mountToast('Error updating marker', 'error');
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -104,6 +112,7 @@ const handleIconTypeChange = (e) => {
                             type="text"
                             value={areaName}
                             onChange={(e) => setAreaName(e.target.value)}
+                            maxLength={ 20 }
                             required
                         />
                      <div className={styles.iconType}>
@@ -135,7 +144,13 @@ const handleIconTypeChange = (e) => {
                             onClick={handleSave}
                             // onClick={handleUpdate}
                         >
-                            Save
+                            {isSaving ? (
+                            <>
+                                <span className = { styles.loadingSpinner }></span>
+                            </>
+                            ) : (
+                                'Save'
+                            )}
                         </button>
                         <button 
                             className = { `${styles.cancelBtn} ${styles.txtTitle}` } 

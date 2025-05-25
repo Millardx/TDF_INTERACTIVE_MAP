@@ -9,6 +9,9 @@ import UseToast from '../../../../../Admin/utility/AlertComponent/UseToast';
 import { API_URL } from '/src/config';
 
 export default function Option({ handleBtnClick, isBtnClicked, handleUser }) {
+    // added by lorenzo @ 05/18/2025
+    const [isLoading, setIsLoading] = useState(false);      // for loading animation
+
     // toast alert pop up
     const mountToast = UseToast();
 
@@ -45,7 +48,10 @@ export default function Option({ handleBtnClick, isBtnClicked, handleUser }) {
         setSexAtBirth(e.target.value);
     };
     
+
+    // Modified by Lorenzo @05/18/2025
     const handleGuestLogin = async () => {
+
         // Validate inputs
         if (!selectedRole) {
             mountToast("Please select a role!", "error");
@@ -59,6 +65,12 @@ export default function Option({ handleBtnClick, isBtnClicked, handleUser }) {
             mountToast("Please choose Assigned Sex at Birth!", "error");
             return;
         }
+
+        
+        // Only start loading if validation is passed
+        if(isLoading) return;   // Function guard - prevents spam
+        setIsLoading(true);     // start loading
+        
     
         try {
             console.log("Sex at Birth (frontend):", sexAtBirth);
@@ -91,74 +103,84 @@ export default function Option({ handleBtnClick, isBtnClicked, handleUser }) {
             } else {
                 console.error('Failed to log guest login');
                 mountToast("An error occurred while logging in. Please try again.", "error");
+                setIsLoading(false);    // stop loading
             }
         } catch (error) {
             console.error('Error logging guest login:', error);
             mountToast("An error occurred while logging in. Please check your network and try again.", "error");
+            setIsLoading(false);    // stop loading
+        } finally {
+            setIsLoading(false);    // stop loading
         }
     };
     
 
     return (
         <>
-            <AnimatePresence>
-                {(!isBtnClicked && !isGuest && categoryUnmountDelay) && (
-                    <motion.div 
-                        className = { styles.optionContent } 
-                        initial = {{opacity: 0}}
-                        animate = {{opacity: 1}}
-                        exit = {{opacity: 0, transition: {delay: 0}}}
-                        transition = {{duration: 0.3, delay: 0.2, ease: "easeInOut"}}
+            {/* Modified by Lorenzo @05/18/2025 */}
+            <AnimatePresence mode="wait">
+                {(!isBtnClicked && !isGuest) ? (
+                    <motion.div
+                        key="login"
+                        className={ styles.optionContent } 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
                     >
-                        <span className = { styles.txtTitle }>Login</span>
-                        <button className = { `${styles.button} ${styles.btnSignIn}` } onClick = { handleBtnClick }>Sign in</button>
-                        <span className = { styles.txtSubTitle }>OR</span>
+                        <span className={ styles.txtTitle }>Login</span>
                         <button 
-                            className = { `${styles.button} ${styles.btnGuest}`}
+                            className={`${styles.button} ${styles.btnSignIn}`} 
+                            onClick={ handleBtnClick }
+                        >
+                            Sign in
+                        </button>
+                        <span className={ styles.txtSubTitle }>OR</span>
+                        <button 
+                            className={`${styles.button} ${styles.btnGuest}`} 
                             // onClick = { () => handleGuestLogin('Guest') }
-                            onClick = { toggleGuest }
+                            onClick={ toggleGuest }
                         >
                             Guest Login
-                        </button> 
-                    </motion.div>  
-                )}
-            </AnimatePresence>
-            <AnimatePresence>
-                {(isGuest && optionUnmountDelay) && (
+                        </button>
+                    </motion.div>
+                ) : (
                     <motion.div
-                        className = { styles.guestCategory }
-                        initial = {{opacity: 0}}
-                        animate = {{opacity: 1}}
-                        exit = {{opacity: 0, transition: {delay: 0}}}
-                        transition = {{duration: 0.3, delay: 0.2, ease: "easeInOut"}}
+                        key="guest"
+                        className={ styles.guestCategory }
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
                     >
-                        <div className = { styles.return } onClick = { toggleGuest }>
-                            <img src = { icons.arrow } alt = "Close" />
+                        <div className={ styles.return } onClick={ toggleGuest }>
+                            <img src={ icons.arrow } alt="Close" />
                         </div>
+                        {/* Modified by Lorenszo @ 05/18/2025 */}
                         <form>
                             <label>Assigned Sex at Birth</label>
-                            <select value={sexAtBirth} onChange={handleSexChange}>
-                                <option value="">--Select--</option>
+                            <select value={ sexAtBirth } onChange={ handleSexChange }>
+                                <option value="" disabled>-- Select --</option>
                                 <option value="Male">Male</option>
                                 <option value="Female">Female</option>
                             </select>
 
                             <label>Role</label>
-                            <select value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)}>   
-                                <option value="">--Select--</option>                            
+                            <select value={ selectedRole } onChange={(e) => setSelectedRole(e.target.value)}>
+                                <option value="" disabled>-- Select --</option>
                                 <option value="Student">Student</option>
                                 <option value="Farmer">Farmer</option>
                                 <option value="GovernmentAssoc">Government Associate</option>
                                 <option value="Others">Others</option>
                             </select>
 
-                              {/* Conditional Input for Custom Role */}
-                              {selectedRole === 'Others' && (
-                                <div className = {styles.userInput}>
+                            {/* Conditional Input for Custom Role */}
+                            {selectedRole === 'Others' && (
+                                <div className={ styles.userInput }>
                                     <label>Specify Your Role</label>
                                     <input
                                         type="text"
-                                        value={customRole}
+                                        value={ customRole }
                                         onChange={(e) => setCustomRole(e.target.value)}
                                         placeholder="Enter your role"
                                     />
@@ -167,11 +189,18 @@ export default function Option({ handleBtnClick, isBtnClicked, handleUser }) {
                         </form>
 
                         <button 
-                            className = { `${styles.button} ${styles.btnGuest}`}
-                            onClick = { () => handleGuestLogin('Guest') }>
-                            Guest Login
-                        </button> 
-                        
+                            className={`${styles.button} ${styles.btnGuest} ${isLoading ? styles.loading : ''}`} 
+                            onClick={() => handleGuestLogin('Guest')}
+                            disabled = { isLoading }
+                        >
+                            {isLoading ? (
+                                <>
+                                    <span className = { styles.loadingSpinner }></span>
+                                </>
+                            ) : (
+                                'Guest Login'
+                            )}
+                        </button>
                     </motion.div>
                 )}
             </AnimatePresence>

@@ -15,13 +15,24 @@ import PaginationControls from '../utility/PaginationComponent/PaginationControl
 //marker icon data
 import markerData from '../../Users/map/Components/addMarker/markerData';
 
+//loading content
+import useLoading from '../utility/PageLoaderComponent/useLoading';
+import LoadingAnim from '../utility/PageLoaderComponent/LoadingAnim';
+
 export default function EditMarkers() {
     // toast alert pop up
     const mountToast = UseToast();
+    // For loading
+    const [isIconLoaded, setIsIconLoaded] = useState(false);
+    const [isMarkerLoaded, setIsMarkerLoaded] = useState(false);
+    const [isFirstLoad, setIsFirstLoad] = useState(true);
+    const [isLoading, setIsLoading] = useLoading(true);
+    const [isDeleting, setIsDeleting] = useState(false);     
 
     const [showUploadMarker, setShowUploadMarker] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [confirmDelete, setConfirmDelete] = useState(false);
+    const [iconToDelete, setIconToDelete] = useState(null);     // targets icon to delete
     const [isMarker, setIsMarker] = useState(null);
     const [isDelete, setIsDelete] = useState(false); // Confirmation Modal 
     const [markers, setMarkers] = useState([]); // State for fetched markers
@@ -30,15 +41,19 @@ export default function EditMarkers() {
     const [logsPerPage, setLogsPerPage] = useState(5);
     const [selectedMarkerId, setSelectedMarkerId] = useState(null);
     
-    const [markerIcons, setMarkerIcons] = useState([]);
-        // Fetch MarkerIcons
+    const [markerIcons, setMarkerIcons] = useState([]);  
+
+    // Fetch MarkerIcons
     const fetchMarkerIcons = async () => {
         try {
-        const response = await axios.get(`${API_URL}/api/markerIcons`);
-        setMarkerIcons(response.data);
+            const response = await axios.get(`${API_URL}/api/markerIcons`);
+            setMarkerIcons(response.data);
         } catch (error) {
-        console.error('Error fetching marker icons:', error);
-        // Add toast notification here if needed
+            console.error('Error fetching marker icons:', error);
+            mountToast('Error fetching marker icons:', 'error');
+            // Add toast notification here if needed
+        } finally {
+            setIsIconLoaded(true);
         }
     };
 
@@ -49,6 +64,11 @@ export default function EditMarkers() {
     }, []);
 
     const handleIconArchive = async (markerId, iconPath , name) => {
+        //function guard
+        if (isDeleting) return;    // break execution if already loading
+
+        setIsDeleting(true);
+
         try {
           console.log('Archiving marker icon...', markerId, name,  iconPath);
       
@@ -70,20 +90,23 @@ export default function EditMarkers() {
             console.log('Marker Icon archived successfully');
             mountToast("Marker icon archived successfully", "success");
             setIsDeleteIcon(false);
-            setSelectedMarkerId(null);
+            setIsDelete(false);
+            setIconToDelete(null);
             fetchMarkerIcons();
           }
         } catch (error) {
           console.error('Error archiving marker icon:', error);
           mountToast("Error archiving marker icon. Please try again.", "error");
+          setIconToDelete(null);
+        } finally {
+            setIsDeleting(false);
         }
-      };
+    };
       
 
 
     // icon delete
     const [isEditIcon, setIsEditIcon] = useState(false);
-
     const [isDeleteIcon, setIsDeleteIcon] = useState(false);
 
     const handleIconDelete = () => {
@@ -99,16 +122,21 @@ export default function EditMarkers() {
         } catch (error) {
           console.error('Error fetching markers:', error);
           mountToast('Error fetching markers', 'error');
+        } finally {
+            setIsMarkerLoaded(true);
         }
-      };
+    };
     
-      useEffect(() => {
+    useEffect(() => {
         fetchMarkers();
-      }, [logsPerPage]);
+    }, [logsPerPage]);
     
 
     const handleDeleteBtn = () => {
+        setIsDeleting(false);
         setIsDelete(!isDelete);
+        setIsMarker(null);
+        setIconToDelete(null);
     }
 
     const confirmAndDelete = () => {
@@ -116,14 +144,24 @@ export default function EditMarkers() {
     }
 
     useEffect(() => {
-        if (confirmDelete && isMarker) {
-            handleConfirmDelete(isMarker); 
+        if (confirmDelete) {
+            if (isMarker) {
+                handleConfirmDelete(isMarker); 
+            } else if (iconToDelete) {
+                handleIconArchive(iconToDelete.id, iconToDelete.path, iconToDelete.name);
+            }
+            
             setConfirmDelete(false);
         }
-      }, [confirmDelete, isMarker]);
+    }, [confirmDelete, isMarker, iconToDelete]);
     
     {/*handle delete for the Markers*/}
     const handleConfirmDelete = async (markerId) => {
+        //function guard
+        if (isDeleting) return;    // break execution if already loading
+
+        setIsDeleting(true);
+
         try {
           const response = await axios.delete(`${API_URL}/api/markers/${markerId}`);
           setMarkers(markers.filter(marker => marker._id !== confirmDelete)); // Remove the deleted marker from the list
@@ -135,6 +173,8 @@ export default function EditMarkers() {
           console.error('Error deleting marker:', error);
           mountToast('Error deleting marker', 'error');
           setIsDelete(false);
+        } finally {
+            setIsDeleting(false);
         }
     };
       
@@ -171,9 +211,9 @@ export default function EditMarkers() {
         } else {
           rootDiv.classList.remove(styles.rootDiv);
         }
-      }, [location])
+    }, [location])
 
-          // pagination 
+    // pagination 
     const handleFilterChange = (searchTerm, limit, currentPage) => {
         const filtered = markers.filter((markers) =>
             [markers.areaName, markers.iconType]
@@ -193,195 +233,221 @@ export default function EditMarkers() {
         setCurrentMarkers(filteredMarkers.slice(offset, offset + logsPerPage));
     };
 
-      return (
+    // stop loading if both are fully loaded 
+    useEffect(() => {
+
+        if (isFirstLoad) setIsLoading(true);    // Start loading
+
+        if (isIconLoaded && isMarkerLoaded) {
+            setIsLoading(false);
+            setIsFirstLoad(false);    // Mark that first load is done
+        }
+    }, [isIconLoaded, isMarkerLoaded]);
+
+    return (
         <>
-            <NavBar />
+            {isLoading ? (
+                <LoadingAnim message="Loading map markers..." />
+            ) : (
+                <>
+                    <NavBar />
 
-            <div className={styles.markerContainer}>
-                <div className={styles.header}>
-                    <span className={styles.txtTitle}>Edit Markers</span>
-                </div>
+                    <div className={styles.markerContainer}>
+                        <div className={styles.header}>
+                            <span className={styles.txtTitle}>Edit Markers</span>
+                        </div>
 
-                <span className={`${styles.txtTitle} ${styles.listHeader}`}>Marker Icon List</span>
+                        <span className={`${styles.txtTitle} ${styles.listHeader}`}>Marker Icon List</span>
 
-                <div className = { styles.listCont }>
-                    <div className = { styles.btns }>
-                        <button 
-                            className = { `${styles.txtTitle} ${styles.addBtn}`}
-                            onClick = {() => {setSelectedMarkerId(null); setShowUploadMarker(true);}}
-                        >Add
-                        </button>
+                        <div className = { styles.listCont }>
+                            <div className = { styles.btns }>
+                                <button 
+                                    className = { `${styles.txtTitle} ${styles.addBtn}`}
+                                    onClick = {() => {setSelectedMarkerId(null); setShowUploadMarker(true);}}
+                                >Add
+                                </button>
 
-                        <button 
-                            className = { !isEditIcon ? `${styles.txtTitle} ${styles.editBtn}` : `${styles.txtTitle} ${styles.cancelBtn}` }
-                            onClick = {() => {setIsEditIcon(!isEditIcon); setIsDeleteIcon(false); } }
-                        >
-                            { !isEditIcon ? "Edit" : "Cancel"}
-                        </button>
-
-                        <button 
-                            className = { !isDeleteIcon ? `${styles.txtTitle} ${styles.deleteBtn}` : `${styles.txtTitle} ${styles.cancelBtn}` }
-                            onClick = {() => { handleIconDelete(); setIsEditIcon(false); } }
-                        >
-                            { !isDeleteIcon ? "Delete" : "Cancel" }
-                        </button>
-                    </div>
-                    
-                    <div className={styles.iconList}>
-                        {markerIcons.map((iconData) => (
-                        <div key={iconData._id} className={styles.marker}>
-                            <img 
-                            src={`${iconData.iconPath}`} 
-                            alt={iconData.name} 
-                            className={styles.icon} 
-                            />
-                                {isDeleteIcon && (
-                                    <div 
-                                    className={styles.iconOverlay}
-                                    onClick={() => {
-                                        setSelectedMarkerId(iconData._id);
-                                        // Trigger the archiving when the delete icon is clicked
-                                        handleIconArchive(iconData._id, iconData.iconPath, iconData.name);
-                                    }}
+                                <button 
+                                    className = { !isEditIcon ? `${styles.txtTitle} ${styles.editBtn}` : `${styles.txtTitle} ${styles.cancelBtn}` }
+                                    onClick = {() => {setIsEditIcon(!isEditIcon); setIsDeleteIcon(false); } }
                                 >
-                                        <img src={icons.minus} alt="Delete Icon" />
-                                    </div>
-                                )}
-                                {isEditIcon && (
-                                    <div
-                                        className = { `${styles.iconOverlay} ${styles.editIcon}` }
-                                        onClick = {() => {setShowUploadMarker(true);
-                                            setSelectedMarkerId(iconData._id);
-                                             }}
-                                    >
-                                        <div className = { styles.bg }>
-                                            <img src={icons.pen} alt="Edit Icon" />
-                                        </div>
-                                    </div>
-                                )}
+                                    { !isEditIcon ? "Edit" : "Cancel"}
+                                </button>
+
+                                <button 
+                                    className = { !isDeleteIcon ? `${styles.txtTitle} ${styles.deleteBtn}` : `${styles.txtTitle} ${styles.cancelBtn}` }
+                                    onClick = {() => { handleIconDelete(); setIsEditIcon(false); } }
+                                >
+                                    { !isDeleteIcon ? "Delete" : "Cancel" }
+                                </button>
                             </div>
-
                             
-                        ))}
-                    </div>
-                </div>
+                            {/* modified by Lorenzo @ 05/19/2025 */}
+                            <div className={styles.iconListWrapper}>
+                                <div className={styles.iconList}>
+                                    {markerIcons.map((iconData) => (
+                                    <div key={iconData._id} className={styles.marker}>
+                                        <img 
+                                        src={`${iconData.iconPath}`} 
+                                        alt={iconData.name} 
+                                        className={styles.icon} 
+                                        />
+                                            {isDeleteIcon && (
+                                                <div 
+                                                className={styles.iconOverlay}
+                                                onClick={() => {
+                                                    // setSelectedMarkerId(iconData._id);
+                                                    // Trigger the archiving when the delete icon is clicked
+                                                    setIconToDelete({
+                                                        id: iconData._id,
+                                                        path: iconData.iconPath,
+                                                        name: iconData.name,
+                                                    });
 
-                <span className={`${styles.txtTitle} ${styles.listHeader}`}>Marker List</span> <br></br>
+                                                    setIsDelete(true);      // Open the modal
+                                                }}
+                                            >
+                                                    <img src={icons.minus} alt="Delete Icon" />
+                                                </div>
+                                            )}
+                                            {isEditIcon && (
+                                                <div
+                                                    className = { `${styles.iconOverlay} ${styles.editIcon}` }
+                                                    onClick = {() => {setShowUploadMarker(true);
+                                                        setSelectedMarkerId(iconData._id);
+                                                        }}
+                                                >
+                                                    <div className = { styles.bg }>
+                                                        <img src={icons.pen} alt="Edit Icon" />
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
 
-                <div className={styles.tblWrapper}>
+                                        
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
 
-                     <PaginationControls
-                        data={filteredMarkers}
-                        rowsPerPageOptions={[5, 10, 15, 20]}
-                        onFilterChange={handleFilterChange}
-                        onPaginationChange={handlePaginationChange}
-                    />
+                        <span className={`${styles.txtTitle} ${styles.listHeader}`}>Marker List</span> <br></br>
 
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Icon Type</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {currentMarkers.length > 0 ? (
-                                currentMarkers.map((marker) => (
-                                    <tr key={marker._id}>
-                                        <td>{marker.areaName}</td>
-                                        <td>{marker.iconType}</td>
-                                        <td>
-                                            <div className={styles.actionBtns}>
-                                                <button onClick={() => { handleOpenModal(marker); }}>
-                                                    <img
-                                                        className={`${styles.icon} ${styles.update}`}
-                                                        src={icons.pencil}
-                                                        alt="Update Item"
-                                                    />
-                                                </button>
-                                                <button onClick={() => {handleDeleteBtn(); setIsMarker(marker._id);}}>
-                                                    <img
-                                                        className={`${styles.icon} ${styles.delete}`}
-                                                        src={icons.remove}
-                                                        alt="Delete Item"
-                                                    />
-                                                </button>
-                                            </div>
-                                        </td>
+                        <div className={styles.tblWrapper}>
+
+                            <PaginationControls
+                                data={filteredMarkers}
+                                rowsPerPageOptions={[5, 10, 15, 20]}
+                                onFilterChange={handleFilterChange}
+                                onPaginationChange={handlePaginationChange}
+                            />
+
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Icon Type</th>
+                                        <th>Action</th>
                                     </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan="3">No markers available</td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            {/* Edit Marker Container */}
-            <AnimatePresence>
-            {showUploadModal && (
-                <motion.div 
-                    className={styles.modal}
-                    initial = {{opacity: 0}}
-                    animate = {{opacity: 1}}
-                    exit = {{opacity: 0}}
-                    transition = {{duration: 0.2, ease: "easeInOut"}}   
-                >
-                <div className={styles.modalContent}>
-                    <MarkerModal 
-                        onClose={ handleCloseModal }
-                        markerData={selectedMarker}
-                        onUpdate={handleUpdate}
-                    />
-                </div>
-                </motion.div>
-            )}
-            </AnimatePresence>
-
-            {/* Upload Marker Icon */}
-            
-            <AnimatePresence>
-            {showUploadMarker && (
-                <motion.div
-                    className={styles.modal}
-                    initial = {{opacity: 0}}
-                    animate = {{opacity: 1}}
-                    exit = {{opacity: 0}}
-                    transition = {{duration: 0.2, ease: "easeInOut"}} 
-                >
-                    <div className = { styles.modalContent }>
-                        <MarkerUpload 
-                             markerId={selectedMarkerId}
-                            onClose = {() => setShowUploadMarker(false)}
-                            onRefresh={fetchMarkerIcons} 
-                        />
+                                </thead>
+                                <tbody>
+                                    {currentMarkers.length > 0 ? (
+                                        currentMarkers.map((marker) => (
+                                            <tr key={marker._id}>
+                                                <td>{marker.areaName}</td>
+                                                <td>{marker.iconType}</td>
+                                                <td>
+                                                    <div className={styles.actionBtns}>
+                                                        <button onClick={() => { handleOpenModal(marker); }}>
+                                                            <img
+                                                                className={`${styles.icon} ${styles.update}`}
+                                                                src={icons.pencil}
+                                                                alt="Update Item"
+                                                            />
+                                                        </button>
+                                                        <button onClick={() => {handleDeleteBtn(); setIsMarker(marker._id);}}>
+                                                            <img
+                                                                className={`${styles.icon} ${styles.delete}`}
+                                                                src={icons.remove}
+                                                                alt="Delete Item"
+                                                            />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="3">No markers available</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </motion.div>
-            )}
-            </AnimatePresence>
+
+                    {/* Edit Marker Container */}
+                    <AnimatePresence>
+                    {showUploadModal && (
+                        <motion.div 
+                            className={styles.modal}
+                            initial = {{opacity: 0}}
+                            animate = {{opacity: 1}}
+                            exit = {{opacity: 0}}
+                            transition = {{duration: 0.2, ease: "easeInOut"}}   
+                        >
+                        <div className={styles.modalContent}>
+                            <MarkerModal 
+                                onClose={ handleCloseModal }
+                                markerData={selectedMarker}
+                                onUpdate={handleUpdate}
+                            />
+                        </div>
+                        </motion.div>
+                    )}
+                    </AnimatePresence>
+
+                    {/* Upload Marker Icon */}
+                    <AnimatePresence>
+                    {showUploadMarker && (
+                        <motion.div
+                            className={styles.modal}
+                            initial = {{opacity: 0}}
+                            animate = {{opacity: 1}}
+                            exit = {{opacity: 0}}
+                            transition = {{duration: 0.2, ease: "easeInOut"}} 
+                        >
+                            <div className = { styles.modalContent }>
+                                <MarkerUpload 
+                                    markerId={selectedMarkerId}
+                                    onClose = {() => setShowUploadMarker(false)}
+                                    onRefresh={fetchMarkerIcons} 
+                                />
+                            </div>
+                        </motion.div>
+                    )}
+                    </AnimatePresence>
 
 
-            {/* Confirmation Modal */}
-            <AnimatePresence>
-            {isDelete && (
-                <motion.div 
-                    className = { styles.confirmation }
-                    initial = {{opacity: 0}}
-                    animate = {{opacity: 1}}
-                    exit = {{opacity: 0}}
-                    transition = {{duration: 0.2, ease: "easeInOut"}}
-                >
-                    <Confirmation 
-                        onCancel = {() => handleDeleteBtn()}
-                        setConfirmDelete={ confirmAndDelete }
-                    />
-                </motion.div>
+                    {/* Confirmation Modal */}
+                    <AnimatePresence>
+                    {isDelete && (
+                        <motion.div 
+                            className = { styles.confirmation }
+                            initial = {{opacity: 0}}
+                            animate = {{opacity: 1}}
+                            exit = {{opacity: 0}}
+                            transition = {{duration: 0.2, ease: "easeInOut"}}
+                        >
+                            <Confirmation 
+                                onCancel = {() => handleDeleteBtn()}
+                                setConfirmDelete={ confirmAndDelete }
+                                isDeleting={ isDeleting }
+                            />
+                        </motion.div>
+                    )}
+                    </AnimatePresence>  
+                </>
             )}
-            </AnimatePresence>  
         </>
     )
 }

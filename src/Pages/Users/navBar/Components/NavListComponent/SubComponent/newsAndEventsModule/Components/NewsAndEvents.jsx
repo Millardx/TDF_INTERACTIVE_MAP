@@ -9,7 +9,9 @@ import { useLocation } from 'react-router-dom';
 import '../../../../../../../Admin/utility/sliderCustomStyles/sliderStyles.scss';
 import { API_URL } from '/src/config';
 
-
+import UseToast from '../../../../../../../Admin/utility/AlertComponent/UseToast.jsx';
+import useLoading from '../../../../../../../Admin/utility/PageLoaderComponent/useLoading.jsx';
+import LoadingAnim from '../../../../../../../Admin/utility/PageLoaderComponent/LoadingAnim.jsx';
 
 export default function NewsAndEvents({ setCurrentModal, handleClickOutside, currentModal, nodeRef, ...props }) {
     const [images, setImages] = React.useState([]);
@@ -20,16 +22,28 @@ export default function NewsAndEvents({ setCurrentModal, handleClickOutside, cur
     const { user: authUser } = useAuth();
     const user = location.state?.user || authUser;
 
+    const [isLoading, setIsLoading] = useLoading(false);
+    const [isFirstLoad, setIsFirstLoad] = useState(true);
+
+    // toast alert pop up
+    const mountToast = UseToast();
+
     // Fetch images from the backend when the modal opens
     useEffect(() => {
         const fetchImages = async () => {
+
+            if (isFirstLoad) setIsLoading(true);
+
             try {
                 const response = await axios.get(`${API_URL}/api/images`);
                 setImages(response.data[0].images); // Assuming only one document
                 setHeaders(response.data[0].newsHeader || [] );
                 setDescription(response.data[0].description || []);
             } catch (error) {
-                console.error("Error fetching images", error);
+                mountToast("Error fetching images", 'error');
+            } finally {
+                setIsLoading(false);
+                setIsFirstLoad(false);    // Mark that first load is done
             }
         };
 
@@ -75,46 +89,50 @@ export default function NewsAndEvents({ setCurrentModal, handleClickOutside, cur
                             exit={{ opacity: 0 }}
                             transition={{ duration: 0.3, ease: "easeInOut" }}
                         >
-                            <div className={styles.newsAndEventContent}>
-                                <div className={styles.close} onClick={() => setCurrentModal(null)}>
-                                    <img src={icons.close} alt="Close" />
+                            {isLoading ? (
+                                <LoadingAnim message="Loading content..." target="loadModal"/>
+                            ) : (
+                                <div className={styles.newsAndEventContent}>
+                                    <div className={styles.close} onClick={() => setCurrentModal(null)}>
+                                        <img src={icons.close} alt="Close" />
+                                    </div>
+                                    <div className = { styles.header }>
+                                        <span className={styles.txtTitle}>News and Events</span>
+                                    </div>
+                                        {images.length > 0 ? (
+                                            <>
+                                                <div className={styles.imageSlider}>
+                                                    <Slider {...settings}>
+                                                        {images.map((image, index) => (
+                                                            <>
+                                                                <div key={index} className ={styles.slickSlide}>
+                                                                    <img src={`${image}`} 
+                                                                    alt={`Slide ${index}`} 
+                                                                    className ={styles.carouselImg}/>
+                                                                </div>
+                                                                <div className = { styles.news }>
+                                                                    <span className = { styles.txtTitle }>{headers[index] || "News Header" }</span>
+                                                                    <p className = { styles.txtSubTitle }>{description[index] || "No news description provided"}</p>
+                                                                </div>
+                                                            </>
+                                                        ))}
+                                                    </Slider>
+                                                </div> 
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div className = { styles.noImg }>
+                                                    <span className = { styles.txtTitle }>No Image Available</span>
+                                                </div>
+                                                <div className = { styles.news }>
+                                                    <span className = { styles.txtTitle }>News Header</span>
+                                                    <p className = { styles.txtSubTitle }>No news or upcoming even just yet... </p>
+                                                </div>
+                                            </>
+                                        )}
+                                    
                                 </div>
-                                <div className = { styles.header }>
-                                    <span className={styles.txtTitle}>News and Events</span>
-                                </div>
-                                    {images.length > 0 ? (
-                                        <>
-                                            <div className={styles.imageSlider}>
-                                                <Slider {...settings}>
-                                                    {images.map((image, index) => (
-                                                        <>
-                                                            <div key={index} className ={styles.slickSlide}>
-                                                                <img src={`${image}`} 
-                                                                alt={`Slide ${index}`} 
-                                                                className ={styles.carouselImg}/>
-                                                            </div>
-                                                            <div className = { styles.news }>
-                                                                <span className = { styles.txtTitle }>{headers[index] || "News Header" }</span>
-                                                                <p className = { styles.txtSubTitle }>{description[index] || "No news description provided"}</p>
-                                                            </div>
-                                                        </>
-                                                    ))}
-                                                </Slider>
-                                            </div> 
-                                        </>
-                                    ) : (
-                                        <>
-                                            <div className = { styles.noImg }>
-                                                <span className = { styles.txtTitle }>No Image Available</span>
-                                            </div>
-                                            <div className = { styles.news }>
-                                                <span className = { styles.txtTitle }>News Header</span>
-                                                <p className = { styles.txtSubTitle }>No news or upcoming even just yet... </p>
-                                            </div>
-                                        </>
-                                    )}
-                                
-                            </div>
+                            )}
                         </motion.div>
                         {/* Edit button */}
 

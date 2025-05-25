@@ -24,9 +24,9 @@ dist-ssr
 *.sw?
 .code-workspace
 
-# Ignoring heavy files
-*.glb
-
+# Ignoring heavy files 
+# *.glb 
+# removed needed to upload the glb 
 # Ignore history files
 .history/
 backend/.env

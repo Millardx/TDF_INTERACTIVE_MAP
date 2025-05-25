@@ -146,8 +146,10 @@ export default function Analytics() {
             const sex = log.sexAtBirth;
             if (sex) sexMap[sex] = (sexMap[sex] || 0) + 1;
     
-            const role = log.role === 'Others' ? log.customRole || 'Others' : log.role;
-            if (role) roleMap[role] = (roleMap[role] || 0) + 1;
+            const roleLabel = log.role === 'Others' ? 'Others' : log.role;
+            if (roleLabel) {
+              roleMap[roleLabel] = (roleMap[roleLabel] || 0) + 1;
+            }
         });
     
         setStarFeedback(Object.entries(starMap).map(([label, value]) => ({ label: `${label} Star`, value })));

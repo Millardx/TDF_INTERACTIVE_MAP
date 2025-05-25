@@ -15,8 +15,8 @@ function Popup({ modalId ,marker, onClose, isAdmin=true }) {
   console.log('Popup modalId:', modalId); // Check the received modalId
   const [isOpen, setIsOpen] = useState(false);
   const [modalData, setModalData] = useState(null);
-  const noImg = `${API_URL}/uploads/cardsImg/undefined`; //http://127.0.0.1:5000null
-  const noImg2 = `${API_URL}/uploads/cardsImg/null`;
+  // const noImg = `${API_URL}/uploads/cardsImg/undefined`; //http://127.0.0.1:5000null
+  // const noImg2 = `${API_URL}/uploads/cardsImg/null`;
  /* const [isOpen, setIsOpen] = useState(false);
   const onViewFullDetail = (data) =>{
     setIsOpen(!isOpen);
@@ -112,15 +112,27 @@ console.log("IMAGE: ", marker.img);
               </button>
           </div>
 
-          {(marker.img !== noImg && marker.img !== noImg2) ? (
-            <div className={styles.popupImage}>
-              <img src={marker.img} alt={marker.name}/> {/* tempoorary replace the marker.img for visualization */}
-            </div>
-          ) : (
-            <div className = { styles.noImg }>           
-              <span className = { styles.txtTitle }>No Image available</span>
-            </div>
-          )}
+          {/* Replaced Code for Fallback when theres no image */}
+          {marker.img &&
+            marker.img.trim() !== '' &&
+            !marker.img.includes('undefined') &&
+            !marker.img.includes('null') ? (
+              <div className={styles.popupImage}>
+                <img
+                  src={marker.img}
+                  alt={marker.name}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = '/fallback-card-image.png'; // optional fallback image
+                  }}
+                />
+              </div>
+            ) : (
+              <div className={styles.noImg}>
+                <span className={styles.txtTitle}>No Image Available</span>
+              </div>
+            )}
+
           
 
           <div className={styles.cont1}>

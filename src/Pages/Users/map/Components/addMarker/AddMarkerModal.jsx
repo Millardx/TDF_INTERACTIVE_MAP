@@ -82,7 +82,13 @@ const Modal = ({ isVisible, onSave, onClose , worldPosition, icon, iconName }) =
               <span>Icon: {iconName} </span>
               </div>
               <div className={styles.icon}>
-                <img src={icon} alt="Marker Icon" />
+                <img src={icon} alt="Marker Icon"   style={{
+                      width: '96px',      // or '6rem'
+                      height: 'auto',     // maintain aspect ratio
+                      maxHeight: '80px',  // prevent vertical overflow
+                      objectFit: 'contain'
+                    }} /> 
+                    {/* Millard Add resizing the Modal Icon */}
               </div>
               <label htmlFor="areaName">Input the site's name:</label>
               <input

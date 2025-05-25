@@ -26,7 +26,7 @@ export default function MarkerUpload({ markerId ,setmarkerId, onClose, onRefresh
               const response = await axios.get(`${API_URL}/api/markerIcons/${markerId}`);
               const { name: fetchedName, iconPath } = response.data;
               setName(fetchedName); // Set the current name
-              setCurrentImage(`${API_URL}/uploads/icons/${iconPath}`); // Set the current image
+              setCurrentImage(iconPath); // Set the current image
           } catch (error) {
               console.error("Error fetching marker details:", error);
           }

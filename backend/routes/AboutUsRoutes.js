@@ -2,34 +2,30 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const path = require('path');
 const AboutUs = require('../models/AboutUs');
-const { cloudinary, getFolderByType } = require('../utility/cloudinaryConfig');
-const { extractPublicId, buildCloudinaryUrl } = require('../utility/claudinaryHelpers');
+const { cloudinary, getFolderByType, storage } = require('../utility/cloudinaryConfig');
+const { extractPublicId } = require('../utility/claudinaryHelpers');
+const path = require('path');
 
+// ✅ File filter (optional, reusing Card setup)
+const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
+const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif'];
 
+const fileFilter = (req, file, cb) => {
+  const ext = path.extname(file.originalname).toLowerCase();
+  const isValidMime = allowedMimeTypes.includes(file.mimetype);
+  const isValidExt = allowedExtensions.includes(ext);
 
+  cb(null, isValidMime && isValidExt);
+};
 
-    const storage = multer.diskStorage({
-        destination: (req, file, cb) => {
-        cb(null, 'uploads/images'); // or any temp path you want
-        },
-        filename: (req, file, cb) => {
-        cb(null, Date.now() + '-' + file.originalname);
-        },
-    });
-    
-    const upload = multer({
-        storage,
-        fileFilter: (req, file, cb) => {
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
-        if (allowedTypes.includes(file.mimetype)) {
-            cb(null, true);
-        } else {
-            cb(new Error('Only image files are allowed'));
-        }
-        },
-    });
+// ✅ Use shared Cloudinary `storage`
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  fileFilter
+});
+
 
 // Fetch About Us details
 router.get('/', async (req, res) => {
@@ -88,11 +84,9 @@ router.put('/', async (req, res) => {
     }
 });
 
-// ✅ Update About Us image using Cloudinary and multer disk storage
 router.put('/image', upload.single('image'), async (req, res) => {
     try {
       const aboutUs = await AboutUs.findOne();
-  
       if (!aboutUs) {
         return res.status(404).json({ message: 'About Us data not found' });
       }
@@ -101,22 +95,17 @@ router.put('/image', upload.single('image'), async (req, res) => {
         return res.status(400).json({ message: 'No image file provided' });
       }
   
-      // 📤 Upload new image to Cloudinary
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: getFolderByType('aboutus'),
-      });
-  
       // 🧹 Delete old Cloudinary image if exists
       if (aboutUs.image) {
         const oldPublicId = extractPublicId(aboutUs.image);
         await cloudinary.uploader.destroy(oldPublicId, { invalidate: true });
       }
   
-      // 💾 Save new Cloudinary image URL to DB
-      aboutUs.image = result.secure_url;
+      // 💾 Save new Cloudinary image URL
+      aboutUs.image = req.file.path;
       await aboutUs.save();
   
-      res.json({ message: 'Image updated successfully', image: result.secure_url });
+      res.json({ message: 'Image updated successfully', image: req.file.path });
     } catch (error) {
       console.error('❌ Error updating About Us image:', error);
       res.status(500).json({ message: 'Failed to update About Us image', error: error.message });

@@ -272,9 +272,9 @@ const ThreeCanvas = () => {
     offVisibility();
   }
 
-  useEffect(() => {
-    console.log("User role on /map:", user?.role);
-  }, [user]);
+  // useEffect(() => {
+  //   console.log("User role on /map:", user?.role);
+  // }, [user]);
 
   useEffect(() => {
     const setVh = () => {

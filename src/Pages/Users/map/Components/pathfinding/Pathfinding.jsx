@@ -7,6 +7,10 @@ import UseToast from '../../../../Admin/utility/AlertComponent/UseToast';
 
 function Pick({pos, moveArrow, removeLine, cameraPF, togglePathfinding, isPathfindingActive, setCurrentModal}) {
 
+    const [user, setUser] = useState(() => {
+        return JSON.parse(localStorage.getItem('user'));
+    });
+
     // toast alert pop up
     const mountToast = UseToast();
 
@@ -175,16 +179,18 @@ function Pick({pos, moveArrow, removeLine, cameraPF, togglePathfinding, isPathfi
             setDestination(null);
             // console.log('enter');
 
-            mountToast(
-                "We'd love your feedback — help us improve!",
-                "info",
-                {
-                    position: "bottom-right",
-                    autoClose: 8000,
-                    onClick: () => setCurrentModal("submitFeedback")
-                }
-            );
-
+            if (user?.role !== "admin" && user?.role !== "staff") {
+                mountToast(
+                    "We'd love your feedback — help us improve!",
+                    "info",
+                    {
+                        position: "bottom-right",
+                        autoClose: 8000,
+                        onClick: () => setCurrentModal("submitFeedback")
+                    }
+                );
+            }
+            
         }
 
 
@@ -198,6 +204,7 @@ function Pick({pos, moveArrow, removeLine, cameraPF, togglePathfinding, isPathfi
 
         }
     }
+    
     const toggleModal = (btn) => {
         // displays current button choice
         choiceHelper(btn);
@@ -235,9 +242,12 @@ function Pick({pos, moveArrow, removeLine, cameraPF, togglePathfinding, isPathfi
     // close modal when user click outside of pathfinding
     useEffect(() => {
         function handleOutsideClick(event) {
+            const modal = document.getElementById('pfModal-wrapper'); // manually created modal
+
             if (
                 pathfindingRef.current &&
                 !pathfindingRef.current.contains(event.target) &&
+                (!modal || !modal.contains(event.target)) &&
                 !isPfBtn // Only run if modal is open
             ) {
                 handleButtonClick('Close');

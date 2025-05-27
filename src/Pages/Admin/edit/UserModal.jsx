@@ -81,25 +81,34 @@ const UserModal = ({ user, onSave, onClose, isSaving }) => {
         // Validation...
         if (!name.trim()) {
             mountToast('Name is required', 'error');
+            setIsProcessing(false); // Re-enable
             return;
         }
     
         if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) {
             mountToast('Please enter a valid email', 'error');
+            setIsProcessing(false); // Re-enable
             return;
         }
     
         if (!user) {
             // Creating a new user — password is required
-            if (!isPasswordValid(password)) return;
+            if (!isPasswordValid(password)) {
+                setIsProcessing(false); // Re-enable
+                return;
+            }
         } else {
             // Updating a user — validate only if password is filled
-            if (password.trim() !== '' && !isPasswordValid(password)) return;
+            if (password.trim() !== '' && !isPasswordValid(password)) {
+                setIsProcessing(false); // Re-enable
+                return;
+            }
         }
     
         const emailExists = await checkEmailExists();
         if (emailExists) {
             mountToast('Email already exists, please use a different email.', 'error');
+            setIsProcessing(false); // Re-enable
             return;
         }
     
@@ -113,6 +122,7 @@ const UserModal = ({ user, onSave, onClose, isSaving }) => {
     
             if (changedFields.length === 0) {
                 mountToast('No changes detected.', 'warn');
+                setIsProcessing(false); // Re-enable
                 return;
             }
     

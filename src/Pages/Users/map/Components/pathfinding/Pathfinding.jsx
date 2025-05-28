@@ -33,6 +33,8 @@ function Pick({pos, moveArrow, removeLine, cameraPF, togglePathfinding, isPathfi
     const getAvailablePositions = (selectionType) => {
         if (selectionType === 'Destination' && current) {
             return pos.filter(p => p.name !== current);
+        } else if (selectionType === 'Current' && destination) {
+            return pos.filter(p => p.name !== destination);
         }
         return pos;
     };

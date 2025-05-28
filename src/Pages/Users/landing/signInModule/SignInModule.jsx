@@ -14,9 +14,11 @@ export default function SignInModule() {
     useEffect(() => {
         checkToken(); // Validate token and redirect if needed
         localStorage.removeItem('guestId'); // Remove guestId from localStorage when this navigated to SignUp Module
-
+        localStorage.removeItem('tdfHasSeenTutorial'); // ✅ Clear modal flag on landing
         console.log("Guest Logout")
     }, [checkToken]);
+
+    
 
     // adds the className rootContainer to the #root and removes it once the component unmounts
     useEffect(function() {

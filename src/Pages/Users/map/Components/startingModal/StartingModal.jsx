@@ -1,4 +1,4 @@
-import React, { useState} from "react";
+import React, { useState, useEffect } from "react";
 import Slider from "react-slick";
 import styles from "./StartingModal.module.scss";
 import "slick-carousel/slick/slick.css"; 
@@ -39,10 +39,28 @@ const StartingModal = () => {
     }
   };
 
-  const [isClose, setIsClose] = useState(false);
-  const handleClose = () =>{
+
+  // Millard UPdate code Panelist Suggestions:
+  //Old Code : 
+  // const [isClose, setIsClose] = useState(false);
+  // const handleClose = () =>{
+  //   setIsClose(true);
+  // }
+
+  //new Code Millard Add: 
+  const [isClose, setIsClose] = useState(true); // default to hidden
+
+  useEffect(() => {
+    const hasSeenTutorial = localStorage.getItem('tdfHasSeenTutorial');
+    if (!hasSeenTutorial) {
+      setIsClose(false); // Show only if not seen
+    }
+  }, []);
+
+  const handleClose = () => {
+    localStorage.setItem('tdfHasSeenTutorial', 'true');
     setIsClose(true);
-  }
+  };
 
   return (
     <>

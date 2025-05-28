@@ -205,9 +205,4 @@ router.put('/updateNews', async (req, res) => {
 });
 
 
-
-
-
-
-
 module.exports = router;

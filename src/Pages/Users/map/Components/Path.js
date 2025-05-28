@@ -222,7 +222,7 @@ class Path {
     }
 
     updateArrowPosition() {
-        const speed = 0.05;
+        const speed = 0.025;
         if(!this.arrowMoving || !this.calculatedPath || !this.isPathValid){
             return;
         }

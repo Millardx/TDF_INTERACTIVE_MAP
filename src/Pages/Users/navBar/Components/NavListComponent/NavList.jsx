@@ -184,7 +184,17 @@ export default function NavList ({
                             <motion.li 
                             key = {'signin'}
                             className = { styles.list }
-                            onClick = { (user?.role === "admin" || user?.role === "staff") ? handleLogout : null }
+                            onClick={() => {
+                                //Millard Addition for clearing the Flag for TUTS modal
+                                // Clear tutorial flag for all user types
+                                localStorage.removeItem('tdfHasSeenTutorial');
+                    
+                                // If admin or staff, trigger logout
+                                if (user?.role === "admin" || user?.role === "staff") {
+                                    handleLogout();
+                                }
+                                // Else for guest, clicking "Sign in" just navigates via <Link>
+                            }}
                             initial = {{opacity: 0, translateY: -80}}
                             animate = {{opacity: 1, translateY: !isHamClicked ? -80 : 0}}
                             exit = {{

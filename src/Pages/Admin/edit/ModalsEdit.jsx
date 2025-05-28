@@ -187,6 +187,12 @@ const Modal = () => {
           return;
         }
 
+         // ✅ NEW: Check if images are present
+        if (!modalImages || modalImages.length === 0) {
+          mountToast("No images uploaded. Please select at least one image.", "warn");
+          return;
+        }
+
         //function guard
         if (isSaving) return;    // break execution if already loading
 

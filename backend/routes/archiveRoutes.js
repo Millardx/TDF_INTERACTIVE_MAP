@@ -169,18 +169,26 @@ router.put('/newsEvent/image/:filename', async (req, res) => {
     const imageUrl = newsEvent.images[imageIndex]; // ✅ Cloudinary URL
     const header = newsEvent.newsHeader?.[imageIndex] || null;
     const description = newsEvent.description?.[imageIndex] || null;
+    const author = newsEvent.author?.[imageIndex] || null;
+    const datePosted = newsEvent.datePosted?.[imageIndex] || null;
 
     // 🗃️ Archive the image URL with header/description as extra data
     await archiveField('NewsEvent', newsEvent._id, 'images', imageUrl, {
       header,
       description,
-      originalIndex: imageIndex
+      originalIndex: imageIndex,
+      author,
+      datePosted
     });
 
     // 🧹 Remove image + its header/description from arrays
     newsEvent.images.splice(imageIndex, 1);
     if (newsEvent.newsHeader) newsEvent.newsHeader.splice(imageIndex, 1);
     if (newsEvent.description) newsEvent.description.splice(imageIndex, 1);
+
+        // ✅ Remove author and datePosted as well
+    if (newsEvent.author) newsEvent.author.splice(imageIndex, 1);
+    if (newsEvent.datePosted) newsEvent.datePosted.splice(imageIndex, 1);
 
     // 🏁 If no more images, flag as archived
     if (newsEvent.images.length === 0) {

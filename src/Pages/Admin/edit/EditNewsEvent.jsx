@@ -11,6 +11,8 @@ import { API_URL } from '/src/config';
 
 import useLoading from '../utility/PageLoaderComponent/useLoading';
 import LoadingAnim from '../utility/PageLoaderComponent/LoadingAnim';
+import { useAuth } from '/src/Pages/Admin/ACMfiles/authContext';
+
 
 export default function NewsEventImage({ setCurrentModal, currentModal, handleClickOutside}) { // setCurrentModal, currentModal, handleClickOutside
     const [isSaving, setIsSaving] = useState(false);
@@ -38,6 +40,15 @@ export default function NewsEventImage({ setCurrentModal, currentModal, handleCl
 
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+    const [imageAuthors, setImageAuthors] = useState([]); // Author per image
+    const [imageDates, setImageDates] = useState([]);     // Date posted per image
+
+    const { user } = useAuth(); // 🔐 user.name will be available
+    const authorName = user?.name || 'Unknown';
+    console.log(authorName);
+
+
+
 
     const confirmAndDelete = () => {
         setConfirmDelete(true);
@@ -64,11 +75,15 @@ export default function NewsEventImage({ setCurrentModal, currentModal, handleCl
         const fetchedImages = document.images || [];
         const fetchedHeaders = document.newsHeader || [];
         const fetchedDescriptions = document.description || [];
+        const fetchedAuthors = document.author || [];
+        const fetchedDates = document.datePosted || [];
 
         // Set the images, headers, and descriptions into state
         setImages(fetchedImages);
         setImageHeaders(fetchedHeaders);
         setImageDescriptions(fetchedDescriptions);
+        setImageAuthors(fetchedAuthors);
+        setImageDates(fetchedDates);
 
            // Store initial values for comparison
             setInitialHeaders(fetchedHeaders);
@@ -135,8 +150,18 @@ export default function NewsEventImage({ setCurrentModal, currentModal, handleCl
 
         const formData = new FormData();
         imageFile.forEach(file => {
-            formData.append('images', file); // Name should match what's expected by the server
+            formData.append('images', file);
         });
+    
+        // ✅ Prepare matching author and date arrays
+        const authorName = user?.name || 'Unknown';
+        const today = new Date().toISOString();
+    
+        const authorArray = Array(imageFile.length).fill(authorName);
+        const datePostedArray = Array(imageFile.length).fill(today);
+    
+        formData.append('author', JSON.stringify(authorArray));         // <-- Append as JSON
+        formData.append('datePosted', JSON.stringify(datePostedArray)); // <-- Append as JSON
     
         try {
             const response = await axios.post(`${API_URL}/api/images`, formData, {
@@ -147,12 +172,12 @@ export default function NewsEventImage({ setCurrentModal, currentModal, handleCl
     
             if (response.status === 200 || response.status === 201) {
                 mountToast("Uploaded successfully!", "success");
-                fetchnewsEvent(); // Refresh image list after successful upload
+                fetchnewsEvent();
             }
     
-            // Reset states after successful upload
+            // Reset state
             setUploadImagePreviews([]);
-            setIsAddImageModalOpen(false); // Close the add image modal
+            setIsAddImageModalOpen(false);
             setUpdatePreviewImages([]);
             setIsUpdateModalOpen(false);
         } catch (error) {
@@ -399,6 +424,13 @@ export default function NewsEventImage({ setCurrentModal, currentModal, handleCl
                                                                     </div>
 
                                                                     <div className={styles.news}>
+                                                                        
+                                                                                <div className={styles.metaInfo}>
+                                                                                <p><strong>Author:</strong> {imageAuthors[index] || 'N/A'}</p>
+                                                                                <p><strong>Date Posted:</strong> {new Date(imageDates[index]).toLocaleDateString('en-PH', {
+                                                                                    year: 'numeric', month: 'long', day: 'numeric'
+                                                                                }) || 'N/A'}</p>
+                                                                                </div>
                                                                         <textarea
                                                                             className={`${styles.txtTitle} ${styles.newsHeader}`}
                                                                             placeholder="News header..."
@@ -415,6 +447,7 @@ export default function NewsEventImage({ setCurrentModal, currentModal, handleCl
                                                                             onChange={(e) => handleTextChange(index, 'description', e.target.value)}
                                                                         />
                                                                     </div>
+
                                                                 </>
                                                             ))}
                                                         </Slider>

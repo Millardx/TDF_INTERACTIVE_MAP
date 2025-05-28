@@ -52,52 +52,103 @@ router.get('/:id', async (req, res) => { // Removed /api/images from the path
 
 
 
-// ➕ Upload new images to Cloudinary
+// // ➕ Upload new images to Cloudinary
+// router.post('/', upload.array('images', 10), async (req, res) => {
+//     try {
+//       const folder = getFolderByType('news');
+//       const uploadPromises = req.files.map(file =>
+//         cloudinary.uploader.upload_stream({ folder }).end(file.buffer)
+//       );
+  
+//       const results = await Promise.allSettled(
+//         req.files.map(file =>
+//           new Promise((resolve, reject) => {
+//             cloudinary.uploader.upload_stream({ folder }, (err, result) => {
+//               if (err) reject(err);
+//               else resolve(result.secure_url);
+//             }).end(file.buffer);
+//           })
+//         )
+//       );
+  
+//       const uploadedUrls = results
+//         .filter(r => r.status === 'fulfilled')
+//         .map(r => r.value);
+  
+//       const numNew = uploadedUrls.length;
+  
+//       let imageDoc = await NewsEvent.findOne();
+//       if (imageDoc) {
+//         imageDoc.images.push(...uploadedUrls);
+//         imageDoc.newsHeader.push(...Array(numNew).fill(null));
+//         imageDoc.description.push(...Array(numNew).fill(null));
+//         await imageDoc.save();
+//         return res.status(200).json(imageDoc);
+//       } else {
+//         const newDoc = new NewsEvent({
+//           images: uploadedUrls,
+//           newsHeader: Array(numNew).fill(null),
+//           description: Array(numNew).fill(null),
+//         });
+//         await newDoc.save();
+//         return res.status(201).json(newDoc);
+//       }
+//     } catch (error) {
+//       console.error('❌ Error uploading images:', error);
+//       res.status(500).json({ message: 'Upload failed', error });
+//     }
+//   });
+// ➕ Upload new images to Cloudinary (now with author + datePosted)
 router.post('/', upload.array('images', 10), async (req, res) => {
-    try {
-      const folder = getFolderByType('news');
-      const uploadPromises = req.files.map(file =>
-        cloudinary.uploader.upload_stream({ folder }).end(file.buffer)
-      );
-  
-      const results = await Promise.allSettled(
-        req.files.map(file =>
-          new Promise((resolve, reject) => {
-            cloudinary.uploader.upload_stream({ folder }, (err, result) => {
-              if (err) reject(err);
-              else resolve(result.secure_url);
-            }).end(file.buffer);
-          })
-        )
-      );
-  
-      const uploadedUrls = results
-        .filter(r => r.status === 'fulfilled')
-        .map(r => r.value);
-  
-      const numNew = uploadedUrls.length;
-  
-      let imageDoc = await NewsEvent.findOne();
-      if (imageDoc) {
-        imageDoc.images.push(...uploadedUrls);
-        imageDoc.newsHeader.push(...Array(numNew).fill(null));
-        imageDoc.description.push(...Array(numNew).fill(null));
-        await imageDoc.save();
-        return res.status(200).json(imageDoc);
-      } else {
-        const newDoc = new NewsEvent({
-          images: uploadedUrls,
-          newsHeader: Array(numNew).fill(null),
-          description: Array(numNew).fill(null),
-        });
-        await newDoc.save();
-        return res.status(201).json(newDoc);
-      }
-    } catch (error) {
-      console.error('❌ Error uploading images:', error);
-      res.status(500).json({ message: 'Upload failed', error });
+  try {
+    const folder = getFolderByType('news');
+
+    const results = await Promise.allSettled(
+      req.files.map(file =>
+        new Promise((resolve, reject) => {
+          cloudinary.uploader.upload_stream({ folder }, (err, result) => {
+            if (err) reject(err);
+            else resolve(result.secure_url);
+          }).end(file.buffer);
+        })
+      )
+    );
+
+    const uploadedUrls = results
+      .filter(r => r.status === 'fulfilled')
+      .map(r => r.value);
+
+    const numNew = uploadedUrls.length;
+
+    // ✅ Get author and datePosted arrays from frontend
+    const authorArray = JSON.parse(req.body.author || '[]');
+    const datePostedArray = JSON.parse(req.body.datePosted || '[]');
+
+    let imageDoc = await NewsEvent.findOne();
+    if (imageDoc) {
+      imageDoc.images.push(...uploadedUrls);
+      imageDoc.newsHeader.push(...Array(numNew).fill(null));
+      imageDoc.description.push(...Array(numNew).fill(null));
+      imageDoc.datePosted.push(...datePostedArray);
+      imageDoc.author.push(...authorArray);
+      await imageDoc.save();
+      return res.status(200).json(imageDoc);
+    } else {
+      const newDoc = new NewsEvent({
+        images: uploadedUrls,
+        newsHeader: Array(numNew).fill(null),
+        description: Array(numNew).fill(null),
+        datePosted: datePostedArray,
+        author: authorArray,
+      });
+      await newDoc.save();
+      return res.status(201).json(newDoc);
     }
-  });
+  } catch (error) {
+    console.error('❌ Error uploading images:', error);
+    res.status(500).json({ message: 'Upload failed', error });
+  }
+});
 
 
 

@@ -97,17 +97,24 @@ const restoreField = async (archiveId) => {
 
   else if (originalCollection === 'NewsEvent') {
     const newsEvent = await OriginalModel.findById(originalId);
-    const { header, description, originalIndex } = data;
-  
+    const { header, description, originalIndex, author, datePosted } = data;
+
     const insertIndex = typeof originalIndex === 'number' ? originalIndex : newsEvent.images.length;
-  
-    // Insert restored image and metadata at the correct index
+
     newsEvent.images.splice(insertIndex, 0, newUrl);
     newsEvent.newsHeader.splice(insertIndex, 0, header || null);
     newsEvent.description.splice(insertIndex, 0, description || null);
+
+    // ✅ Restore author and datePosted
+    if (!newsEvent.author) newsEvent.author = [];
+    if (!newsEvent.datePosted) newsEvent.datePosted = [];
+
+    newsEvent.author.splice(insertIndex, 0, author || null);
+    newsEvent.datePosted.splice(insertIndex, 0, datePosted || null);
+
     newsEvent.imageArchived = false;
-  
     await newsEvent.save();
+
   }
   
   else {

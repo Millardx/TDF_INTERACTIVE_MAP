@@ -17,6 +17,9 @@ export default function NewsAndEvents({ setCurrentModal, handleClickOutside, cur
     const [images, setImages] = React.useState([]);
     const [headers , setHeaders] = useState([]);
     const [description , setDescription] = useState ([]);
+    const [authors, setAuthors] = useState([]);
+    const [dates, setDates] = useState([]);
+
 
     const location = useLocation();
     const { user: authUser } = useAuth();
@@ -39,6 +42,9 @@ export default function NewsAndEvents({ setCurrentModal, handleClickOutside, cur
                 setImages(response.data[0].images); // Assuming only one document
                 setHeaders(response.data[0].newsHeader || [] );
                 setDescription(response.data[0].description || []);
+                setAuthors(response.data[0].author || []);
+                setDates(response.data[0].datePosted || []);
+
             } catch (error) {
                 mountToast("Error fetching images", 'error');
             } finally {
@@ -113,6 +119,11 @@ export default function NewsAndEvents({ setCurrentModal, handleClickOutside, cur
                                                                 <div className = { styles.news }>
                                                                     <span className = { styles.txtTitle }>{headers[index] || "News Header" }</span>
                                                                     <p className = { styles.txtSubTitle }>{description[index] || "No news description provided"}</p>
+                                                                </div>
+                                                                <div className={styles.meta}>
+                                                                <span className={styles.txtMeta}>
+                                                                    Posted by: {authors[index] || 'Unknown'} on {dates[index] ? new Date(dates[index]).toLocaleDateString() : 'N/A'}
+                                                                </span>
                                                                 </div>
                                                             </>
                                                         ))}

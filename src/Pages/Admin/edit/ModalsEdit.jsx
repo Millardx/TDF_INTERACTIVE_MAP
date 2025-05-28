@@ -18,6 +18,10 @@ import { API_URL } from '/src/config';
 import useLoading from '../utility/PageLoaderComponent/useLoading';
 import LoadingAnim from '../utility/PageLoaderComponent/LoadingAnim';
 
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css'; // Quill default theme
+
+
 const Modal = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -580,7 +584,7 @@ const Modal = () => {
                                 transition = {{duration: 0.2,  ease: "easeInOut"}}
                                 onAnimationComplete={() => adjustHeight(descriptionRef)}
                               >               
-                                <textarea
+                                {/* <textarea
                                   ref = {descriptionRef}
                                   row = "1"
                                   className = { styles.txtSubTitle } 
@@ -590,7 +594,23 @@ const Modal = () => {
                                   onChange={(e) => setDescription(e.target.value)}
                                   placeholder = "Enter description here..."
                                   required
-                                />       
+                                />        */}
+
+                                  <ReactQuill
+                                    theme="snow"
+                                    value={description}
+                                    onChange={setDescription}
+                                    modules={{
+                                      toolbar: [
+                                        ['bold', 'italic', 'underline'],
+                                        [{ list: 'bullet' }, { list: 'ordered' }],
+                                        ['clean']
+                                      ]
+                                    }}
+                                    placeholder="Enter description here..."
+                                    className={styles.quillEditor}
+                                  />
+
 
                                 <div className = { styles.line }></div>
                               </motion.div>
@@ -607,7 +627,7 @@ const Modal = () => {
                                 transition = {{duration: 0.2, ease: "easeInOut"}}
                                 onAnimationComplete={() => adjustHeight(technologiesRef)}
                               >
-                                <textarea 
+                                {/* <textarea 
                                   ref = {technologiesRef}
                                   row = "1"
                                   className ={ styles.txtSubTitle }
@@ -616,7 +636,22 @@ const Modal = () => {
                                   onChange={(e) => setTechnologies(e.target.value)}
                                   placeholder = "Enter technologies here..."
                                   required 
+                                /> */}
+                                <ReactQuill
+                                  theme="snow"
+                                  value={technologies}
+                                  onChange={setTechnologies} // ✅ this gives you HTML string directly
+                                  modules={{
+                                    toolbar: [
+                                      ['bold', 'italic', 'underline'],
+                                      [{ list: 'bullet' }, { list: 'ordered' }],
+                                      ['clean']
+                                    ]
+                                  }}
+                                  placeholder="Enter technologies here..."
+                                  className={styles.quillEditor}
                                 />
+
 
                                 <div className = { styles.line }></div>
                               </motion.div>
@@ -794,7 +829,6 @@ const Modal = () => {
         )}
       </>
   );
-    
 };
 
 export default Modal;

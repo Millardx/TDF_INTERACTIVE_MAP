@@ -153,8 +153,12 @@ const Modal = ({ isOpen, onClose, details, modalData }) => {
                   exit = {{opacity: 0}}
                   transition = {{duration: 0.2,  ease: "easeInOut"}}
                 >
-                  <p className = { styles.txtSubTitle }>{modalData.description}</p>
-                  
+                  {/* <p className = { styles.txtSubTitle }>{modalData.description}</p> */}
+                  <p
+                    className={styles.txtSubTitle}
+                    dangerouslySetInnerHTML={{ __html: modalData.description || '<p>No description</p>' }}>
+                  </p>
+
                   <div className = { styles.line }></div>
                 </motion.div>
               )}
@@ -169,8 +173,11 @@ const Modal = ({ isOpen, onClose, details, modalData }) => {
                   exit = {{opacity: 0}}
                   transition = {{duration: 0.2, ease: "easeInOut"}}
                 >
-                  <p className ={ styles.txtSubTitle }> {modalData.technologies}</p>  
-                  
+                  {/* <p className ={ styles.txtSubTitle }> {modalData.technologies}</p>   */}
+                  <p
+                    className={styles.txtSubTitle}
+                    dangerouslySetInnerHTML={{ __html: modalData.technologies || '<p>No technologies</p>' }}>
+                  </p>
                   <div className = { styles.line }></div>
                 </motion.div>
               )}

@@ -146,6 +146,7 @@ const Modal = ({ isOpen, onClose, details, modalData }) => {
               {!isInfo && (
                 <motion.div 
                   className = { styles.description }
+                  style={{ whiteSpace: 'pre-line' }}
                   key = {"description"}
                   initial = {{opacity: 0}}
                   animate = {{opacity: 1, transition: {delay: 0.2}}}
@@ -161,6 +162,7 @@ const Modal = ({ isOpen, onClose, details, modalData }) => {
               {isInfo && (
                 <motion.div 
                   className = { styles.technologies }
+                  style={{ whiteSpace: 'pre-line' }}
                   key = {"technologies"}
                   initial = {{opacity: 0}}
                   animate = {{opacity: 1, transition: {delay: 0.2}}}

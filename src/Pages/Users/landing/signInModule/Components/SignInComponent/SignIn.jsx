@@ -55,11 +55,14 @@ export default function SignIn ({ handleBtnClick, isBtnClicked, handleUser }) {
 
             localStorage.setItem('user', JSON.stringify(response));
             localStorage.setItem('token', response.token);
+            localStorage.setItem('userName', response.name);     // ✅ ADD THIS
+            localStorage.setItem('userRole', response.role);     // ✅ ADD THIS
             setUser(response);
 
             // Now you can navigate based on the user role
             if (response.role === 'admin' || response.role === 'staff') {
                 console.log(response.role ,'Logged In!')
+                window.location.reload(); // 🔄 TEMPORARY reload to ensure localStorage is ready
                 navigate('/map', { state: { user: response } }); // Pass user object for admin and staff
             } else if (response.role === 'guest') {
                 navigate('/map'); // Guest just navigates without passing user

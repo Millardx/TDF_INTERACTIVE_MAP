@@ -578,6 +578,7 @@ const Modal = () => {
                                   ref = {descriptionRef}
                                   row = "1"
                                   className = { styles.txtSubTitle } 
+                                  style={{ whiteSpace: 'pre-line' }}
                                   value={description}
                                   onInput={() => adjustHeight(descriptionRef)}
                                   onChange={(e) => setDescription(e.target.value)}
@@ -592,6 +593,7 @@ const Modal = () => {
                             {isInfo && (
                               <motion.div 
                                 className = { styles.technologies }
+                                style={{ whiteSpace: 'pre-line' }}
                                 key = {"technologies"}
                                 initial = {{opacity: 0}}
                                 animate = {{opacity: 1, transition: {delay: 0.2}}}

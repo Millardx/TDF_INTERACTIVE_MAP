@@ -286,6 +286,14 @@ const ThreeCanvas = () => {
     return () => window.removeEventListener('resize', setVh);
   }, []);
 
+
+  const [showMarkerNames, setShowMarkerNames] = useState(false);
+
+  const handleCheckboxChange = (e) => {
+    setShowMarkerNames(e.target.checked);
+    console.log('Show marker names:', e.target.checked); // true or false
+  };
+
   return(
     <div id="container" ref={containerRef}>
       <Preloader />
@@ -294,6 +302,9 @@ const ThreeCanvas = () => {
           user = { user }
           currentModal={currentModal}
           setCurrentModal={setCurrentModal}
+          showMarkerNames={showMarkerNames}
+          setShowMarkerNames={setShowMarkerNames}
+          handleCheckboxChange={handleCheckboxChange}
         />
       )}
 
@@ -312,6 +323,9 @@ const ThreeCanvas = () => {
         camera={sceneAndCamera.camera}
         container={containerRef.current}
         moveToMarker={moveToMarker}
+        showMarkerNames={showMarkerNames}
+        setShowMarkerNames={setShowMarkerNames}
+        handleCheckboxChange={handleCheckboxChange}
       />
       )}
       {/* {sceneAndCamera &&(

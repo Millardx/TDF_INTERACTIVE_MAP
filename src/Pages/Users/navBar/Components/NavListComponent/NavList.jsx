@@ -124,7 +124,7 @@ export default function NavList ({
                                 transition = {{duration: 0.2, delay: 0.18 * 3, ease: "easeInOut"}}
                             >
                                 <img className = { `${styles.icon} ${styles.contact}` } src = { icons.contact } alt = "Contact Us" />
-                                <span className = { styles.text }>Contact Us</span>
+                                <span className = { styles.text }>Send Inquiries</span>
                             </motion.li>
                         )}
 

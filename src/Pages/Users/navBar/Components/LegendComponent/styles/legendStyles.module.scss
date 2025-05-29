@@ -108,6 +108,23 @@
     }    
 }
 
+.showNames {
+
+    font-family: $subTitle;
+    background-color: rgba(0, 0, 0, 0.7); // black with 50% opacity
+    padding: 5px 10px;
+    border-radius: 10px;
+    margin-top: 10px;
+    text-align: center;
+    font-size: .75rem;
+
+    label {
+        display: flex;
+        gap: 5px;
+        color: white !important; // inverted text color
+    }
+}
+
 @media (min-width: 768px) {
     .compassLegendCont {
         .content {

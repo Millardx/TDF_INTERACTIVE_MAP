@@ -1,3 +1,11 @@
+/* import font styles */
+@import url('https://fonts.googleapis.com/css2?family=Lalezar&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@100..900&display=swap');
+
+/* font styles */
+    $title: "Lalezar", system-ui;
+    $subTitle: "Noto Sans Lao", sans-serif;
+
 .marker {
     position: absolute;
     transform: translate(-50%, -100%);
@@ -19,12 +27,13 @@
 
   
   .tooltip {
+    font-family: $subTitle;
     position: absolute;
     background: white;
     border: 1px solid #ccc;
     border-radius: 5px;
     padding: 0.5rem 1rem;
-    font-size: 0.9rem;
+    font-size: 0.75rem;
     pointer-events: none; /* Prevent blocking marker events */
     z-index: 11; /* Higher than the marker's z-index */
     transform: translate(-50%, -200%); /* Position above the marker */

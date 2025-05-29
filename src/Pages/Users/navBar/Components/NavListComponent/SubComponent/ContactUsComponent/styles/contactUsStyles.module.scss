@@ -93,43 +93,42 @@
         }
 
         .contacts {
-            position: relative;
-            display: flex;
-            flex-grow: 0;
-            flex-shrink: 0;
-            gap: 30px;
+            // position: relative;
+            // display: flex;
+            // flex-grow: 0;
+            // flex-shrink: 0;
+            // gap: 30px;
             justify-content: center;
             width: 100%;
-            margin-top: 40px;
             padding-bottom: 10px;
 
             .info {
-                // margin: 20px 0 0px 0; 
-                position: absolute;
-                top: -35%;
-                left: 50%;
-                transform: translate(-50%, -50%);
+                margin-top: 10px;
+                display: flex;
+                justify-content: space-around;
                 height: auto;
                 text-align: center;
                 font-family: $subTitle;
                 // font-size: 0.7rem;
-                color: grey;
-                .location, .number, .email, .facebook {
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    width: 10rem;
-                    height: 2rem;
-                    opacity: 0;
-                    transition: all 0.2s ease-in-out;
-                    position: absolute;
+                color: black;
+                
+                .containerInfo {
 
-                    user-select: none;
-                    -webkit-tap-highlight-color: transparent; /* Android Chrome */
-                    -webkit-touch-callout: none;              /* iOS Safari */
-                }
-    
-                .location.active, .number.active, .email.active, .facebook.active {
-                    opacity: 1;
+                    small {
+                        display: flex;
+                        flex-direction: row;
+                        gap: 5px;
+                        align-items: center;
+                        font-size: 0.65rem;
+
+                        img {
+
+                            height: 15px;
+                            width: 15px;
+                        }
+                    }
+
+                    
                 }
             }
 
@@ -228,6 +227,35 @@
                 .txtSubTitle {
                     font-size: 13px;
                 }
+
+                .info {
+                
+                display: flex;
+                justify-content: space-around;
+                height: auto;
+                text-align: center;
+                font-family: $subTitle;
+                color: black;
+                
+                .containerInfo {
+
+                    small {
+                        display: flex;
+                        flex-direction: row;
+                        gap: 5px;
+                        align-items: center;
+                        font-size: 0.8rem;
+
+                        img {
+
+                            height: 15px;
+                            width: 15px;
+                        }
+                    }
+
+                    
+                }
+            }
 
             }
         }

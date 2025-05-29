@@ -41,3 +41,19 @@ $wide: 720px;
     }
   }
 }
+
+@media screen and (orientation: landscape) and (max-width: 720px) {
+  .preloader {
+
+    .logo {
+      width: 30%;
+      height: 50px;
+      width: 50px;
+    }
+
+    h1 {
+      font-size: 0.8rem;
+      margin-bottom: 10%;
+    }
+  }
+}

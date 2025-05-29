@@ -157,3 +157,46 @@ $bold: 900;
     width: 9rem;
   }
 }
+
+
+@media screen and (max-width: 767.98px) and (orientation: landscape) {
+  .container {
+    max-width: 50%;
+    height: 90%;
+    padding: 10px;
+    font-size: 0.6rem;
+
+
+    .close {
+      font-size: 0.7rem;
+    }
+  }
+
+  .content {
+    h1 {
+      font-size: .8rem;
+    }
+
+    p {
+      font-size: 0.56rem;
+    }
+  }
+
+  .controls {
+    h2 {
+      font-size: 0.8rem;
+    }
+
+    p {
+      font-size: 0.56rem;
+    }
+  }
+
+  .guideImg {
+    width: 1.5rem;
+  }
+
+  .horizontalIcon {
+    width: 7rem;
+  }
+}

@@ -12,6 +12,7 @@
     position: absolute;
     pointer-events: all; //!important
     width: 70%;
+    overflow-y: scroll;
 
 
     .submitFeedbackContent {
@@ -200,4 +201,72 @@
             }
         }
     }
+}
+
+
+@media screen and (orientation: landscape) and (max-width: 767px) {
+  .submitFeedbackContainer {
+    max-height: 80%;
+    padding: 15px 20px;
+
+    .submitFeedbackContent {
+      .close {
+        img {
+          height: 13px;
+          width: 13px;
+        }
+      }
+
+      .txtTitle {
+        font-size: 16px;
+      }
+
+      .txtSubTitle {
+        font-size: 8px;
+      }
+
+      .starContainer {
+        width: 75%;
+        margin: 10px 0;
+
+        .icon.star {
+          height: 16px;
+          width: 16px;
+        }
+      }
+
+      .form {
+        textarea {
+          font-size: 7px;
+          min-height: 100px;
+          max-height: 250px;
+          width: 90%;
+        }
+
+        .txtSubTitle {
+          font-size: 8px;
+        }
+
+        .submitBtn {
+          font-size: 12px;
+          width: 100px;
+          height: 30px;
+          margin-top: 15px;
+          margin-bottom: 20px;
+        }
+      }
+    }
+
+    button {
+      font-size: 1.2rem;
+      height: 2.5rem;
+      width: 10rem;
+    }
+
+    input,
+    textarea {
+      font-size: 10px;
+      padding: 4px;
+    }
+  }
 }

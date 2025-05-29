@@ -8,7 +8,7 @@
     justify-content: center;
     min-height: 150px;
     max-height: 500px;
-    height: 100%; // don't forget to convert into max height once content is implemented
+    // height: 100%; // don't forget to convert into max height once content is implemented
     // overflow: hidden;
     min-width: 360px;
     max-width: 700px;
@@ -159,4 +159,67 @@
 
 .txtMeta {
   display: block;
+}
+
+
+
+
+@media screen and (orientation: landscape) and (max-width: 767px) {
+  .newsAndEventContainer {
+    padding: 15px 30px;
+    max-height: 80%;
+    max-width: 70%;
+
+    .newsAndEventContent {
+      .close {
+        img {
+          height: 13px;
+          width: 13px;
+        }
+      }
+
+      .header {
+        padding: 15px 0 10px 0;
+
+        .txtTitle {
+          font-size: 16px;
+        }
+      }
+
+      .imageSlider {
+        padding: 5px;
+
+        .carouselImg {
+          height: 180px;
+          border-radius: 8px;
+        }
+      }
+
+      .noImg {
+        .txtTitle {
+          font-size: 16px;
+        }
+      }
+
+      .news {
+        padding-left: 10px;
+        margin-top: 15px;
+
+        .txtTitle {
+          font-size: 18px;
+        }
+      }
+    }
+  }
+
+  .editBtn {
+    span {
+      font-size: 14px;
+      padding: 4px 20px;
+    }
+  }
+
+  .meta {
+    font-size: 0.7rem;
+  }
 }

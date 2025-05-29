@@ -8,8 +8,9 @@
     justify-content: center;
     min-height: 150px;
     max-height: 500px;
-    height: 100%; // don't forget to convert into max height once content is implemented
+    // height: 100%; // don't forget to convert into max height once content is implemented
     // overflow: hidden;
+    
     min-width: 360px;
     max-width: 700px;
     width: 90%;
@@ -164,7 +165,7 @@
 
 
 
-@media screen and (orientation: landscape) and (max-width: 767px) {
+@media screen and (orientation: landscape) and (max-width: 844px) {
   .newsAndEventContainer {
     padding: 15px 30px;
     max-height: 80%;

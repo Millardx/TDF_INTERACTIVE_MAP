@@ -122,7 +122,7 @@ export default function ContactUs({ setCurrentModal, handleClickOutside, current
                                 </div>
 
                                 <div className = { styles.header }>
-                                    <span className = { styles.txtTitle }>Contact Us</span>
+                                    <span className = { styles.txtTitle }>Send Inquiries</span>
                                 </div>
 
                                 <form className =  { styles.form } onSubmit={onSubmit}>
@@ -165,24 +165,28 @@ export default function ContactUs({ setCurrentModal, handleClickOutside, current
 
                                 <div className =  { styles.contacts }>
                                     <div className = { styles.info }>
-                                        <small className = { activeInfo === "location" ? `${ styles.txtSubTitle } ${ styles.location } ${ styles.active }` : `${ styles.txtSubTitle } ${ styles.location }` }>
-                                            {contactUsData.location}
-                                        </small>
-                                        <small className = { activeInfo === "number" ? `${ styles.txtSubTitle } ${ styles.number } ${ styles.active }` : `${ styles.txtSubTitle } ${ styles.number }` }>
-                                            {contactUsData.telephone}
-                                        </small>
-                                        <small className = { activeInfo === "email" ? `${ styles.txtSubTitle } ${ styles.email } ${ styles.active }` : `${ styles.txtSubTitle } ${ styles.email }` }>
-                                            {contactUsData.email}
-                                        </small>
-                                        <small className = { activeInfo === "facebook" ? `${ styles.txtSubTitle } ${ styles.facebook } ${ styles.active }` : `${ styles.txtSubTitle } ${ styles.facebook }` }>
-                                            {contactUsData.facebookPage}
-                                        </small>
+                                        <div className = { styles.containerInfo }>
+                                            <small className = { styles.txtSubTitle }>
+                                               <img src = { icons.location} alt = "Location" /> {contactUsData.location}
+                                            </small> 
+                                            <small className = { styles.txtSubTitle }>
+                                               <img src = { icons.contact} alt = "Contact Number" /> {contactUsData.telephone}
+                                            </small >
+                                        </div>
+                                        <div className = { styles.containerInfo }>
+                                            <small className = { styles.txtSubTitle }>
+                                                <img src = { icons.email} alt = "Email" /> {contactUsData.email}
+                                            </small> 
+                                            <small className = { styles.txtSubTitle }>
+                                                <img src = { icons.facebook} alt = "Facebook" /> {contactUsData.facebookPage}
+                                            </small>
+                                        </div>
                                     </div>
 
-                                    <img onClick = {() => handleContactClick('location')} src = { icons.location} alt = "Location" />
+                                    {/* <img onClick = {() => handleContactClick('location')} src = { icons.location} alt = "Location" />
                                     <img onClick = {() => handleContactClick('number')} src = { icons.contact} alt = "Contact Number" />
                                     <img onClick = {() => handleContactClick('email')} src = { icons.email} alt = "Email" />
-                                    <img onClick = {() => handleContactClick('facebook')} src = { icons.facebook} alt = "Facebook" />
+                                    <img onClick = {() => handleContactClick('facebook')} src = { icons.facebook} alt = "Facebook" /> */}
                                 </div>
                                 
                             </div>

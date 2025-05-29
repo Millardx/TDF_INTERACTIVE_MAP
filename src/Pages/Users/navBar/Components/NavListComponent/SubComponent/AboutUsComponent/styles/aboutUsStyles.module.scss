@@ -155,3 +155,68 @@
         }
     }
 }
+
+
+@media screen and (orientation: landscape) and (max-width: 767px) {
+  .aboutUsContainer {
+    max-height: 400px;
+    height: 80%;
+    max-width: 70%;
+
+    .aboutUsContent {
+      margin: 10px;
+
+      .close {
+        img {
+          height: 12px;
+          width: 12px;
+        }
+      }
+
+      .header {
+        padding: 20px 0 10px 0;
+        .txtTitle {
+          font-size: 18px;
+        }
+      }
+
+      .content {
+        margin-top: 15px;
+
+        img {
+          border-radius: 15px;
+        }
+
+        .noImg {
+          height: 200px;
+
+          .txtTitle {
+            font-size: 16px;
+          }
+        }
+
+        .history,
+        .vision,
+        .mission,
+        .goal,
+        .objective {
+          .txtTitle {
+            font-size: 16px;
+          }
+
+          .txtSubTitle {
+            font-size: 9px;
+            text-indent: 20px;
+          }
+        }
+      }
+    }
+  }
+
+  .editBtn {
+    span {
+      font-size: 13px;
+      padding: 4px 20px;
+    }
+  }
+}

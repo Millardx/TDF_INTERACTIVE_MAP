@@ -93,43 +93,42 @@
         }
 
         .contacts {
-            position: relative;
-            display: flex;
-            flex-grow: 0;
-            flex-shrink: 0;
-            gap: 30px;
+            // position: relative;
+            // display: flex;
+            // flex-grow: 0;
+            // flex-shrink: 0;
+            // gap: 30px;
             justify-content: center;
             width: 100%;
-            margin-top: 40px;
             padding-bottom: 10px;
 
             .info {
-                // margin: 20px 0 0px 0; 
-                position: absolute;
-                top: -35%;
-                left: 50%;
-                transform: translate(-50%, -50%);
+                margin-top: 10px;
+                display: flex;
+                justify-content: space-around;
                 height: auto;
                 text-align: center;
                 font-family: $subTitle;
                 // font-size: 0.7rem;
-                color: grey;
-                .location, .number, .email, .facebook {
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    width: 10rem;
-                    height: 2rem;
-                    opacity: 0;
-                    transition: all 0.2s ease-in-out;
-                    position: absolute;
+                color: black;
+                
+                .containerInfo {
 
-                    user-select: none;
-                    -webkit-tap-highlight-color: transparent; /* Android Chrome */
-                    -webkit-touch-callout: none;              /* iOS Safari */
-                }
-    
-                .location.active, .number.active, .email.active, .facebook.active {
-                    opacity: 1;
+                    small {
+                        display: flex;
+                        flex-direction: row;
+                        gap: 5px;
+                        align-items: center;
+                        font-size: 0.65rem;
+
+                        img {
+
+                            height: 15px;
+                            width: 15px;
+                        }
+                    }
+
+                    
                 }
             }
 
@@ -229,7 +228,122 @@
                     font-size: 13px;
                 }
 
+                .info {
+                
+                display: flex;
+                justify-content: space-around;
+                height: auto;
+                text-align: center;
+                font-family: $subTitle;
+                color: black;
+                
+                .containerInfo {
+
+                    small {
+                        display: flex;
+                        flex-direction: row;
+                        gap: 5px;
+                        align-items: center;
+                        font-size: 0.8rem;
+
+                        img {
+
+                            height: 15px;
+                            width: 15px;
+                        }
+                    }
+
+                    
+                }
+            }
+
             }
         }
     }
+}
+
+
+@media screen and (orientation: landscape) and (max-width: 767px) {
+  .contactUsContainer {
+    max-width: 55%;
+    max-height: 80%;
+    padding: 15px 20px;
+
+    .contactUsContent {
+      .close {
+        img {
+          height: 13px;
+          width: 13px;
+        }
+      }
+
+      .header {
+        width: 90%;
+        padding: 15px 0 10px 0;
+        .txtTitle {
+          font-size: 16px;
+        }
+      }
+
+      .form {
+        // width: 100%;
+
+        label {
+          font-size: 10px;
+        }
+
+        input,
+        textarea {
+          font-size: 10px;
+          padding: 3px;
+        }
+
+        textarea {
+          height: 100px;
+        }
+
+        .submitBtn {
+          font-size: 13px;
+          padding: 4px 25px;
+          margin-top: 20px;
+        }
+      }
+
+      .contacts {
+        padding-bottom: 5px;
+
+        .txtSubTitle {
+          font-size: 10px;
+        }
+
+        .info {
+
+          gap: 8px;
+
+          .containerInfo {
+            small {
+              font-size: 0.6rem;
+
+              img {
+                height: 12px;
+                width: 12px;
+              }
+            }
+          }
+        }
+
+        img {
+          height: 15px;
+          width: 15px;
+        }
+      }
+    }
+  }
+
+  .editBtn {
+    span {
+      font-size: 13px;
+      padding: 4px 25px;
+    }
+  }
 }

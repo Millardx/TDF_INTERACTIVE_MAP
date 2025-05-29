@@ -120,3 +120,43 @@
         }
     }
 }
+
+@media screen and (max-width: 767.98px) and (orientation: landscape) {
+  .optionContent {
+    .txtTitle {
+      font-size: 20px;
+    }
+
+    .txtSubTitle {
+      font-size: 0.75rem;
+    }
+  }
+
+  .guestCategory {
+    .return {
+      height: 30px;
+      width: 30px;
+
+      img {
+        height: 15px;
+        width: 15px;
+      }
+    }
+
+    form {
+      label {
+        font-size: 0.75rem;
+      }
+
+      select,
+      .userInput input {
+        font-size: 0.75rem;
+        height: 25px;
+      }
+
+      .userInput input {
+        padding: 4px;
+      }
+    }
+  }
+}

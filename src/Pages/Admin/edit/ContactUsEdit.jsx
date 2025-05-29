@@ -28,7 +28,7 @@ export default function ContactUsEdit ({ setCurrentModal, currentModal, handleCl
             const response = await axios.get(`${API_URL}/api/contact`);
             setContactUsData(response.data);
         } catch (error) {
-            console.error("Error fetching Contact Us data:", error);
+            console.error("Error fetching Contact data:", error);
         }
     };
     
@@ -72,7 +72,7 @@ export default function ContactUsEdit ({ setCurrentModal, currentModal, handleCl
                 mountToast("No changes detected. Contact data was not updated.", "error");
                 setCurrentModal("contactUs");
             } else {
-                console.error("Error saving Contact Us data:", error);
+                console.error("Error saving Contact data:", error);
                 setCurrentModal("contactUsEdit");
             }
         } finally {
@@ -111,7 +111,7 @@ export default function ContactUsEdit ({ setCurrentModal, currentModal, handleCl
                                 </div>
 
                                 <div className = { styles.header }>
-                                    <span className = { styles.txtTitle }>Contact Us</span>
+                                    <span className = { styles.txtTitle }>Send Inquiries</span>
                                 </div>
                                 
 

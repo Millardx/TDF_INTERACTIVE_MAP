@@ -12,7 +12,7 @@ import { API_URL } from '/src/config';
 //const markers = fetchMarkerData;
 const screenWidth = window.innerWidth;
 
-const Markers = ({ scene, camera, container, moveToMarker }) => {
+const Markers = ({ scene, camera, container, moveToMarker, showMarkerNames, setShowMarkerNames, handleCheckboxChange }) => {
   const[hoveredMarker, setHoveredMarker] = useState(null);
   const animationFrameRef = useRef();
   const [selectedMarker, setSelectedMarker] = useState(null);
@@ -74,19 +74,22 @@ const [modals, setModals] = useState([]);
       }
 
       const tooltipElement = document.getElementById(`tooltip-${index}`);
-      if (tooltipElement && hoveredMarker === index) {
+      if (tooltipElement) {
         tooltipElement.style.left = `${x}px`;
-        tooltipElement.style.top = `${y - 30}px`; // Offset tooltip above marker
+        tooltipElement.style.top = `${y}px`;
       }
     });
     
 
     // calculate popup pos
-    if(selectedMarker){
+    if (selectedMarker) {
+      let isLandscape = window.innerWidth > window.innerHeight;
+
       let offset = {
-        top: window.innerWidth > 666 ? -200 : -250,
-        left: window.innerWidth > 666 ? 40 : -150,
-      }
+        top: isLandscape ? -150 : (window.innerWidth > 666 ? -200 : -250),
+        left: isLandscape ? -90 : (window.innerWidth > 666 ? 40 : -150),
+      };
+
       const { x, y } = calculatePosition(selectedMarker.position);
       const popupElement = document.getElementById('popup');
       if (popupElement) {
@@ -143,20 +146,24 @@ const [modals, setModals] = useState([]);
         >
           <img src={marker.icon} alt={marker.name} />
         </div>
+
+
         {/* Tooltip */}
-      {hoveredMarker === index && (
+      {(showMarkerNames || hoveredMarker === index) && (
         <div
           id={`tooltip-${index}`}
           className={styles.tooltip}
           style={{
             position: 'absolute',
-            left: calculatePosition(marker.position).x,
-            top: calculatePosition(marker.position).y,
+            opacity: (showMarkerNames || hoveredMarker === index) ? 1 : 0,
+            pointerEvents: 'none',
           }}
         >
           {marker.name}
         </div>
       )}
+
+
         </React.Fragment>
       ))}
 

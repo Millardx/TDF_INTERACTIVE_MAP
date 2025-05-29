@@ -20,7 +20,7 @@ import legend from '../../../../../assets/icon/Icons.js';
 import icons from '../../../../../assets/for_landingPage/Icons.jsx';
 import styles from './styles/legendStyles.module.scss';
 
-export default function Legend() {
+export default function Legend({ showMarkerNames, setShowMarkerNames, handleCheckboxChange}) {
     const [markerIcons, setMarkerIcons] = useState([]);
 
     // Fetch marker icons
@@ -76,6 +76,16 @@ export default function Legend() {
                                         </li>
                                     ))}
                                 </ul>
+                            </div>
+                            <div className = { styles.showNames }>
+                                <label>
+                                    <input
+                                        type="checkbox"
+                                        checked={showMarkerNames}
+                                        onChange={handleCheckboxChange}
+                                    />
+                                    Show marker names
+                                </label>
                             </div>
                         </section>
                         </div>

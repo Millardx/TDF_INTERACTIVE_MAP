@@ -168,3 +168,82 @@ button {
     border-bottom: 2px solid $outOfFocus;
     width: 93%;
 }
+
+
+@media screen and (orientation: landscape) and (max-width: 767px) {
+  .popupContent {
+    max-width: 180px;
+    height: 230px;
+    padding: 8px 12px;
+    margin: 10px;
+
+    .closeBtn {
+      padding: 4px;
+      top: 0.2rem;
+      right: 0.2rem;
+
+      img {
+        width: 12px;
+        height: 12px;
+      }
+    }
+
+    .popupImage,
+    .noImg {
+      margin: -8px -12px 0 -12px;
+      width: calc(100% + 24px);
+      height: 110px;
+
+      img {
+        border-radius: 10px 10px 0 0;
+      }
+
+      span {
+        font-size: 11px;
+      }
+    }
+
+    .cont1 {
+      height: 6.5rem;
+      margin: 8px 0;
+
+      .btns {
+        right: -1.2rem;
+        margin: 6px 0;
+
+        button {
+          padding: 6px;
+
+          .icon {
+            width: 20px;
+            height: 20px;
+          }
+        }
+      }
+
+      .txtTitle {
+        font-size: 15px;
+        margin-bottom: 3px;
+      }
+
+      .quickFacts {
+        font-size: 8px;
+        width: 140px;
+        max-height: 100px;
+        padding-right: 6px;
+      }
+
+      .fullDeets {
+        .deets {
+          p {
+            font-size: 10px;
+          }
+        }
+      }
+    }
+  }
+
+  .line {
+    width: 85%;
+  }
+}

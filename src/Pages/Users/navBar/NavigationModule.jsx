@@ -18,7 +18,7 @@ import NewsEventImage from '../../Admin/edit/EditNewsEvent.jsx';
 import AboutUsEdit from '../../Admin/edit/AboutUsEdit.jsx';
 import ContactUsEdit from '../../Admin/edit/ContactUsEdit.jsx';
 
-export default function NavigationModule ({ currentModal, setCurrentModal}) {
+export default function NavigationModule ({ currentModal, setCurrentModal, showMarkerNames, setShowMarkerNames, handleCheckboxChange}) {
 
 // ------- Global -------
 
@@ -114,7 +114,11 @@ export default function NavigationModule ({ currentModal, setCurrentModal}) {
                 />
                 
                 {/* Not in use, replaced with map legend list */}
-                <Legend />
+                <Legend 
+                    showMarkerNames = { showMarkerNames }
+                    setShowMarkerNames = { setShowMarkerNames }
+                    handleCheckboxChange = { handleCheckboxChange }
+                />
 
                 <div className = { navListItemsStyles.modalContainer } >
                     {/* ------- ContactUs Component Section ------- */}

@@ -42,6 +42,8 @@ export default function NavList ({
         //navigate('/'); // Redirect to home or login page after logout
     };
 
+    const isMobileLandscape = window.innerWidth > window.innerHeight && window.innerWidth <= 991;
+
     return (
         <>
         <AnimatePresence>
@@ -49,7 +51,16 @@ export default function NavList ({
                 <motion.section 
                     id = "navigationList" 
                     className = { styles.navBarList }
-                    initial = {(window.innerWidth > 991) ? {translateY: 120, translateX: 20, opacity: 0} : {translateY: 80, translateX: 20, opacity: 0}}
+                    initial={{
+                        translateY:
+                            window.innerWidth > 991
+                            ? 120 // Desktop
+                            : isMobileLandscape
+                                ? 60 // Mobile Landscape
+                                : 80, // Mobile Portrait
+                        translateX: 20,
+                        opacity: 0
+                    }}
                     animate = {{opacity: 1,}}
                     exit = {{
                         opacity: 0, 
@@ -124,7 +135,7 @@ export default function NavList ({
                                 transition = {{duration: 0.2, delay: 0.18 * 3, ease: "easeInOut"}}
                             >
                                 <img className = { `${styles.icon} ${styles.contact}` } src = { icons.contact } alt = "Contact Us" />
-                                <span className = { styles.text }>Contact Us</span>
+                                <span className = { styles.text }>Send Inquiries</span>
                             </motion.li>
                         )}
 

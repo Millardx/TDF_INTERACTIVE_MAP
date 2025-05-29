@@ -326,28 +326,14 @@
         .description, .technologies {
           height: 100%;
   
-          textarea {
-            border: 1px solid $tertiary;
-            border-radius: 5px;
-            color: $tertiary;
-            font-size: 8px;
-            margin-bottom: 15px;
-            margin-top: 10px;
-            height: 100%;
-            padding: 5px;
-            resize: none;
-            outline: transparent;
-            overflow-x: hidden;
-            width: 90%;
-            text-align: justify;
-            text-justify: inter-word;
-
-            text-align: justify;
-            max-height: 100px;
-            overflow-y: scroll;
-            padding-right: 10px;
-            word-wrap: break-word;
+          // inside Pathfinding.module.scss or a global css
+          .quillEditor {
+            background-color: white;
+            min-height: 150px;
+            border-radius: 8px;
+            margin: 20px 0;
           }
+
         }
 
         .description {
@@ -640,10 +626,4 @@
         }
       }
   }
-}
-// inside Pathfinding.module.scss or a global css
-.quillEditor {
-  background-color: white;
-  min-height: 150px;
-  border-radius: 8px;
 }

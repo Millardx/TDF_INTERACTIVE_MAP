@@ -183,6 +183,38 @@
     }
 }
 
-@media (min-width: 768px) {
-    
+@media screen and (max-width: 767.98px) and (orientation: landscape) {
+  .signInContent {
+    .txtTitle {
+      font-size: 20px;
+    }
+
+    .form {
+      label {
+        font-size: 0.75rem;
+      }
+
+      input {
+        font-size: 0.75rem;
+      }
+
+      .submitBtn {
+        font-size: 0.75rem;
+      }
+
+      .passToolTip .toolTipText {
+        font-size: 0.7rem;
+      }
+    }
+
+    .return {
+      height: 30px;
+      width: 30px;
+
+      img {
+        height: 15px;
+        width: 15px;
+      }
+    }
+  }
 }

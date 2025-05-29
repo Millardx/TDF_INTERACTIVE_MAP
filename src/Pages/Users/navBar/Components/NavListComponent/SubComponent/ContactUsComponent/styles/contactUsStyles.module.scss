@@ -261,3 +261,89 @@
         }
     }
 }
+
+
+@media screen and (orientation: landscape) and (max-width: 767px) {
+  .contactUsContainer {
+    max-width: 55%;
+    max-height: 80%;
+    padding: 15px 20px;
+
+    .contactUsContent {
+      .close {
+        img {
+          height: 13px;
+          width: 13px;
+        }
+      }
+
+      .header {
+        width: 90%;
+        padding: 15px 0 10px 0;
+        .txtTitle {
+          font-size: 16px;
+        }
+      }
+
+      .form {
+        // width: 100%;
+
+        label {
+          font-size: 10px;
+        }
+
+        input,
+        textarea {
+          font-size: 10px;
+          padding: 3px;
+        }
+
+        textarea {
+          height: 100px;
+        }
+
+        .submitBtn {
+          font-size: 13px;
+          padding: 4px 25px;
+          margin-top: 20px;
+        }
+      }
+
+      .contacts {
+        padding-bottom: 5px;
+
+        .txtSubTitle {
+          font-size: 10px;
+        }
+
+        .info {
+
+          gap: 8px;
+
+          .containerInfo {
+            small {
+              font-size: 0.6rem;
+
+              img {
+                height: 12px;
+                width: 12px;
+              }
+            }
+          }
+        }
+
+        img {
+          height: 15px;
+          width: 15px;
+        }
+      }
+    }
+  }
+
+  .editBtn {
+    span {
+      font-size: 13px;
+      padding: 4px 25px;
+    }
+  }
+}

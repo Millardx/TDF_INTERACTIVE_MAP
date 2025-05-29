@@ -87,3 +87,41 @@
     }
     
 }
+
+@media screen and (max-width: 767.98px) and (orientation: landscape) {
+  .navBar {
+    height: 70px;
+    padding: 15px 20px;
+
+    .icon {
+      img {
+        height: 16px;
+        width: 16px;
+      }
+    }
+
+    .icon.hamburger {
+      height: 40px;
+      width: 40px;
+
+      img {
+        height: 16px;
+        width: 16px;
+      }
+    }
+
+    .icon.user {
+      height: 40px;
+      width: 40px;
+
+      img {
+        height: 20px;
+        width: 20px;
+      }
+    }
+
+    li {
+      padding: 0 6px;
+    }
+  }
+}

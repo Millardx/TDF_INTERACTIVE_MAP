@@ -53,3 +53,20 @@
         flex-grow: 1;
     }
 }
+
+@media screen and (max-width: 767.98px) and (orientation: landscape) {
+  .secondContainer {
+    img {
+      height: 30px;
+      width: 30px;
+    }
+
+    .txtTitle {
+      font-size: 20px;
+    }
+
+    .txtSubTitle {
+      font-size: 12px;
+    }
+  }
+}

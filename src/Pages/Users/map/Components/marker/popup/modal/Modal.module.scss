@@ -329,3 +329,112 @@
     }
   }
 }
+
+
+@media screen and (orientation: landscape) and (max-width: 768px) {
+  .modalBackdrop {
+    .modalContent {
+      max-height: 250px;
+      overflow-y: scroll;
+      padding: 16px 30px;
+      max-width: 360px;
+
+      .closeButton {
+        font-size: 12px;
+        right: 8px;
+        top: 8px;
+
+        img {
+          width: 12px;
+          height: 12px;
+        }
+      }
+
+      .headerBg {
+        margin: 0 0 10px 10px;
+
+        .txtTitle {
+          font-size: 14px;
+          height: 22px;
+          padding: 0 6px;
+        }
+      }
+
+      .imageCarousel {
+        .imageContainer {
+          .carouselImage {
+            height: 160px;
+          }
+
+          .noImg {
+            height: 140px;
+
+            span {
+              font-size: 12px;
+            }
+          }
+        }
+      }
+
+      .infoContainer {
+        margin-top: 6px;
+        padding: 6px 12px 0 12px;
+
+        .description, .technologies {
+          .txtSubTitle {
+            font-size: 7px;
+            max-height: 80px;
+            padding-right: 6px;
+          }
+        }
+
+        .infoBtn {
+          .btns {
+            margin-top: 10px;
+            margin-left: -6px;
+
+            li {
+              span {
+                font-size: 7px;
+                margin-right: 3px;
+              }
+            }
+          }
+
+          .speaker {
+            width: 25px;
+            height: 25px;
+            top: -30px;
+            right: 15px;
+
+            .icon {
+              width: 15px;
+              height: 15px;
+            }
+          }
+
+          .toggleSwitch {
+            width: 55px;
+            height: 20px;
+            right: 3px;
+            top: -5px;
+
+            .label {
+              font-size: 8px;
+            }
+
+            .switchCircle {
+              width: 12px;
+              height: 12px;
+              top: 4px;
+            }
+
+            &.on .switchCircle {
+              transform: translateX(25px);
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -181,3 +181,29 @@ canvas{
     height: 100%;
     width: 100%;
 }
+
+
+@media screen and (max-width: 767.98px) and (orientation: landscape) {
+  #pfModal-wrapper {
+    #header {
+      font-size: 1.5rem; // Smaller header text
+    }
+
+    #pfModal {
+      max-width: 90%;
+      height: 60%;
+      font-size: 0.75rem;
+
+      #items-container {
+        .items {
+          font-size: 0.65rem;
+          height: 40px;
+        }
+      }
+    }
+  }
+
+  #startingModal {
+    font-size: 0.75rem;
+  }
+}

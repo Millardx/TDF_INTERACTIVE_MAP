@@ -703,7 +703,7 @@ const Modal = () => {
                     <div className = { styles.customLabel }>
                       <button className = { styles.browseBtn }>Browse...</button>
                       <span className = { styles.fileName }>
-                        { "Select your images" } {/* Add, file name if one, n files selected if multiple */}
+                        { "Select image replacement" } {/* Add, file name if one, n files selected if multiple */}
                       </span>
                       <input
                         type="file"
@@ -757,7 +757,7 @@ const Modal = () => {
                       <div className = { styles.customLabel }>
                         <button className = { styles.browseBtn }>Browse...</button>
                         <span className = { styles.fileName }>
-                          { "Temporary Placholder" } {/* Add, file name if one, n files selected if multiple */}
+                          { "Select your image/s" } {/* Add, file name if one, n files selected if multiple */}
                         </span>
                         <input 
                           type="file" 

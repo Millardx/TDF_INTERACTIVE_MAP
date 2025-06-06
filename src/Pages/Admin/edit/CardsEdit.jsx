@@ -41,6 +41,9 @@ const Cards = () => {
     const [imgToDelete, setImgToDelete] = useState(null);
     const [fileId, setFileId] = useState(null);
 
+      //New Added  6-7-25
+    const [searchTerm, setSearchTerm] = useState('');
+
     const handleDeleteBtn = () => {
       setIsDeleting(false);
       setIsDelete(!isDelete);
@@ -81,6 +84,22 @@ const Cards = () => {
     useEffect(() => {
       fetchCards();
     }, []);
+
+    const fetchSortedMarkers = async (sort = 'newest') => {
+      try {
+        const response = await axios.get(`${API_URL}/api/markers/sorted?sort=${sort}`);
+        const markers = response.data;
+        // You can now extract:
+        const sortedCards = markers.map(marker => marker.card);
+        setCards(sortedCards); // For modal edit list
+      } catch (error) {
+        console.error("Error fetching sorted markers:", error);
+      }
+    };
+    useEffect(() => {
+      fetchSortedMarkers(); // default: 'newest'
+    }, []);
+    
 
       // Handle image upload for card
       const handleImageUpload = (e, cardId) => {
@@ -262,15 +281,51 @@ const Cards = () => {
               </div>
 
               <span className = { `${ styles.txtTitle} ${ styles.listHeader }` }>Select Card</span>
-              
-              <div className={styles.cardsList}>
-              {cards.map((card) => (
-                <div className = { styles.infoContainer } key={card._id}>
-                  <span className = { styles.txtTitle }>{card.areaName}</span>
-                  <button onClick={() => setSelectedCardId(card._id)}>Edit</button>
+              {/* Search Bar Added 6-7-25 */}
+                <div className={styles.searchWrapper}>
+                        <input
+                          type="text"
+                          placeholder="Search by Area Name..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className={styles.searchInput}
+                        />
+                        {searchTerm && (
+                          <button className={styles.clearBtn} onClick={() => setSearchTerm('')}>
+                          <img src="/for_landingPage/icons/close.png" alt="close" className={styles.clearIcon} />
+                        </button>
+                        
+                        )}
                 </div>
-              ))}
-              </div>
+                
+                <div className={styles.cardsList}>
+                  {/* Case: No cards fetched at all */}
+                  {cards.length === 0 ? (
+                    <p className={styles.noResult}>No cards available.</p>
+                  ) : (
+                    <>
+                      {/* Case: Filtered results */}
+                      {cards
+                        .filter((card) =>
+                          card?.areaName?.toLowerCase().includes(searchTerm.toLowerCase())
+                        )
+                        .map((card) => (
+                          <div className={styles.infoContainer} key={card._id}>
+                            <span className={styles.txtTitle}>{card.areaName}</span>
+                            <button onClick={() => setSelectedCardId(card._id)}>Edit</button>
+                          </div>
+                        ))}
+
+                      {/* Case: Cards exist, but no match for search */}
+                      {cards.filter((card) =>
+                        card?.areaName?.toLowerCase().includes(searchTerm.toLowerCase())
+                      ).length === 0 && (
+                        <p className={styles.noResult}>No cards match your search.</p>
+                      )}
+                    </>
+                  )}
+                </div>
+
 
               <button 
                 className = { `${styles.txtTitle} ${ styles.btnSave }` } 

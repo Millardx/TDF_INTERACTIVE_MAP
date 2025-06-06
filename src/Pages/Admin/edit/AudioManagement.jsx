@@ -96,10 +96,26 @@ const AudioManagement = () => {
     }
   };
 
+  // New Added For sorting Newest to Oldest 6-7-25
+  const fetchSortedMarkers = async (sort = 'newest') => {
+    try {
+      const response = await axios.get(`${API_URL}/api/markers/sorted?sort=${sort}`);
+      const markers = response.data;
+      const sortedAudios = markers.map(marker => marker.audio);
+  
+      setAudiosRef(sortedAudios); // Save full list for filtering/pagination
+      setFilteredAudio(sortedAudios); // Initially no filter
+      setAudios(sortedAudios.slice(0, logsPerPage)); // First page
+    } catch (error) {
+      console.error("Error fetching sorted markers:", error);
+    }
+  };
+
   useEffect(() => {
     fetchAudios();
+    fetchSortedMarkers(); // Only need this if you're replacing the original audio fetch
   }, [logsPerPage]);
-
+  
 
   const handlePlayAudio = async (filePath, audioKey) => {
     if (!filePath) {

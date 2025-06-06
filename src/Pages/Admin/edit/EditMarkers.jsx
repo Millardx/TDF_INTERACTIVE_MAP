@@ -43,6 +43,9 @@ export default function EditMarkers() {
     
     const [markerIcons, setMarkerIcons] = useState([]);  
 
+    const [markersRef, setMarkersRef] = useState([]); // Full unsliced list 6-7-25
+
+
     // Fetch MarkerIcons
     const fetchMarkerIcons = async () => {
         try {
@@ -113,19 +116,24 @@ export default function EditMarkers() {
         setIsDeleteIcon(!isDeleteIcon);
     }
     
+
     const fetchMarkers = async () => {
-        try {
-          const response = await axios.get(`${API_URL}/api/markers/markerData`);
-          setMarkers(response.data);
-          setFilteredMarkers(response.data);
-          setCurrentMarkers(response.data.slice(0, logsPerPage));
-        } catch (error) {
-          console.error('Error fetching markers:', error);
-          mountToast('Error fetching markers', 'error');
-        } finally {
-            setIsMarkerLoaded(true);
-        }
+      try {
+        const response = await axios.get(`${API_URL}/api/markers/markerData`);
+        const sortedMarkers = response.data;
+    
+        setMarkersRef(sortedMarkers); // Full list (unfiltered)
+        setMarkers(sortedMarkers);    // For backup / direct access
+        setFilteredMarkers(sortedMarkers); // Initially unfiltered
+        setCurrentMarkers(sortedMarkers.slice(0, logsPerPage)); // First page
+      } catch (error) {
+        console.error('Error fetching markers:', error);
+        mountToast('Error fetching markers', 'error');
+      } finally {
+        setIsMarkerLoaded(true);
+      }
     };
+    
     
     useEffect(() => {
         fetchMarkers();
@@ -181,11 +189,14 @@ export default function EditMarkers() {
     const handleOpenModal = (marker) => {
         setShowUploadModal(true);
         setSelectedMarker(marker);
+        
     };
 
     const handleCloseModal = () => {
         setShowUploadModal(false);
         fetchMarkers();
+        setIsEditIcon(false);   // ✅ Reset edit/delete modes
+        setIsDeleteIcon(false);
     };
 
     const [selectedMarker, setSelectedMarker] = useState(null);
@@ -214,24 +225,27 @@ export default function EditMarkers() {
     }, [location])
 
     // pagination 
+    // Updated for Integration of Sorted Newest - Olders 6-7-25
     const handleFilterChange = (searchTerm, limit, currentPage) => {
-        const filtered = markers.filter((markers) =>
-            [markers.areaName, markers.iconType]
-                .map((value) => value?.toString().toLowerCase())
-                .some((value) => value?.includes(searchTerm.toLowerCase()))
+        const filtered = markersRef.filter((marker) =>
+          [marker.areaName, marker.iconType]
+            .map((value) => value?.toString().toLowerCase())
+            .some((value) => value?.includes(searchTerm.toLowerCase()))
         );
-
+      
         setLogsPerPage(limit);
         setFilteredMarkers(filtered);
-
+      
         const offset = currentPage * limit;
         setCurrentMarkers(filtered.slice(offset, offset + limit));
-    };
+      };
+      
 
-    const handlePaginationChange = (currentPage) => {
+      const handlePaginationChange = (currentPage) => {
         const offset = currentPage * logsPerPage;
         setCurrentMarkers(filteredMarkers.slice(offset, offset + logsPerPage));
-    };
+      };
+      
 
     // stop loading if both are fully loaded 
     useEffect(() => {
@@ -263,7 +277,13 @@ export default function EditMarkers() {
                             <div className = { styles.btns }>
                                 <button 
                                     className = { `${styles.txtTitle} ${styles.addBtn}`}
-                                    onClick = {() => {setSelectedMarkerId(null); setShowUploadMarker(true);}}
+                                    onClick={() => {
+                                        setSelectedMarkerId(null);
+                                        setIsEditIcon(false);        // ✅ Hide edit
+                                        setIsDeleteIcon(false);      // ✅ Hide delete
+                                        setShowUploadMarker(true);
+                                      }}
+                                      
                                 >Add
                                 </button>
 
@@ -305,6 +325,7 @@ export default function EditMarkers() {
                                                     });
 
                                                     setIsDelete(true);      // Open the modal
+                                                    
                                                 }}
                                             >
                                                     <img src={icons.minus} alt="Delete Icon" />
@@ -315,6 +336,7 @@ export default function EditMarkers() {
                                                     className = { `${styles.iconOverlay} ${styles.editIcon}` }
                                                     onClick = {() => {setShowUploadMarker(true);
                                                         setSelectedMarkerId(iconData._id);
+                                                        setIsEditIcon(false);  
                                                         }}
                                                 >
                                                     <div className = { styles.bg }>

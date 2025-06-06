@@ -15,7 +15,7 @@ export default function MarkerUpload({ markerId ,setmarkerId, onClose, onRefresh
   const [preview, setPreview] = useState(null); // For image preview
   const [name, setName] = useState(''); // Marker name
   const [currentImage, setCurrentImage] = useState(null); // Current markerIconimage
-  //const [currentName, setCurrentImage] = useState(null); // Current markerIcon Name
+  const [currentName,setCurrentName] = useState(null); // Current markerIcon Name
 
   const  notify  = UseToast();
 
@@ -27,6 +27,7 @@ export default function MarkerUpload({ markerId ,setmarkerId, onClose, onRefresh
               const { name: fetchedName, iconPath } = response.data;
               setName(fetchedName); // Set the current name
               setCurrentImage(iconPath); // Set the current image
+              setCurrentName(fetchedName); // ✅ Add this line
           } catch (error) {
               console.error("Error fetching marker details:", error);
           }
@@ -39,19 +40,54 @@ export default function MarkerUpload({ markerId ,setmarkerId, onClose, onRefresh
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
+
+        // If no file is selected (user canceled browse), do nothing
+      if (!selectedFile) return;
+
+      // File size limit: 5MB (5 * 1024 * 1024)
+      const maxSize = 5 * 1024 * 1024;
+      if (selectedFile.size > maxSize) {
+        notify('File size must be less than 5MB.', 'error');
+        return;
+      }
+      
       setFile(selectedFile);
       setFileName(selectedFile.name);
       setPreview(URL.createObjectURL(selectedFile)); // Generate preview URL
-    } else {
-      setFile(null);
-      setFileName('No File Selected...');
-      setPreview(null);
-    }
+    } 
+
   };
 
   const handleSave = async () => {
-    if (!name || !file) {
-      notify('Please provide all required fields.', 'error');
+    // Trim name to avoid false positive spaces
+const trimmedName = name.trim();
+
+// No name at all
+if (!trimmedName) {
+  notify('Please enter a marker name.', 'error');
+  return;
+}
+
+// If updating existing marker
+if (markerId) {
+  const nameUnchanged = trimmedName === currentName;
+  const noNewImage = !file;
+
+  if (nameUnchanged && noNewImage) {
+    notify('No changes detected to save.', 'warn');
+    return;
+  }
+} else {
+  // If creating new marker and missing image
+  if (!file) {
+    notify('Please select a PNG file to upload.', 'error');
+    return;
+  }
+}
+
+
+    if (!file && !markerId) {
+      notify('Please select a PNG file to upload.', 'error');
       return;
     }
 
@@ -62,7 +98,7 @@ export default function MarkerUpload({ markerId ,setmarkerId, onClose, onRefresh
 
     const formData = new FormData();
     formData.append('name', name);
-    formData.append('icon', file);
+    if (file) formData.append('icon', file); // Only append file if provided
 
     try {
       const url = markerId 
@@ -103,9 +139,15 @@ export default function MarkerUpload({ markerId ,setmarkerId, onClose, onRefresh
 
         <div className={styles.header}>
           <span className={styles.txtTitle}>
-            UPLOAD MARKER ICON
+            {markerId ? 'EDIT MARKER ICON' : 'UPLOAD NEW MARKER ICON'}
           </span>
+          
         </div>
+        <p className={styles.subText}>
+            {markerId
+              ? 'Update the name or replace the current icon image.'
+              : 'Select a PNG file and assign a name for the new marker icon.'}
+          </p>
 
         <div className={styles.form}>
           <div className={styles.editContent}>

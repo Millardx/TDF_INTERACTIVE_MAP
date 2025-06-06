@@ -24,43 +24,6 @@ const AudioUpload = ({ audioId, currentTitle, onClose, language}) => {
     setAudioFile(e.target.files[0]); // Set the selected file
   };
 
-  // Handler for updating existing audio record
-  // const handleUpdate = async (e) => {
-  //   e.preventDefault();
-
-  //   if (!audioId) return; // No action if there's no audio ID
-  //   if (!audioFile) {
-  //     mountToast("Please select an audio file to upload.", "error"); // Alert if no file is selected
-  //     console.log("error");
-  //     return; // Stop execution if no file is selected
-  //   }
-
-  //         // Allowed audio file extensions
-  //     const allowedExtensions = ['.mp3', '.wav', '.m4a'];
-      
-  //     // Check if the file extension is in the allowed list
-  //     const fileExtension = audioFile.name.split('.').pop().toLowerCase();
-  //     if (!allowedExtensions.includes(`.${fileExtension}`)) {
-  //       mountToast("Unsupported audio format. Only mp3, wav, m4a are allowed.", "error");
-  //       return; // Stop execution if the file extension is not allowed
-  //     }
-
-  //   const formData = new FormData();
-  //   formData.append('title', title);
-  //   if (audioFile) formData.append('audio', audioFile);
-
-  //   try {
-  //     await axios.put(`${API_URL}/api/audio/update/${audioId}`, formData, {
-  //       headers: { 'Content-Type': 'multipart/form-data' },
-  //     });
-  //     mountToast("Audio updated successfully!", "success");
-  //     onClose(); // Close the modal
-  //   } catch (error) {
-  //     console.error('Error updating audio:', error);
-  //     mountToast("Error updating audio, please try again.", "error"); // Show error message
-  //   }
-  // };
-
   //new Hnadler for 2 audio Fil and Eng
   const handleUpdate = async (e) => {
     e.preventDefault();

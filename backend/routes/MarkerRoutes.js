@@ -81,13 +81,16 @@ router.post('/addMarker', async (req, res) => {
 // Fetch all markers
 router.get('/markerData', async (req, res) => {
   try {
-    const markers = await Marker.find({}).populate('card modal audio');
+    const markers = await Marker.find({})
+      .populate('card modal audio')
+      .sort({ createdAt: -1 }); // 🆕 Sort newest first
     res.status(200).json(markers);
   } catch (err) {
     console.error('Error fetching markers:', err);
     res.status(500).json({ message: 'Error fetching markers' });
   }
 });
+
 
 router.delete('/:id', async (req, res) => {
   const markerId = req.params.id;
@@ -162,6 +165,23 @@ router.put('/:id', async (req, res) => {
   } catch (err) {
     console.error('Error updating marker:', err);
     res.status(500).json({ message: 'Error updating marker and related documents' });
+  }
+});
+
+//!! NEW ADDITION FOR SORTING
+// GET /api/markers/sorted?sort=newest|oldest
+router.get('/sorted', async (req, res) => {
+  try {
+    const sortDirection = req.query.sort === 'oldest' ? 1 : -1; // Default to newest first
+
+    const markers = await Marker.find({}) // You can filter by `{ modal: { $ne: null } }` if needed
+      .populate('modal card audio')
+      .sort({ createdAt: sortDirection });
+
+    res.status(200).json(markers);
+  } catch (err) {
+    console.error('Error fetching sorted markers:', err);
+    res.status(500).json({ message: 'Error fetching sorted markers' });
   }
 });
 

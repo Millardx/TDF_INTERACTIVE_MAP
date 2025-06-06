@@ -54,6 +54,22 @@ const Modal = () => {
 
     const [confirmDelete, setConfirmDelete] = useState(false);
 
+    //New Millard Add Dynamic Display of FileName of Selected Images:
+    const [selectedFileNames, setSelectedFileNames] = useState({
+      upload: 'Select your image/s',
+      update: 'Select replacement'
+    });
+    // For Clearing the Input file when cancelled
+    const uploadInputRef = useRef(null);
+    const updateInputRef = useRef(null);
+    // Sepearating this two for the validation for not causing uploads when theres no file:
+    const [uploadImages, setUploadImages] = useState([]);
+    const [updateImages, setUpdateImages] = useState([]);
+    
+    const [searchTerm, setSearchTerm] = useState('');
+
+
+
     const confirmAndDelete = () => {
       setConfirmDelete(true);
     }
@@ -126,6 +142,23 @@ const Modal = () => {
     }
   }, [isOpen]);
 
+  const fetchSortedMarkers = async (sort = 'newest') => {
+    try {
+      const response = await axios.get(`${API_URL}/api/markers/sorted?sort=${sort}`);
+      const markers = response.data;
+      // You can now extract:
+      const sortedModals = markers.map(marker => marker.modal);
+      setModals(sortedModals); // For modal edit list
+    } catch (error) {
+      console.error("Error fetching sorted markers:", error);
+    }
+  };
+  useEffect(() => {
+    fetchSortedMarkers(); // default: 'newest'
+  }, []);
+  
+  
+
   const handleEditClick = (modal) => {
     if (currentModal) {
       // Close the currently open modal
@@ -161,27 +194,57 @@ const Modal = () => {
     setDeleteModalVisible(false);
     setUploadImagePreviews([]); // Clear the image previews
     setUpdatePreviewImages([]);
-    
-    // Optionally, clear modalImages if you don't need them after canceling
-    // setModalImages([]);
+    setUploadImages([]); // Clear Selected Images
+    setUpdateImages([]);
+
+
+        // ✅ Clear selected filenames
+    setSelectedFileNames({
+      upload: 'Select your image/s',
+      update: 'Select replacement'
+    });
+
+    // ✅ Reset file input fields
+    if (uploadInputRef.current) uploadInputRef.current.value = '';
+    if (updateInputRef.current) updateInputRef.current.value = '';
   };
 
 
   const handleUploadFileChange = (e) => {
     const fileArray = Array.from(e.target.files);
-    const imageUrls = fileArray.map((file) => URL.createObjectURL(file)); // Create URLs for previews
+
+
+      // ✅ Hard limit: don't allow more than 10 selected
+  if (fileArray.length > 10) {
+    mountToast("You can only select up to 10 images at a time.", "warn");
+    if (uploadInputRef.current) uploadInputRef.current.value = '';
+    return;
+  }
+    // ✅ Don't do anything if user canceled the file picker
+    if (fileArray.length === 0) return;
+
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-
+  
     const unsupportedFiles = fileArray.filter(file => !allowedTypes.includes(file.type));
-
     if (unsupportedFiles.length > 0) {
       mountToast("Unsupported file format. Only JPG, JPEG, and PNG are allowed.", "error");
       return;
     }
 
-    setModalImages(fileArray); // Store actual files for submission
-    setUploadImagePreviews(imageUrls); // Generate preview URLs for uploading
+
+
+      const imageUrls = fileArray.map((file) => URL.createObjectURL(file));
+    // ✅ Set dynamic label
+    if (fileArray.length === 1) {
+      setSelectedFileNames(prev => ({ ...prev, upload: fileArray[0].name }));
+    } else if (fileArray.length > 1) {
+      setSelectedFileNames(prev => ({ ...prev, upload: `${fileArray.length} files selected` }));
+    }
+  
+    setUploadImages(fileArray);
+    setUploadImagePreviews(imageUrls);
   };
+  
 
 
       // Handle the upload of new images
@@ -192,10 +255,19 @@ const Modal = () => {
         }
 
          // ✅ NEW: Check if images are present
-        if (!modalImages || modalImages.length === 0) {
+         //Revamp changed the state for new detection validation
+         if (!uploadImages || uploadImages.length === 0) {
           mountToast("No images uploaded. Please select at least one image.", "warn");
           return;
         }
+
+          // ✅ Check image limit
+      const currentCount = modalImages.length;
+      const uploadCount = uploadImages.length;
+      if (currentCount + uploadCount > 10) {
+        mountToast(`You can only have up to 10 images. You've already have ${currentCount}.`, "warn");
+        return;
+      }
 
         //function guard
         if (isSaving) return;    // break execution if already loading
@@ -204,7 +276,7 @@ const Modal = () => {
       
         try {
           const formData = new FormData();
-          modalImages.forEach((image) => {
+          uploadImages.forEach((image) => {
             formData.append('modalImages', image); // Append each image with the key 'modalImages'
           });
       
@@ -220,9 +292,11 @@ const Modal = () => {
             fetchModalData(); // Fetch updated modal data
             setUploadImagePreviews([]);
             setUploadModalVisible(null); 
-            return;
+            setUploadImages([]);
+            setSelectedFileNames(prev => ({ ...prev, upload: 'Select your image/s' }));
+            // ✅ Clear file input visually
+            if (uploadInputRef.current) uploadInputRef.current.value = '';
           } else {
-            console.error('Unexpected status:', response.status);
             mountToast("Failed to upload images.", "error");
           }
         } catch (error) {
@@ -233,21 +307,31 @@ const Modal = () => {
         }
       };
       
-      const handleUpdateFileChange = (e) => {
-        const fileArray = Array.from(e.target.files);
-        const imageUrls = fileArray.map((file) => URL.createObjectURL(file)); // Create URLs for previews
-        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-      
-        const unsupportedFiles = fileArray.filter(file => !allowedTypes.includes(file.type));
-      
-        if (unsupportedFiles.length > 0) {
-          mountToast("Unsupported file format. Only JPG, JPEG, and PNG are allowed.", "error");
-          return;
-        }
-      
-        setModalImages(fileArray); // Store actual files for submission
-        setUpdatePreviewImages(imageUrls); // Generate preview URLs for updating
-      };
+
+  const handleUpdateFileChange = (e) => {
+    const fileArray = Array.from(e.target.files);
+      // ✅ User canceled dialog — do nothing, keep previous preview & file
+    if (fileArray.length === 0) return;
+
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    const unsupportedFiles = fileArray.filter(file => !allowedTypes.includes(file.type));
+    if (unsupportedFiles.length > 0) {
+      mountToast("Unsupported file format. Only JPG, JPEG, and PNG are allowed.", "error");
+      return;
+    }
+
+    const imageUrls = fileArray.map((file) => URL.createObjectURL(file));
+    // ✅ Set dynamic label
+    if (fileArray.length === 1) {
+      setSelectedFileNames(prev => ({ ...prev, update: fileArray[0].name }));
+    } else if (fileArray.length > 1) {
+      setSelectedFileNames(prev => ({ ...prev, update: `${fileArray.length} files selected` }));
+    }
+  
+    setUpdateImages(fileArray);             // For uploading
+    setUpdatePreviewImages(imageUrls);      // For previewing
+  };
+  
       
 
     const handleUpdate = async () => {
@@ -255,6 +339,12 @@ const Modal = () => {
         mountToast("No modal or image index selected for updating.", "error");
         return;
       }
+
+        // ✅ New validation æUpadted
+        if (!updateImages || updateImages.length === 0) {
+          mountToast("No replacement image selected.", "warn");
+          return;
+        }
 
       //function guard
       if (isSaving) return;    // break execution if already loading
@@ -267,7 +357,7 @@ const Modal = () => {
     
         // Append only the new image for the specific index
         if (modalImages[0]) {
-          formData.append('modalImage', modalImages[0]); // Upload the new image
+          formData.append('modalImage', updateImages[0]); // Upload the new image
           formData.append('imageIndex', updateImageIndex); // Pass the index of the image to replace
         }
     
@@ -286,7 +376,9 @@ const Modal = () => {
           fetchModalData(); // Fetch updated modal data
           setUpdateModalVisible(null);
           setUpdatePreviewImages([]);
-          return;
+          setUpdateImages([]);
+          setSelectedFileNames(prev => ({ ...prev, update: 'Select replacement' }));
+          if (updateInputRef.current) updateInputRef.current.value = '';
         } else {
           throw new Error('Failed to update the image');
         }
@@ -377,11 +469,6 @@ const Modal = () => {
   };
 
     
-    const navigate = useNavigate();
-    const handleBackClick  = () => {
-      navigate(`/map`); // Navigate to the specific card display page
-    };
-    
     //Settings of Slick Carousel
     const settings = {
       dots: false,
@@ -462,9 +549,29 @@ const Modal = () => {
               ) : (
                 <>
                   <span className = { `${ styles.txtTitle} ${ styles.listHeader }` }>Select Modal</span>
+                  {/* Search Bar Added 6-7-25 */}
+                  <div className={styles.searchWrapper}>
+                      <input
+                        type="text"
+                        placeholder="Search by Area Name..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className={styles.searchInput}
+                      />
+                      {searchTerm && (
+                        <button className={styles.clearBtn} onClick={() => setSearchTerm('')}>
+                        <img src="/for_landingPage/icons/close.png" alt="close" className={styles.clearIcon} />
+                      </button>
+                      
+                      )}
+                    </div>
+                    
                   <div className={styles.modalsList}>
                     {modals.length > 0 ? (
-                      modals.map((modal) => (
+                      modals
+                      .filter((modal) =>
+                        modal?.title?.toLowerCase().includes(searchTerm.toLowerCase())
+                      ).map((modal) => (
                         <div className = { styles.infoContainer } key={modal._id}>
                           <span className = { styles.txtTitle }>{modal.title}</span>
                           <button onClick={() => handleEditClick(modal)}>Edit</button>
@@ -473,6 +580,13 @@ const Modal = () => {
                     ) : (
                       <p>No modals available</p>  /* Fallback when no modals are fetched */
                     )}
+                      {/* Show when search yields no match */}
+                      {modals.length > 0 &&
+                        modals.filter((modal) =>
+                          modal?.title?.toLowerCase().includes(searchTerm.toLowerCase())
+                        ).length === 0 && (
+                          <p className={styles.noResult}>No modals match your search.</p>
+                        )}
                   </div>
                 </>
               )}
@@ -703,10 +817,12 @@ const Modal = () => {
                     <div className = { styles.customLabel }>
                       <button className = { styles.browseBtn }>Browse...</button>
                       <span className = { styles.fileName }>
-                        { "Select replacement" } {/* Add, file name if one, n files selected if multiple */}
+                      {selectedFileNames.update}
+                        {/* { "Select replacement" } Add, file name if one, n files selected if multiple */}
                       </span>
                       <input
                         type="file"
+                        ref={updateInputRef}
                         accept="image/jpeg, image/jpg, image/png"
                         onChange={handleUpdateFileChange}
                       />
@@ -753,15 +869,22 @@ const Modal = () => {
                       <div className = { styles.header }>
                         <span className = { styles.txtTitle }>Upload New Images</span>
                       </div>
+                      <div className={styles.uploadInfo}>
+                      <span className={modalImages.length >= 10 ? styles.imageCountMax : styles.imageCount}>
+                          Images uploaded: {modalImages.length} / 10
+                        </span>
+                      </div>
 
                       <div className = { styles.customLabel }>
                         <button className = { styles.browseBtn }>Browse...</button>
                         <span className = { styles.fileName }>
-                          { "Select your image/s" } {/* Add, file name if one, n files selected if multiple */}
+                        {selectedFileNames.upload}
+                          {/* { "Select your image/s" } Add, file name if one, n files selected if multiple */}
                         </span>
                         <input 
                           type="file" 
                           accept="image/jpeg, image/jpg, image/png" 
+                          ref={uploadInputRef} 
                           multiple 
                           onChange={handleUploadFileChange} 
                         />
@@ -829,6 +952,7 @@ const Modal = () => {
         )}
       </>
   );
+
 };
 
 export default Modal;

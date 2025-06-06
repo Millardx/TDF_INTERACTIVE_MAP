@@ -116,10 +116,14 @@ export default function NewsAndEvents({ setCurrentModal, handleClickOutside, cur
                                                                     alt={`Slide ${index}`} 
                                                                     className ={styles.carouselImg}/>
                                                                 </div>
-                                                                <div className = { styles.news }>
-                                                                    <span className = { styles.txtTitle }>{headers[index] || "News Header" }</span>
-                                                                    <p className = { styles.txtSubTitle }>{description[index] || "No news description provided"}</p>
+                                                                <div className={styles.news}>
+                                                                <span className={styles.txtTitle}>{headers[index] || "News Header"}</span>
+                                                                <div
+                                                                    className={styles.txtSubTitle}
+                                                                    dangerouslySetInnerHTML={{ __html: description[index] || "No news description provided" }}
+                                                                ></div>
                                                                 </div>
+
                                                                 <div className={styles.meta}>
                                                                 <span className={styles.txtMeta}>
                                                                     Posted by: {authors[index] || 'Unknown'} on {dates[index] ? new Date(dates[index]).toLocaleDateString() : 'N/A'}

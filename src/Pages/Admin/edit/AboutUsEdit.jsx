@@ -11,6 +11,9 @@ import { API_URL } from '/src/config';
 
 import useLoading from '../utility/PageLoaderComponent/useLoading';
 import LoadingAnim from '../utility/PageLoaderComponent/LoadingAnim';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css'; // Snow theme
+
 
 export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClickOutside }) {
     const [isSaving, setIsSaving] = useState(false);
@@ -18,6 +21,9 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
 
     const [isLoading, setIsLoading] = useLoading(false);
     const [isFirstLoad, setIsFirstLoad] = useState(true);
+
+    const [openSection, setOpenSection] = useState('historicalBackground');
+
 
     // toast alert pop up
     const mountToast = UseToast();
@@ -54,10 +60,10 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
     }, [currentModal]); // Empty dependency array means this runs only once, when the component mounts
     
 
-    const handleChangeDetails = (e) => {
-        const { name, value } = e.target;
-        setAboutUsData({ ...aboutUsData, [name]: value });
+    const handleChangeDetails = (name, value) => {
+        setAboutUsData(prev => ({ ...prev, [name]: value }));
     };
+    
 
     const handleSaveDetails = async () => {
         // Check if any field is empty
@@ -89,6 +95,47 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
             setIsSaving(false);
         }
     };
+
+    // new for the ReactQuill 6-7-25
+    const renderAccordion = (label, fieldName) => {
+        const isOpen = openSection === fieldName;
+      
+        return (
+          <div className={styles.accordionItem} key={fieldName}>
+            <div
+              className={styles.accordionHeader}
+              onClick={() =>
+                setOpenSection(isOpen ? null : fieldName)
+              }
+            >
+              <span className={styles.txtTitle}>{label}</span>
+              <span className={`${styles.arrow} ${isOpen ? styles.arrowOpen : ''}`}>
+                ▼
+              </span>
+            </div>
+      
+            {isOpen && (
+              <ReactQuill
+                theme="snow"
+                value={aboutUsData[fieldName]}
+                onChange={(value) => handleChangeDetails(fieldName, value)}
+                className={styles.quillEditor}
+                placeholder="Place information here..."
+                modules={{
+                  toolbar: [
+                    ['bold', 'italic', 'underline'],
+                    [{ list: 'ordered' }, { list: 'bullet' }],
+                    [{ align: [] }], // ⬅️ Add this line for alignment
+                    ['clean']
+                  ]
+                }}
+              />
+            )}
+          </div>
+        );
+      };
+      
+      
     
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -281,60 +328,12 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
                                         </button>
                                         
 
-                                        <div className = { styles.history }>
-                                            <span className = { styles.txtTitle }>Historical Background</span>
-                                            <textarea
-                                                className = { styles.txtSubTitle } 
-                                                placeholder = "Place information here..."
-                                                name="historicalBackground"
-                                                value={aboutUsData.historicalBackground}
-                                                onChange={handleChangeDetails}
-                                            />
-                                        </div>
+                                        {renderAccordion("Historical Background", "historicalBackground")}
+                                        {renderAccordion("Vision", "vision")}
+                                        {renderAccordion("Mission", "mission")}
+                                        {renderAccordion("Goal", "goal")}
+                                        {renderAccordion("Objectives", "objectives")}
 
-                                        <div className = { styles.vision}>
-                                            <span className = { styles.txtTitle }>Vision</span>
-                                            <textarea
-                                                className = { styles.txtSubTitle } 
-                                                placeholder = "Place information here..."
-                                                name="vision"
-                                                value={aboutUsData.vision}
-                                                onChange={handleChangeDetails}
-                                            />
-                                        </div>
-
-                                        <div className = { styles.mission}>
-                                            <span className = { styles.txtTitle }>Mission</span>
-                                            <textarea
-                                                className = { styles.txtSubTitle } 
-                                                placeholder = "Place information here..."
-                                                name="mission"
-                                                value={aboutUsData.mission}
-                                                onChange={handleChangeDetails}
-                                            />
-                                        </div>
-
-                                        <div className = { styles.goal}>
-                                            <span className = { styles.txtTitle }>Goal</span>
-                                            <textarea
-                                                className = { styles.txtSubTitle } 
-                                                placeholder = "Place information here..."
-                                                name="goal"
-                                                value={aboutUsData.goal}
-                                                onChange={handleChangeDetails}
-                                            />
-                                        </div>
-
-                                        <div className = { styles.objective}>
-                                            <span className = { styles.txtTitle }>Objectives</span>
-                                            <textarea
-                                                className = { styles.txtSubTitle } 
-                                                placeholder = "Place information here..."
-                                                name="objectives"
-                                                value={aboutUsData.objectives}
-                                                onChange={handleChangeDetails}
-                                            />
-                                        </div>
                                     </div>
                                 </div>
                             )}

@@ -441,3 +441,27 @@
   }
   
 }
+
+.quillEditor {
+  min-height: 150px;
+  background: white;
+  
+  .ql-container {
+    min-height: 100px;
+  }
+
+  .ql-toolbar {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+  }
+
+  .ql-editor {
+    min-height: 100px;
+    overflow-y: auto;
+  }
+}
+
+
+.newsDesc {
+  min-height: 150px;
+}

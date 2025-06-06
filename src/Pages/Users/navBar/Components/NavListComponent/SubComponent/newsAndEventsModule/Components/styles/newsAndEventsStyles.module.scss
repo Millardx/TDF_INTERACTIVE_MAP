@@ -162,6 +162,22 @@
   display: block;
 }
 
+.txtSubTitle {
+  white-space: normal;
+  line-height: 1.5;
+  
+  ul, ol {
+    padding-left: 1.5rem;
+    margin: 0.5rem 0;
+  }
+
+  p {
+    margin-bottom: 0.75rem;
+  }
+
+  text-align: start; // fallback alignment
+}
+
 
 
 

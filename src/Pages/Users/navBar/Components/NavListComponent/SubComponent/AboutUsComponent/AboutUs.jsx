@@ -112,30 +112,47 @@ export default function AboutUs({ setCurrentModal, handleClickOutside, currentMo
                                             </div>
                                         )}
 
-                                        <div className = { styles.history }>
-                                            <span className = { styles.txtTitle }>Historical Background</span>
-                                            <p className = { styles.txtSubTitle }>{aboutUsData.historicalBackground}</p>
+                                        {/* Updated This for Displaying the Quill Content */}
+                                        <div className={styles.history}>
+                                        <span className={styles.txtTitle}>Historical Background</span>
+                                        <div
+                                            className={styles.txtSubTitle}
+                                            dangerouslySetInnerHTML={{ __html: aboutUsData.historicalBackground }}
+                                        ></div>
                                         </div>
 
-                                        <div className = { styles.vision}>
-                                            <span className = { styles.txtTitle }>Vision</span>
-                                            <p className = { styles.txtSubTitle }>{aboutUsData.vision}</p>
+                                        <div className={styles.vision}>
+                                        <span className={styles.txtTitle}>Vision</span>
+                                        <div
+                                            className={styles.txtSubTitle}
+                                            dangerouslySetInnerHTML={{ __html: aboutUsData.vision }}
+                                        ></div>
                                         </div>
 
-                                        <div className = { styles.mission}>
-                                            <span className = { styles.txtTitle }>Mission</span>
-                                            <p className = { styles.txtSubTitle }>{aboutUsData.mission}</p>
+                                        <div className={styles.mission}>
+                                        <span className={styles.txtTitle}>Mission</span>
+                                        <div
+                                            className={styles.txtSubTitle}
+                                            dangerouslySetInnerHTML={{ __html: aboutUsData.mission }}
+                                        ></div>
                                         </div>
 
-                                        <div className = { styles.goal}>
-                                            <span className = { styles.txtTitle }>Goal</span>
-                                            <p className = { styles.txtSubTitle }>{aboutUsData.goal}</p>
+                                        <div className={styles.goal}>
+                                        <span className={styles.txtTitle}>Goal</span>
+                                        <div
+                                            className={styles.txtSubTitle}
+                                            dangerouslySetInnerHTML={{ __html: aboutUsData.goal }}
+                                        ></div>
                                         </div>
 
-                                        <div className = { styles.objective}>
-                                            <span className = { styles.txtTitle }>Objectives</span>
-                                            <p className = { styles.txtSubTitle }>{aboutUsData.objectives}</p>
+                                        <div className={styles.objective}>
+                                        <span className={styles.txtTitle}>Objectives</span>
+                                        <div
+                                            className={styles.txtSubTitle}
+                                            dangerouslySetInnerHTML={{ __html: aboutUsData.objectives }}
+                                        ></div>
                                         </div>
+
 
 
                                     </div>

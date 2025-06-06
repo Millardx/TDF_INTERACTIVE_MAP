@@ -718,6 +718,7 @@ const Modal = () => {
                                       toolbar: [
                                         ['bold', 'italic', 'underline'],
                                         [{ list: 'bullet' }, { list: 'ordered' }],
+                                        [{ align: [] }],
                                         ['clean']
                                       ]
                                     }}
@@ -759,6 +760,7 @@ const Modal = () => {
                                     toolbar: [
                                       ['bold', 'italic', 'underline'],
                                       [{ list: 'bullet' }, { list: 'ordered' }],
+                                      [{ align: [] }],
                                       ['clean']
                                     ]
                                   }}

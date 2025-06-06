@@ -12,6 +12,8 @@ import { API_URL } from '/src/config';
 import useLoading from '../utility/PageLoaderComponent/useLoading';
 import LoadingAnim from '../utility/PageLoaderComponent/LoadingAnim';
 import { useAuth } from '/src/Pages/Admin/ACMfiles/authContext';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css'; // Snow theme
 
 
 export default function NewsEventImage({ setCurrentModal, currentModal, handleClickOutside}) { // setCurrentModal, currentModal, handleClickOutside
@@ -439,13 +441,22 @@ export default function NewsEventImage({ setCurrentModal, currentModal, handleCl
                                                                             onChange={(e) => handleTextChange(index, 'header', e.target.value)}
                                                                         />
                                                                         <br />
-                                                                        <textarea
-                                                                            className={`${styles.txtSubTitle} ${styles.newsDesc}`}
-                                                                            placeholder="No current news description..."
+                                                                        <ReactQuill
+                                                                            theme="snow"
                                                                             value={imageDescriptions[index] || ""}
-                                                                            maxLength={25}
-                                                                            onChange={(e) => handleTextChange(index, 'description', e.target.value)}
-                                                                        />
+                                                                            onChange={(value) => handleTextChange(index, 'description', value)}
+                                                                            className={`${styles.quillEditor} ${styles.newsDesc}`}
+                                                                            placeholder="Enter news description..."
+                                                                            modules={{
+                                                                                toolbar: [
+                                                                                ['bold', 'italic', 'underline'],
+                                                                                [{ list: 'ordered' }, { list: 'bullet' }],
+                                                                                [{ align: [] }],
+                                                                                ['clean']
+                                                                                ]
+                                                                            }}
+                                                                            />
+                                                                            <br />
                                                                     </div>
 
                                                                 </>

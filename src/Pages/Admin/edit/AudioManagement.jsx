@@ -198,7 +198,7 @@ const AudioManagement = () => {
         );
   
         mountToast("Audio archived successfully", "success");
-        fetchAudios();
+        fetchSortedMarkers();
         setConfirmDelete(false);
         setAudioToDelete(null);
         setIsDelete(false);

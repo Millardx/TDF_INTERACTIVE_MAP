@@ -226,7 +226,8 @@ const AudioManagement = () => {
 
   const handleCloseModal = () => {
     setShowUploadModal(false);
-    fetchAudios(); // Refresh the audio list after upload/update
+    // fetchAudios(); // Refresh the audio list after upload/update
+    fetchSortedMarkers();
   };
 
   // importat. Related to CSS

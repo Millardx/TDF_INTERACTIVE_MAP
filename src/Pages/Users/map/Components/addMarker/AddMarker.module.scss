@@ -200,3 +200,10 @@
       width: 80%;
     }
   }
+
+
+@media (max-width: 768px) {
+  .button {
+    display: none;
+  }
+}

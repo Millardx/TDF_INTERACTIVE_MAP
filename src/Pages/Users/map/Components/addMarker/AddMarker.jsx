@@ -233,9 +233,10 @@ const AddMarker = ({ scene, container, camera, addMarkerMode, isOnAddMarker }) =
       >
         {(user?.role === "staff" || user?.role === "admin") && (
         <button 
-        ref={btnRef} 
-        className={styles.button}
-        onClick={(e) => {toggleAddMarker(); addMarkerMode();}}>
+          ref={btnRef} 
+          className={styles.button}
+          onClick={(e) => {toggleAddMarker(); addMarkerMode();}}
+        >
           <span>Add Marker</span>
           <img src={plusIcon} alt="add marker icon" />
         </button>

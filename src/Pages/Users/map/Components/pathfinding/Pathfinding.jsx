@@ -161,7 +161,7 @@ function Pick({pos, moveArrow, removeLine, cameraPF, togglePathfinding, isPathfi
             setTimeout(() => {
                 setIsPfBtn(true);
             }, 300)
-            console.log('close modal');
+            // console.log('close modal');
 
         }
     }
@@ -206,7 +206,7 @@ function Pick({pos, moveArrow, removeLine, cameraPF, togglePathfinding, isPathfi
     
     const choiceHelper = (btn) => {
         headerRef.current.textContent = btn;
-        console.log(btn)
+        // console.log(btn)
     }
     const chosenPath = (choice) =>{
         const header = headerRef.current?.textContent;

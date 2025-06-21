@@ -1,7 +1,7 @@
 
 import styles from "./styles/confirmationStyles.module.scss"
 
-export default function Confirmation({ onCancel, setConfirmDelete, isDeleting }) {
+export default function Confirmation({ onCancel, setConfirmDelete, isDeleting, deleteMessage }) {
     
     return (
         <>
@@ -9,8 +9,7 @@ export default function Confirmation({ onCancel, setConfirmDelete, isDeleting })
                 <div className = { styles.content }>
                     <span className = { styles.txtTitle }> ARE YOU SURE</span>
                     <p className = { styles.txtSubTitle }>
-                        Are you sure you want to delete this item? <br />
-                        This action cannot be undone.
+                        { deleteMessage ? deleteMessage : `Are you sure you want to delete this item? This action cannot be undone.`}
                     </p>
                     <div className = { styles.btns}>
                         <div className = { styles.delete }>

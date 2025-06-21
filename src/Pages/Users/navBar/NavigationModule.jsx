@@ -90,7 +90,7 @@ export default function NavigationModule ({ currentModal, setCurrentModal, showM
         setIsDropClicked(!isDropClicked);
     }
     
-    console.log(currentModal);
+    // console.log(currentModal);
 
     return (
         <>

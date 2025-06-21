@@ -285,10 +285,10 @@ const Modal = () => {
               'Content-Type': 'multipart/form-data',
             },
           });
-          console.log('Response:', response);
+          // console.log('Response:', response);
           if (response.status === 200) {
             mountToast("Images uploaded successfully!", "success");
-            console.log('Images uploaded successfully!');
+            // console.log('Images uploaded successfully!');
             fetchModalData(); // Fetch updated modal data
             setUploadImagePreviews([]);
             setUploadModalVisible(null); 
@@ -372,7 +372,7 @@ const Modal = () => {
     
         if (response.status === 200) {
           mountToast("Image updated successfully!", "success");
-          console.log('Images updated successfully!');
+          // console.log('Images updated successfully!');
           fetchModalData(); // Fetch updated modal data
           setUpdateModalVisible(null);
           setUpdatePreviewImages([]);
@@ -401,9 +401,9 @@ const Modal = () => {
     setIsDeleting(true);
 
     try {
-      console.log('Archiving modal image...', modalId, imagePath);
+      // console.log('Archiving modal image...', modalId, imagePath);
       const response = await axios.put(`${API_URL}/api/archive/modal/${modalId}`, { imagePath });
-      console.log("API Response:", response);
+      // console.log("API Response:", response);
 
       if (response.status === 200) {
         setModals((prevModals) =>
@@ -417,7 +417,7 @@ const Modal = () => {
               : modal
           )
         );
-        console.log('Archiving Success');
+        // console.log('Archiving Success');
         mountToast("Modal image archived successfully", "success");
         fetchModalData(); 
         setDeleteModalVisible(null);

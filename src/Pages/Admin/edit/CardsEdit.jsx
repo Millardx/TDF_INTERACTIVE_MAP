@@ -104,7 +104,7 @@ const Cards = () => {
       // Handle image upload for card
       const handleImageUpload = (e, cardId) => {
         const file = e.target.files[0];
-        console.log('File selected:', file);
+        // console.log('File selected:', file);
         // Allowed image formats
       const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
           // Check if file exceeds 5MB
@@ -121,7 +121,7 @@ const Cards = () => {
         }
         if (file) {
           const imageUrl = URL.createObjectURL(file); // Create a local URL for the uploaded image
-          console.log('Image URL created:', imageUrl);
+          // console.log('Image URL created:', imageUrl);
           // Update the card state with the new image URL
           setCards(prevCards =>
             prevCards.map(card =>
@@ -208,9 +208,9 @@ const Cards = () => {
       setIsDeleting(true);
 
       try {
-        console.log('Archiving image...', imageId, imagePath);
+        // console.log('Archiving image...', imageId, imagePath);
         const response = await axios.put(`${API_URL}/api/archive/cards/${imageId}`, { imagePath });
-        console.log("API Response:", response);
+        // console.log("API Response:", response);
     
         if (response.status === 200) {
           setCards((prevCards) =>
@@ -218,7 +218,7 @@ const Cards = () => {
               card._id === imageId ? { ...card, image: null, isArchived: true } : card
             )
           );
-          console.log('Archiving Success');
+          // console.log('Archiving Success');
           mountToast("Image archived successfully", "success");
           setConfirmDelete(false);
           setImgToDelete(null);

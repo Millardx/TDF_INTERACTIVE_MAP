@@ -41,7 +41,7 @@ export default function Analytics() {
     useEffect(() => {
         const reloaded = sessionStorage.getItem('hasReloaded');
         
-        console.log('value', reloaded);
+        // console.log('value', reloaded);
 
         if (!reloaded) {
             sessionStorage.setItem('hasReloaded', 'true');
@@ -156,11 +156,11 @@ export default function Analytics() {
         setSexDistribution(Object.entries(sexMap).map(([label, value]) => ({ label, value })));
         setRoleDistribution(Object.entries(roleMap).map(([label, value]) => ({ label, value })));
 
-        console.log(`🟢 Timeframe Filter: ${timeframe.toUpperCase()}`);
-        console.log(`🔢 Total Logs (All): ${logs.length}`);
-        console.log(`🔍 Filtered Logs (After Date Filter): ${filtered.length}`);
+        // console.log(`🟢 Timeframe Filter: ${timeframe.toUpperCase()}`);
+        // console.log(`🔢 Total Logs (All): ${logs.length}`);
+        // console.log(`🔍 Filtered Logs (After Date Filter): ${filtered.length}`);
 
-        console.log(`⭐ Logs WITH Feedback: ${withFeedback.length}`);
+        // console.log(`⭐ Logs WITH Feedback: ${withFeedback.length}`);
 
     };
     
@@ -204,9 +204,9 @@ export default function Analytics() {
         try {
             const response = await fetch(`${API_URL}/api/guest/guestLogs/countFeedback`);
             const data = await response.json();
-            console.log('Fetched Count Feedback:', data);
+            // console.log('Fetched Count Feedback:', data);
         } catch (error) {
-            console.error('Error fetching count feedback:', error);
+            // console.error('Error fetching count feedback:', error);
         }
     };
 

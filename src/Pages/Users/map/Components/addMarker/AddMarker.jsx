@@ -75,13 +75,13 @@ const AddMarker = ({ scene, container, camera, addMarkerMode, isOnAddMarker }) =
 
   const handleDragStart = (e, marker) => {
     e.dataTransfer.setData('marker', JSON.stringify(marker));
-    console.log(`${marker.name} is being dragged`);
+    // console.log(`${marker.name} is being dragged`);
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
     const marker = JSON.parse(e.dataTransfer.getData('marker'));
-    console.log(`${marker.name}`, "got dropped");
+    // console.log(`${marker.name}`, "got dropped");
 
     // Use Click utility to calculate world position
     const clickInstance = new Click(e, camera, scene);
@@ -135,7 +135,7 @@ const AddMarker = ({ scene, container, camera, addMarkerMode, isOnAddMarker }) =
         { ...currentMarker, siteName}
       ])
     }
-    console.log(markerPos);
+    // console.log(markerPos);
 
   }
 
@@ -161,7 +161,7 @@ const AddMarker = ({ scene, container, camera, addMarkerMode, isOnAddMarker }) =
   }, [camera, container]);
 
   useEffect(() => {
-    console.log(markerPos);
+    // console.log(markerPos);
   }, [markerPos]);
 
   const updateMarkerPositions = useCallback(() => {
@@ -224,7 +224,7 @@ const AddMarker = ({ scene, container, camera, addMarkerMode, isOnAddMarker }) =
   // add icon functions
   const addIcon = () =>{
     setIsAddIcon(!isAddIcon);
-    console.log(isAddIcon)
+    // console.log(isAddIcon)
   }
   
   return (
@@ -233,9 +233,10 @@ const AddMarker = ({ scene, container, camera, addMarkerMode, isOnAddMarker }) =
       >
         {(user?.role === "staff" || user?.role === "admin") && (
         <button 
-        ref={btnRef} 
-        className={styles.button}
-        onClick={(e) => {toggleAddMarker(); addMarkerMode();}}>
+          ref={btnRef} 
+          className={styles.button}
+          onClick={(e) => {toggleAddMarker(); addMarkerMode();}}
+        >
           <span>Add Marker</span>
           <img src={plusIcon} alt="add marker icon" />
         </button>

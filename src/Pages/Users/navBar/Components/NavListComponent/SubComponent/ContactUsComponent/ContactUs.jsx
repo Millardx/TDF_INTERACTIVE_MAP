@@ -69,7 +69,7 @@ export default function ContactUs({ setCurrentModal, handleClickOutside, current
         setActiveInfo(info === activeInfo ? null : info);
     }
 
-    console.log(activeInfo);
+    // console.log(activeInfo);
 
     // Handler for user message sent to client email
     const onSubmit = async (event) => {

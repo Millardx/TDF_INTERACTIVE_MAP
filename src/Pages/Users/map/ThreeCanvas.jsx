@@ -291,7 +291,7 @@ const ThreeCanvas = () => {
 
   const handleCheckboxChange = (e) => {
     setShowMarkerNames(e.target.checked);
-    console.log('Show marker names:', e.target.checked); // true or false
+    // console.log('Show marker names:', e.target.checked); // true or false
   };
 
   return(

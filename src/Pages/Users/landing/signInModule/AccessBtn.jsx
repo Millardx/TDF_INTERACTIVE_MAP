@@ -25,7 +25,7 @@ const AccessBtn = ({ onClick, disabled }) => {
 
     const handleLogout = () => {
         logout(); // Call the logout function from context
-        console.log(user.role,'logout')
+        // console.log(user.role,'logout')
         //navigate('/'); // Redirect to home or login page after logout
     };
 

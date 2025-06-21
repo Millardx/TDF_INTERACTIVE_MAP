@@ -82,44 +82,24 @@ export default function ContactUs({ setCurrentModal, handleClickOutside, current
     
         formData.append("access_key", "bc61024f-bc8c-407c-8805-b5d73b18ae51"); // using web3forms, replace with the access key for the client email
     
-        try {
-            const res = await fetch("https://api.web3forms.com/submit", {
-                method: "POST",
-                body: formData
-                // ✅ No need for headers — FormData sets the correct multipart boundary
-            }).then((res) => res.json());
-
-            if (res.success) {
-                mountToast("Message sent!", "success");
-            } else {
-                mountToast("Message not sent!", "error");
-            }
-        } catch (err) {
-            mountToast("Something went wrong!", "error");
-            console.error(err);
-        } finally {
-            setIsLoading(false);
-        }
-
         // const object = Object.fromEntries(formData);
         // const json = JSON.stringify(object);
     
-        // const res = await fetch("https://api.web3forms.com/submit", {
-        //   method: "POST",
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //     Accept: "application/json"
-        //   },
-        //   body: json
-        // }).then((res) => res.json());
+        const res = await fetch("https://api.web3forms.com/submit", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await res.json();
     
-        // if (res.success) {
-        //     mountToast("Message sent!", "success");
-        //     setIsLoading(false);    // stop loading
-        // } else {
-        //     mountToast("Message not sent!", "error");
-        //     setIsLoading(false);    // stop loading
-        // }
+        if (data.success) {
+            mountToast("Message sent!", "success");
+            setIsLoading(false);    // stop loading
+            event.target.reset();
+        } else {
+            mountToast("Message not sent!", "error");
+            setIsLoading(false);    // stop loading
+        }
     };
 
     return (

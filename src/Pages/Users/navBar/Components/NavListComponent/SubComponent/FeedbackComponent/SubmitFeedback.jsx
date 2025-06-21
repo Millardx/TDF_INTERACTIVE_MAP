@@ -42,9 +42,9 @@ export default function NewsAndEvents({ setCurrentModal, handleClickOutside, cur
 
 
     const handleSubmit = async () => {
-        console.log('handleSubmit is triggered'); // Check if this is triggered
+        // console.log('handleSubmit is triggered'); // Check if this is triggered
         const guestId = localStorage.getItem('guestId'); // Retrieve the guestId from localStorage
-        console.log('Retrieved guestId from localStorage:', guestId); // Check if this logs correctly
+        // console.log('Retrieved guestId from localStorage:', guestId); // Check if this logs correctly
 
          // Check if no star is selected
         if (selectedStar === -1) {
@@ -68,7 +68,7 @@ export default function NewsAndEvents({ setCurrentModal, handleClickOutside, cur
         };
 
         try {
-            console.log('Sending feedback data:', feedbackData); // Check before sending
+            // console.log('Sending feedback data:', feedbackData); // Check before sending
             const response = await axios.post(`${API_URL}/api/guest/updateFeedback`, feedbackData, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -76,7 +76,7 @@ export default function NewsAndEvents({ setCurrentModal, handleClickOutside, cur
             });
     
             if (response.status === 200) {
-                console.log('Feedback submitted successfully');
+                // console.log('Feedback submitted successfully');
                 // Alert the user and reload the page
                 mountToast("Feedback submitted successfully!", "success"); //not converted yet due to conflict with toast
                 setCurrentModal(null);

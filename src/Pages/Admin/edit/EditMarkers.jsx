@@ -75,14 +75,14 @@ export default function EditMarkers() {
         setIsDeleting(true);
 
         try {
-          console.log('Archiving marker icon...', markerId, name,  iconPath);
+        //   console.log('Archiving marker icon...', markerId, name,  iconPath);
       
           const response = await axios.put(
             `${API_URL}/api/archive/markerIcon/${markerId}`,
             { iconPath , name}
           );
       
-          console.log("API Response:", response);
+        //   console.log("API Response:", response);
       
           if (response.status === 200) {
             setMarkerIcons((prevIcons) =>
@@ -92,7 +92,7 @@ export default function EditMarkers() {
                   : icon
               )
             );
-            console.log('Marker Icon archived successfully');
+            // console.log('Marker Icon archived successfully');
             mountToast("Marker icon archived successfully", "success");
             setIsDeleteIcon(false);
             setIsDelete(false);
@@ -205,7 +205,7 @@ export default function EditMarkers() {
     const [selectedMarker, setSelectedMarker] = useState(null);
     const handleUpdate = (updatedMarker) => {
         // Logic to update markers in the parent state or refetch them
-        console.log('Updated Marker:', updatedMarker);
+        // console.log('Updated Marker:', updatedMarker);
         handleCloseModal();
     };
 

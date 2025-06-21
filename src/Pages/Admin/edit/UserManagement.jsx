@@ -65,7 +65,7 @@ const UserManagement = () => {
     }, []);
 
     const fetchUsers = async () => {
-        console.log("Attempting to fetch users...");
+        // console.log("Attempting to fetch users...");
 
         if (isFirstLoad) setIsLoading(true);    // Start loading
         try {
@@ -75,7 +75,7 @@ const UserManagement = () => {
                     Authorization: `Bearer ${token}`
                 }
             });
-            console.log("Users fetched:", response.data);
+            // console.log("Users fetched:", response.data);
             setUsers(response.data);
         } catch (error) {
             console.error("Failed to fetch users:", error);

@@ -47,7 +47,7 @@ export default function NewsEventImage({ setCurrentModal, currentModal, handleCl
 
     const { user } = useAuth(); // 🔐 user.name will be available
     const authorName = user?.name || 'Unknown';
-    console.log(authorName);
+    // console.log(authorName);
 
 
 

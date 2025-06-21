@@ -172,7 +172,7 @@ const AudioManagement = () => {
     setIsDeleting(true);
 
     try {
-      console.log('📦 Archiving audio...', audioId);
+      // console.log('📦 Archiving audio...', audioId);
   
       // 🧠 Build payload conditionally
       const payload = {};
@@ -219,7 +219,7 @@ const AudioManagement = () => {
   </button> */}
 
   const handleOpenModal = (audioId = null, currentTitle = '', language = 'filipino') => {
-    console.log("Opening modal with audioId:", audioId);
+    // console.log("Opening modal with audioId:", audioId);
     setModalProps({ audioId, currentTitle, language });
     setShowUploadModal(true);
   };

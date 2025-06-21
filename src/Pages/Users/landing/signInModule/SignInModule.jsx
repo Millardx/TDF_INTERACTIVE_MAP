@@ -15,7 +15,7 @@ export default function SignInModule() {
         checkToken(); // Validate token and redirect if needed
         localStorage.removeItem('guestId'); // Remove guestId from localStorage when this navigated to SignUp Module
         localStorage.removeItem('tdfHasSeenTutorial'); // ✅ Clear modal flag on landing
-        console.log("Guest Logout")
+        // console.log("Guest Logout")
     }, [checkToken]);
 
     
@@ -77,7 +77,7 @@ export default function SignInModule() {
 
     const handleUser = (user, role) => {
         setIsUser(user);
-        console.log(`${user} logged in with ID: ${role}`); // Log the user role
+        // console.log(`${user} logged in with ID: ${role}`); // Log the user role
 
     };
 

@@ -71,6 +71,8 @@ export default function Archive() {
         setConfirmDelete(true);
     }
 
+    const [deleteMessage, setDeleteMessage] = useState(null); // dynamic delete message 6-21-2025
+
     useEffect(() => {
         if (confirmDelete && itemToDelete) {
             handleDelete(itemToDelete); 
@@ -392,7 +394,7 @@ export default function Archive() {
                                                             
                                                             <img className={`${styles.icon} ${styles.undo}`} src={icons.undo} alt="Restore Item" />
                                                     </button>
-                                                    <button className={styles.delBtn} onClick={() => { handleDeleteBtn(); setItemToDelete(archive._id); }} >
+                                                    <button className={styles.delBtn} onClick={() => { handleDeleteBtn(); setItemToDelete(archive._id); setDeleteMessage('Delete this item forever?')}} >
                                                         <img className={`${styles.icon} ${styles.delete}`} src={icons.remove} alt="Delete Item" />
                                                     </button>
                                                 </div>
@@ -424,6 +426,7 @@ export default function Archive() {
                                 onCancel = {() => handleDeleteBtn()}
                                 setConfirmDelete={ confirmAndDelete }
                                 isDeleting={ isDeleting }
+                                deleteMessage = { deleteMessage }
                             />
                         </motion.div>
                     )}

@@ -45,6 +45,8 @@ export default function EditMarkers() {
 
     const [markersRef, setMarkersRef] = useState([]); // Full unsliced list 6-7-25
 
+    const [deleteMessage, setDeleteMessage] = useState(null); // dynamic error message 6-21-2025
+
 
     // Fetch MarkerIcons
     const fetchMarkerIcons = async () => {
@@ -145,6 +147,7 @@ export default function EditMarkers() {
         setIsDelete(!isDelete);
         setIsMarker(null);
         setIconToDelete(null);
+        setDeleteMessage(null);
     }
 
     const confirmAndDelete = () => {
@@ -325,6 +328,8 @@ export default function EditMarkers() {
                                                     });
 
                                                     setIsDelete(true);      // Open the modal
+
+                                                    setDeleteMessage('Deleting this icon will leave other markers with no icon display. Delete this icon?')
                                                     
                                                 }}
                                             >
@@ -386,7 +391,13 @@ export default function EditMarkers() {
                                                                 alt="Update Item"
                                                             />
                                                         </button>
-                                                        <button onClick={() => {handleDeleteBtn(); setIsMarker(marker._id);}}>
+                                                        <button 
+                                                            onClick={() => {
+                                                                    handleDeleteBtn(); 
+                                                                    setIsMarker(marker._id);
+                                                                    setDeleteMessage('Contents will be deleted and will not be restorable. Delete this marker?')
+                                                                }}
+                                                            >
                                                             <img
                                                                 className={`${styles.icon} ${styles.delete}`}
                                                                 src={icons.remove}
@@ -464,6 +475,7 @@ export default function EditMarkers() {
                                 onCancel = {() => handleDeleteBtn()}
                                 setConfirmDelete={ confirmAndDelete }
                                 isDeleting={ isDeleting }
+                                deleteMessage = { deleteMessage }
                             />
                         </motion.div>
                     )}

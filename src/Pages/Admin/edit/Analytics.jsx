@@ -17,7 +17,8 @@ defaults.maintainAspectRatio = false;
 defaults.responsive = true; 
 
 export default function Analytics() {
-    const [isLoading, setIsLoading] = useLoading(true);     // For loading
+    const [isLoading, setIsLoading] = useLoading(false);     // For loading
+    const [isFirstLoad, setIsFirstLoad] = useState(true);    // prevents loading in every interaction
     const location = useLocation();
     const [starFeedback, setStarFeedback] = useState([]);
     const [sexDistribution, setSexDistribution] = useState([]);
@@ -58,7 +59,7 @@ export default function Analytics() {
 
     // ✅ Fetch Guest Logs Data
     const fetchGuestLogs = async () => {
-        setIsLoading(true);
+        if (isFirstLoad) setIsLoading(true);    // Start loading
 
         try {
             const response = await fetch(`${API_URL}/api/guest/guestLogs`);
@@ -74,6 +75,7 @@ export default function Analytics() {
             console.error('Error fetching guest logs:', error);
         } finally {
             setIsLoading(false);
+            setIsFirstLoad(false);    // Mark that first load is done
         }
     };
 
@@ -169,27 +171,35 @@ export default function Analytics() {
     // pagination
     const handleFilterChange = (searchTerm, limit, currentPage) => {
 
-        let logsToFilter = filteredLogs.filter(log => log.feedback?.rating != null);
+        setLogsPerPage(limit);
 
-            // 🔁 Apply comment filter
-            if (commentFilter === 'with') {
-                logsToFilter = logsToFilter.filter(log => log.feedback?.comment && log.feedback.comment.trim() !== '');
-            } else if (commentFilter === 'without') {
-                logsToFilter = logsToFilter.filter(log => !log.feedback?.comment || log.feedback.comment.trim() === '');
-            } // Filter logs based on search term and limit
-
-        const filtered = filteredLogs
+        let filtered = guestLogs
             .filter(log => log.feedback?.rating != null) // only logs with feedback
+            .filter(log => {
+                // 🔁 Apply commentFilter inline
+                if (commentFilter === 'with') {
+                    return log.feedback?.comment && log.feedback.comment.trim() !== '';
+                } else if (commentFilter === 'without') {
+                    return !log.feedback?.comment || log.feedback.comment.trim() === '';
+                }
+                return true; // 'all'
+            })
             .filter((log) =>
                 [log.role, log.sexAtBirth, log.feedback?.rating, log.feedback?.comment]
                     .map((value) => value?.toString().toLowerCase())
                     .some((value) => value?.includes(searchTerm.toLowerCase()))
             )
-            .sort((a, b) => new Date(b.feedback?.feedbackDate || b._effectiveDate) - new Date(a.feedback?.feedbackDate || a._effectiveDate));
-    
-        setLogsPerPage(limit);
+            .sort((a, b) =>
+                new Date(b.feedback?.feedbackDate || b._effectiveDate) -
+                new Date(a.feedback?.feedbackDate || a._effectiveDate)
+            );
+
+        const totalPages = Math.ceil(filtered.length / limit);
+        const safePage = Math.max(0, Math.min(currentPage, totalPages - 1));
+        const offset = safePage * limit;
+
         setFilteredLogs(filtered);
-        setCurrentLogs(filtered.slice(currentPage * limit, currentPage * limit + limit));
+        setCurrentLogs(filtered.slice(offset, offset + limit));
     };
     
 
@@ -199,31 +209,16 @@ export default function Analytics() {
 
     };
 
-    // ✅ Fetch Count Feedback Data (new handler)
-    const fetchCountFeedback = async () => {
-        try {
-            const response = await fetch(`${API_URL}/api/guest/guestLogs/countFeedback`);
-            const data = await response.json();
-            // console.log('Fetched Count Feedback:', data);
-        } catch (error) {
-            // console.error('Error fetching count feedback:', error);
-        }
-    };
-
     
 
     // ✅ Run All Fetches on Mount
     useEffect(() => {
         fetchGuestLogs();
-        fetchCountFeedback(); // New fetch for count feedback
-    }, [logsPerPage, selectedTimeframe]);
+    }, [selectedTimeframe]);
 
     // ✅ Re-filter logs when commentFilter changes
     useEffect(() => {
-        if (commentFilter === 'with' || commentFilter === 'without') {
-            setLogsPerPage(20); // Set to 20 only on filter
-            handleFilterChange('', 20, 0); // Reset page and re-filter
-        }
+        handleFilterChange('', logsPerPage, 0); // ✅ Always reset page
     }, [commentFilter]);
     
     
@@ -241,7 +236,7 @@ export default function Analytics() {
 
     // Added by lorenzo - 05/19/2025
     if (!shouldRender) return null;     // Skip render until reload has occurred
-
+    
     return (
         <>
             {isLoading ? (
@@ -510,28 +505,20 @@ export default function Analytics() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                    {currentLogs
-                                            .filter((log) => {
-                                                const hasComment = !!log.feedback?.comment?.trim();
-                                                if (commentFilter === 'with') return hasComment;
-                                                if (commentFilter === 'without') return !hasComment;
-                                                return true; // 'all'
-                                            })
-                                            
-                                            .map((log, index) => (
-                                            <tr key={index}>
-                                                <td>{index + 1}</td> {/* ✅ Number column */}
-                                                <td>{log.role === "Others" ? log.customRole || "N/A" : log.role}</td>
-                                                <td>{log.sexAtBirth}</td>
-                                                <td>{log.feedback?.rating ? `${log.feedback.rating} Stars` : 'No Rating'}</td>
-                                                <td>{log.feedback?.comment || 'No Comment'}</td>
-                                                <td>
-                                                    {moment(log.feedback?.feedbackDate || log.createdAt).format('MMM D, YYYY,')}
-                                                    <br />
-                                                    {moment(log.feedback?.feedbackDate).format('h:mm A')}
-                                                </td>
-                                            </tr>
-                                        ))}
+                                    {currentLogs.map((log, index) => (
+                                        <tr key={index}>
+                                            <td>{index + 1}</td>
+                                            <td>{log.role === "Others" ? log.customRole || "N/A" : log.role}</td>
+                                            <td>{log.sexAtBirth}</td>
+                                            <td>{log.feedback?.rating ? `${log.feedback.rating} Stars` : 'No Rating'}</td>
+                                            <td>{log.feedback?.comment || 'No Comment'}</td>
+                                            <td>
+                                                {moment(log.feedback?.feedbackDate || log.createdAt).format('MMM D, YYYY')}
+                                                <br />
+                                                {moment(log.feedback?.feedbackDate).format('h:mm A')}
+                                            </td>
+                                        </tr>
+                                    ))}
                                     </tbody>
                                 </table>
                             </div>

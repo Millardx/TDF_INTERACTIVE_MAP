@@ -139,6 +139,14 @@ export default function AboutUsEdit ({ setCurrentModal, currentModal, handleClic
     
     const handleImageChange = (e) => {
         const file = e.target.files[0];
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+
+        // Check if file type is allowed
+        if (file && !allowedTypes.includes(file.type)) {
+          mountToast("Only JPEG, PNG, and GIF image formats are allowed!", "error");
+          return;
+        }
+
         if (file) {
             setSelectedImage(file); 
             setPreviewImage(URL.createObjectURL(file)); // Set preview URL

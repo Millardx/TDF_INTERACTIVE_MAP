@@ -13,6 +13,13 @@
     height: 100%;
 }
 
+.accordionHeader {
+
+    .txtTitle {
+        font-size: 20px;
+    }
+}
+
 .editContainer {
     background-color: $tertiary;
     border-radius: 8px;
@@ -23,6 +30,8 @@
     padding: 20px;
     max-width: 600px;
     width: 90%;
+    max-height: 700px;
+    height: 75%;
     
     overflow: auto;
     margin: 20px;

@@ -140,6 +140,11 @@ const AddMarker = ({ scene, container, camera, addMarkerMode, isOnAddMarker }) =
   }
 
   const handleCloseModal = () => {
+
+    if (currentMarker) {
+      setMarkerPos((prev) => prev.filter(m => m.id !== currentMarker.id));
+    }
+
     setIsModalVisible(false);
     setCurrentMarker(null);
   }

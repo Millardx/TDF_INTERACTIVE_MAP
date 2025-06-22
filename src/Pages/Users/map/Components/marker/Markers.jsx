@@ -86,7 +86,7 @@ const [modals, setModals] = useState([]);
       let isLandscape = window.innerWidth > window.innerHeight;
 
       let offset = {
-        top: isLandscape ? -150 : (window.innerWidth > 666 ? -200 : -250),
+        top: isLandscape ? -250 : (window.innerWidth > 666 ? -200 : -250),
         left: isLandscape ? -90 : (window.innerWidth > 666 ? 40 : -150),
       };
 
